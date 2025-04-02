@@ -1,0 +1,16 @@
+before: docs/before.md
+after: docs/after.md
+snippets:
+  - title: "gravitee.yml"
+    language: YAML
+    content: >-  
+      secrets:
+        kubernetes:
+          enable: true
+  - title: "values.yaml"
+    language: YAML
+    content: >-
+      gateway:
+        secrets:
+          kubernetes:
+            enable: true

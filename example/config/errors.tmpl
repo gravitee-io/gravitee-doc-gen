@@ -1,0 +1,12 @@
+You can use the response template feature to override the default response provided by the policy.
+These templates are be defined at the API level, in "Entrypoint" section for V4 Apis, or in "Response Templates" for V2 APIs.
+
+The error keys sent by this policy are as follows:
+
+{{ range $col := .Columns }}| {{ $col.Label }}{{- end }} |
+{{ range $_ := .Columns }}| --- {{ end }} |
+{{ range $row := .Rows }}
+{{- range $col := $.Columns -}}
+| {{ if $row.Deprecated }}~~{{ end }}{{ default (index $row.Data $col.Id) "-" }}{{ if $row.Deprecated }}~~{{ end }}
+{{- end }} |
+{{ end -}}

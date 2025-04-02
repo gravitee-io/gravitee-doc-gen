@@ -1,0 +1,24 @@
+# {{ .Plugin.Title }}
+## Overview
+{{ .Overview.Content }}
+{{ if .Usage.Exists }}
+## Usage
+{{ .Usage.Content }}
+{{ end }}
+{{ if .Errors.Exists }}
+## Errors
+{{ .Errors.Content }}
+{{end }}
+<!-- extended-section-start -->
+{{ if .Gateway_config.Exists }}
+## Configuration
+### Gateway configuration
+{{ .Gateway_config.Content }}
+### Configuration options
+{{ else }}## Configuration options
+{{ end }}
+## Phases
+The phases checked below are supported by the `{{ .Plugin.Id }}` policy:
+{{ .Phases.Content }}
+## Compatibility matrix
+{{ .Matrix.Content }}

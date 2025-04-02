@@ -1,0 +1,29 @@
+columns:
+  - id: "plugin"
+    label: "Plugin version"
+  - id: "apim"
+    label: "APIM"
+  - id: "am"
+    label: "AM"
+  - id: "cockpit"
+    label: "Cockpit"
+  - id: "comment"
+    label: "Comment"
+rows:
+  - data:
+      plugin: "1.0"
+      apim: "3.x"
+      am: "2.1"
+    deprecated: true
+  - data:
+      plugin: "2.x"
+      apim: "4.x"
+      am: "4.1"
+      cloud: "4.0"
+      comment: "Incompatible with cloud"
+    deprecated: false
+  - data:
+      plugin: "3.x"
+      apim: "4.6 and above"
+      am: "4.6 and above"
+      cloud: "5.0"

@@ -1,0 +1,28 @@
+# {{ .plugin.title }}
+## Overview
+{{ .overview.content }}
+{{ if .usage.exists }}
+## Usage
+{{ .usage.content }}
+{{ end }}
+{{ if .errors.exists }}
+## Errors
+
+{{ .errors.content }}
+    {{end }}
+<!-- extended-section-start -->
+## Phases
+{{ .phases.content }}
+{{ if .gateway_config.exists }}## Configuration{{end}}
+{{ if .gateway_config.exists }}
+### Gateway configuration
+{{ .gateway_config.content }}
+{{ end }}
+{{ if .gateway_config.exists }}### Configuration options
+{{ else }}## Configuration options
+{{ end }}
+{{ .configuration_options.content }}
+## Examples
+{{ .examples.content }}
+## Compatibility matrix
+{{ .matrix.content }}

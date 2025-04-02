@@ -1,0 +1,1 @@
+You need to configure Gravitee as follows
