@@ -1,8 +1,3 @@
-columns:
-  - id: "key"
-    label: "Key"
-  - id: "params"
-    label: "Parameters"
 rows:
   - data:
       key: "API_KEY_MISSING"

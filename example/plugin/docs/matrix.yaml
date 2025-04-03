@@ -1,14 +1,3 @@
-columns:
-  - id: "plugin"
-    label: "Plugin version"
-  - id: "apim"
-    label: "APIM"
-  - id: "am"
-    label: "AM"
-  - id: "cockpit"
-    label: "Cockpit"
-  - id: "comment"
-    label: "Comment"
 rows:
   - data:
       plugin: "1.0"

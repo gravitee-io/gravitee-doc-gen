@@ -1,12 +1,3 @@
-columns:
-  - id: v2
-    label: v2 Phases
-  - id: v2-comp
-    label: Compatible?
-  - id: v4
-    label: v4 Phases
-  - id: v4-comp
-    label: Compatible?
 rows:
   - data:
       v2: onRequest
@@ -16,12 +7,12 @@ rows:
       v4: onResponse
   - data:
       v2: onRequestContent
-      v2-comp: X
+      v2-comp: true
       v4: onMessageRequest
-      v4-comp: X
+      v4-comp: true
   - data:
       v2: onResponseContent
-      v2-comp: X
+      v2-comp: true
       v4: onMessageResponse
-      v4-comp: X
+      v4-comp: true
 

@@ -26,5 +26,9 @@ func FileExists(filename string) bool {
 }
 
 func GetDataFile(chunk config.Chunk) string {
-	return chunk.Data[string(chunk.Type)].(string)
+	return GetFile(chunk, string(chunk.Type))
+}
+
+func GetFile(chunk config.Chunk, key string) string {
+	return chunk.Data[key].(string)
 }

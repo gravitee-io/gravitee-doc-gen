@@ -1,0 +1,21 @@
+{{- range .Sections }}
+#### {{ .Title }} {{ if .Comment }}({{ title .Comment }}){{ end }}
+
+| Name <br>`json name` | Type <br>(constraint) | Mandatory  | Default | Supports <br>EL  | Supports <br>Secrets | Description |
+|----------------------|-----------------------|:----------:|---------|:----------------:|:--------------------:|-------------|
+{{- range .Attributes }}
+| {{ .Name }}<br>`{{ .Property }}`|{{ .Type }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
+| {{ asTick .Required -}}
+| {{ if .Default }}`{{ .Default }}`{{ end -}}
+| {{ asTick .EL -}}
+| {{ asTick .Secret -}}
+| {{ .Description -}}{{ if or (eq .Type "object") (eq .Type "array") }}<br/>See "{{ .Name }}" section{{ end -}}
+{{ if gt (len .Enums) 0 -}}
+{{ if ne .Description "" -}}
+<br>Values: {{- range .Enums }}`{{ . }}` {{ end -}}
+{{ else -}}
+{{ .Enums -}}
+{{ end -}}
+{{ end -}}
+|{{ end -}}
+{{ end }}

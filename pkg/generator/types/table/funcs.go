@@ -20,23 +20,8 @@ type Row struct {
 }
 
 type Table struct {
-	Columns []Columns `yaml:"columns"`
-	Rows    []Row     `yaml:"rows"`
-}
-
-func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-	matrix, err := os.ReadFile(common.GetDataFile(chunk))
-	if err != nil {
-		return chunks.Processed{}, err
-	}
-
-	table := Table{}
-	processed := chunks.Processed{Data: &table}
-	err = yaml.Unmarshal(matrix, processed.Data)
-	if err != nil {
-		return chunks.Processed{}, err
-	}
-	return processed, nil
+	Columns []Columns
+	Rows    []Row `yaml:"rows"`
 }
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -52,4 +37,34 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 	}
 
 	return tmplExists && tableFileExists, nil
+}
+
+func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
+	matrix, err := os.ReadFile(common.GetDataFile(chunk))
+	if err != nil {
+		return chunks.Processed{}, err
+	}
+
+	table := Table{}
+	processed := chunks.Processed{Data: &table}
+	err = yaml.Unmarshal(matrix, processed.Data)
+	if err != nil {
+		return chunks.Processed{}, err
+	}
+	table.Columns = getColumns(chunk)
+
+	return processed, nil
+}
+
+func getColumns(chunk config.Chunk) []Columns {
+	if cols, ok := chunk.Data["columns"]; ok && cols != nil {
+		if colsMaps, ok := cols.(map[string]interface{}); ok && colsMaps != nil {
+			columns := make([]Columns, 0)
+			for id, label := range colsMaps {
+				columns = append(columns, Columns{Id: id, Label: label.(string)})
+			}
+			return columns
+		}
+	}
+	panic("no columns definition for chunk: " + chunk.String())
 }

@@ -22,7 +22,7 @@ func CompileTemplateWithFunctions(file string) (*template.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	return template.New(file).Funcs(template.FuncMap{"default": defaultTo}).Parse(string(content))
+	return template.New(file).Funcs(template.FuncMap{"default": defaultTo, "asTick": asTick, "title": Title}).Parse(string(content))
 }
 
 func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
@@ -38,6 +38,17 @@ func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
 func defaultTo(value any, fallback any) any {
 	if value == nil || reflect.ValueOf(value).IsZero() {
 		return fallback
+	}
+	return value
+}
+
+func asTick(value any) any {
+	if isTrue, ok := value.(bool); ok {
+		if isTrue {
+			return "✅"
+		} else {
+			return " "
+		}
 	}
 	return value
 }
