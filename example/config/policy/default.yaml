@@ -1,34 +1,48 @@
 mainTemplate: "{{ .RMG_ROOT }}/{{ .Plugin.Type }}/dev_README.tmpl"
 chunks:
-  - template: "docs/overview.md"
+  - template: docs/overview.md
     required: true
-  - template: "{{ .RMG_ROOT }}/matrix.tmpl" # template to RMG_ROOT (built-in)
+  - template: "{{ .RMG_ROOT }}/matrix.tmpl"
     type: table
     data:
-      table: "docs/matrix.yaml"
+      table: docs/matrix.yaml
+      columns:
+        plugin: Plugin version
+        apim: APIM
+        am: AM
+        cockpit: Cockpit
+        comment: Comment
     required: true
-  - template: "docs/usage.md"
+  - template: docs/usage.md
   - template: "{{ .RMG_ROOT }}/policy/phases.tmpl"
     data:
-      table: "docs/phases.yaml"
+      table: docs/phases.yaml
+      columns:
+        v2: v2 Phases
+        v2-comp: Compatible?
+        v4: v4 Phases
+        v4-comp: Compatible?
     type: table
     required: true
-#  - template: "{{ .RMG_ROOT }}/examples.md"
-#    type: examples
-#    data:
-#      schemas:
-#        - main: "src/main/resources/schemas/schema-form.json"
-#    required: true
-#  - template: "{{ .RMG_ROOT }}/configuration_options.md"
-#    type: options
-#    data:
-#      schemas:
-#        - main: "src/main/resources/schemas/schema-form.json"
+  #  - template: "{{ .RMG_ROOT }}/examples.md"
+  #    type: examples
+  #    data:
+  #      schemas:
+  #        main: src/main/resources/schemas/schema-form.json
+  #    required: true
+  - template: "{{ .RMG_ROOT }}/configuration_options.tmpl"
+    type: options
+    required: true
+    data:
+      schema: src/main/resources/schemas/schema-form.json
   - template: "{{ .RMG_ROOT }}/gateway_config.tmpl"
     type: code
     data:
-      code: "docs/gateway-config.yaml"
+      code: docs/gateway-config.yaml
   - template: "{{ .RMG_ROOT }}/errors.tmpl"
     type: table
     data:
-      table: "docs/errors.yaml"
+      table: docs/errors.yaml
+      columns:
+        key: Key
+        params: Parameters
