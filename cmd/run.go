@@ -58,12 +58,13 @@ func run(_ *cobra.Command, _ []string) {
 
 }
 
-func fail(err error) {
-	fmt.Println("Error:", err)
-	os.Exit(1)
-}
 func failIf(err error) {
 	if err != nil {
 		fail(err)
 	}
+}
+
+func fail(err error) {
+	fmt.Println("Error:", err)
+	os.Exit(1)
 }

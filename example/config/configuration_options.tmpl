@@ -1,21 +1,31 @@
-{{- range .Sections }}
-#### {{ .Title }} {{ if .Comment }}({{ title .Comment }}){{ end }}
-
-| Name <br>`json name` | Type <br>(constraint) | Mandatory  | Default | Supports <br>EL  | Supports <br>Secrets | Description |
-|----------------------|-----------------------|:----------:|---------|:----------------:|:--------------------:|-------------|
-{{- range .Attributes }}
-| {{ .Name }}<br>`{{ .Property }}`|{{ .Type }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
-| {{ asTick .Required -}}
-| {{ if .Default }}`{{ .Default }}`{{ end -}}
-| {{ asTick .EL -}}
-| {{ asTick .Secret -}}
+{{-  range $_,$section := .Sections }}
+#### {{ if .OneOf.Present -}}
+{{ .OneOf.Parent }}: {{ .Title }} `{{ .OneOf.Property }} = "{{ .DiscriminatedBy }}"`{{ else -}}
+{{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
+{{ end }}
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+{{ $rows := 0 -}}
+{{- range $i, $_:=.Attributes -}}
+{{ if or (not $section.OneOf.Present) (ne $section.OneOf.Property .Property) -}}
+| {{ if .Name }}{{ .Name }}<br>{{ end }}{{ code .Property -}}
+| {{ default .Type "string" }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
+| {{ asCheck .Required -}}
+| {{ if and .Default (not .IsConstant) }}{{ code .Default }}{{ end }}{{ if .IsConstant }}{{ code (default .Default  "\"\"") }} (constant){{ end -}}
+| {{ asCheck .EL -}}
+| {{ asCheck .Secret -}}
 | {{ .Description -}}{{ if or (eq .Type "object") (eq .Type "array") }}<br/>See "{{ .Name }}" section{{ end -}}
-{{ if gt (len .Enums) 0 -}}
-{{ if ne .Description "" -}}
-<br>Values: {{- range .Enums }}`{{ . }}` {{ end -}}
-{{ else -}}
-{{ .Enums -}}
+{{ if .OneOf.Present -}}
+{{ if ne .Description "" -}}<br>{{ end -}}
+{{ .Name}} of {{ .OneOf.Parent -}}
 {{ end -}}
+{{ if gt (len .Enums) 0 -}}
+{{ if or .Description .OneOf.Present -}}
+<br>{{ end -}}
+Values: {{- range .Enums }}{{ code (default . "\"\"") }} {{ end -}}
 {{ end -}}
 |{{ end -}}
+{{ $rows := $i -}}
+{{ end -}}
+{{ if eq $rows 0 }}| No properties | | | | | | | {{ end }}
 {{ end }}

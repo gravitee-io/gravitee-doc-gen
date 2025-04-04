@@ -58,13 +58,20 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 
 func getColumns(chunk config.Chunk) []Columns {
 	if cols, ok := chunk.Data["columns"]; ok && cols != nil {
-		if colsMaps, ok := cols.(map[string]interface{}); ok && colsMaps != nil {
+		if colsMaps, ok := cols.([]interface{}); ok && colsMaps != nil {
 			columns := make([]Columns, 0)
-			for id, label := range colsMaps {
-				columns = append(columns, Columns{Id: id, Label: label.(string)})
+			for _, colsMap := range colsMaps {
+				if colMap, ok := colsMap.(map[string]interface{}); ok && len(colMap) == 1 {
+					for id, label := range colMap {
+						columns = append(columns, Columns{Id: id, Label: label.(string)})
+					}
+				} else {
+					panic("one columns spec should a single key/value: " + chunk.String())
+				}
 			}
 			return columns
 		}
+		panic("columns should be a list: " + chunk.String())
 	}
 	panic("no columns definition for chunk: " + chunk.String())
 }
