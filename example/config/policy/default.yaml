@@ -1,9 +1,18 @@
-mainTemplate: "{{ .RMG_ROOT }}/{{ .Plugin.Type }}/dev_README.tmpl"
+mainTemplate: "{{ .RootDir }}/{{ .Plugin.Type }}/README.tmpl"
 chunks:
   - template: docs/overview.md
     required: true
-  - template: "{{ .RMG_ROOT }}/matrix.tmpl"
+  - template: docs/usage.md
+  - template: "{{ .RootDir }}/errors.tmpl"
     type: table
+    data:
+      table: docs/errors.yaml
+      columns:
+        - key: Key
+        - params: Parameters
+  - template: "{{ .RootDir }}/matrix.tmpl"
+    type: table
+    required: true
     data:
       table: docs/matrix.yaml
       columns:
@@ -12,9 +21,9 @@ chunks:
         - am: AM
         - cockpit: Cockpit
         - comment: Comment
+  - template: "{{ .RootDir }}/policy/phases.tmpl"
+    type: table
     required: true
-  - template: docs/usage.md
-  - template: "{{ .RMG_ROOT }}/policy/phases.tmpl"
     data:
       table: docs/phases.yaml
       columns:
@@ -22,27 +31,20 @@ chunks:
         - v2-comp: Compatible?
         - v4: v4 Phases
         - v4-comp: Compatible?
-    type: table
-    required: true
-  #  - template: "{{ .RMG_ROOT }}/examples.md"
-  #    type: examples
-  #    data:
-  #      schemas:
-  #        main: src/main/resources/schemas/schema-form.json
-  #    required: true
-  - template: "{{ .RMG_ROOT }}/configuration_options.tmpl"
+  - template: "{{ .RootDir }}/configuration_options.tmpl"
     type: options
     required: true
     data:
       schema: src/main/resources/schemas/schema-form.json
-  - template: "{{ .RMG_ROOT }}/gateway_config.tmpl"
+  - template: "{{ .RootDir }}/examples.tmpl"
+    type: examples
+    data:
+      schema: src/main/resources/schemas/schema-form.json
+      v4ApiPolicy: "{{ .RootDir }}/policy/api-v4-snippet.json.tmpl"
+      v4ApiCRDPolicy: "{{ .RootDir }}/policy/crd-api-v4-snippet.yaml.tmpl"
+    required: true
+  - template: "{{ .RootDir }}/gateway_config.tmpl"
     type: code
     data:
       code: docs/gateway-config.yaml
-  - template: "{{ .RMG_ROOT }}/errors.tmpl"
-    type: table
-    data:
-      table: docs/errors.yaml
-      columns:
-        - key: Key
-        - params: Parameters
+

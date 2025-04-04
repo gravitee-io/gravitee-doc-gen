@@ -1,27 +1,36 @@
-# {{ .plugin.title }}
+# {{ .Plugin.Title }}
+
 ## Overview
-{{ .overview.content }}
-{{ if .usage.exists }}
-## Usage
-{{ .usage.content }}
+{{ .Overview.Content }}
+{{ if .Usage.Exists }}
+
+    ## Usage
+    {{ .Usage.Content }}
 {{ end }}
-{{ if .errors.exists }}
-## Errors
-{{ .errors.content }}
+{{ if .Errors.Exists }}
+
+    ## Errors
+    {{ .Errors.Content }}
 {{end }}
 <!-- extended-section-start -->
+
 ## Phases
-{{ .phases.content }}
-{{ if .gateway_config.exists }}## Configuration{{end}}
-{{ if .gateway_config.exists }}
-### Gateway configuration
-{{ .gateway_config.content }}
-{{ end }}
-{{ if .gateway_config.exists }}### Configuration options
-{{ else }}## Configuration options
-{{ end }}
-{{ .configuration_options.content }}
-## Examples
-{{ .examples.content }}
+The phases checked below are supported by the `{{ .Plugin.Id }}` policy:
+{{ .Phases.Content }}
+
 ## Compatibility matrix
-{{ .matrix.content }}
+{{ .Matrix.Content }}
+
+{{ if .Gateway_config.Exists }}
+## Configuration
+### Gateway configuration
+{{ .Gateway_config.Content }}
+
+### Configuration options
+{{ else -}}
+## Configuration Options
+{{ end }}
+{{ .Configuration_options.Content}}
+
+## Examples
+{{ .Examples.Content }}

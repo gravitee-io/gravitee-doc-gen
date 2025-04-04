@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/gravitee-io-labs/readme-gen/cmd"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap/handlers"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/code"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/common"
+	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/examples"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/options"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/table"
 	"os"
@@ -18,6 +21,8 @@ func main() {
 	generator.Registry.Register(config.TableDataType, table.TypeHandler, table.TypeValidator)
 	generator.Registry.Register(config.CodeDataType, code.TypeHandler, code.TypeValidator)
 	generator.Registry.Register(config.Options, options.TypeHandler, options.TypeValidator)
+	generator.Registry.Register(config.Examples, examples.TypeHandler, examples.TypeValidator)
+	bootstrap.Registry.RegisterHandler(handlers.Properties, handlers.PropertiesFileHandler)
 
 	err := cmd.MainCommand().Execute()
 	if err != nil {

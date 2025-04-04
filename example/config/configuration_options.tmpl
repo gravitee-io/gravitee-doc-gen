@@ -1,19 +1,19 @@
 {{-  range $_,$section := .Sections }}
 #### {{ if .OneOf.Present -}}
-{{ .OneOf.Parent }}: {{ .Title }} `{{ .OneOf.Property }} = "{{ .DiscriminatedBy }}"`{{ else -}}
+{{ .OneOf.Parent }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
 {{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
 {{ end }}
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
 {{ $rows := 0 -}}
-{{- range $i, $_:=.Attributes -}}
-{{ if or (not $section.OneOf.Present) (ne $section.OneOf.Property .Property) -}}
-| {{ if .Name }}{{ .Name }}<br>{{ end }}{{ code .Property -}}
+{{- range $i, $_ := .Attributes -}}
+{{ if not ($section.IsOneOfProperty .Property) -}}
+| {{ if .Name }}{{ .Name }}<br>{{ end }}`{{ .Property }}` {{- /* hack to elude trailing \n */ -}}
 | {{ default .Type "string" }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
-| {{ asCheck .Required -}}
-| {{ if and .Default (not .IsConstant) }}{{ code .Default }}{{ end }}{{ if .IsConstant }}{{ code (default .Default  "\"\"") }} (constant){{ end -}}
-| {{ asCheck .EL -}}
-| {{ asCheck .Secret -}}
+| {{ ternary .Required "✅" " " -}}
+| {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end -}}
+| {{ ternary .EL "✅" " " -}}
+| {{ ternary .Secret "✅" " " -}}
 | {{ .Description -}}{{ if or (eq .Type "object") (eq .Type "array") }}<br/>See "{{ .Name }}" section{{ end -}}
 {{ if .OneOf.Present -}}
 {{ if ne .Description "" -}}<br>{{ end -}}
@@ -22,10 +22,12 @@
 {{ if gt (len .Enums) 0 -}}
 {{ if or .Description .OneOf.Present -}}
 <br>{{ end -}}
-Values: {{- range .Enums }}{{ code (default . "\"\"") }} {{ end -}}
+Values: {{- range .Enums }}`{{ default . "\"\"" }}` {{ end -}}
 {{ end -}}
-|{{ end -}}
-{{ $rows := $i -}}
+|
+{{ else -}}{{- /* hack to remove \n if the line is not printed */ -}}
+{{ end -}}
+{{ $rows = $i -}}
 {{ end -}}
 {{ if eq $rows 0 }}| No properties | | | | | | | {{ end }}
 {{ end }}

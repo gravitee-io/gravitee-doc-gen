@@ -1,11 +1,13 @@
 package util
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"text/template"
 )
 
@@ -24,9 +26,10 @@ func CompileTemplateWithFunctions(file string) (*template.Template, error) {
 	}
 	return template.New(file).Funcs(template.FuncMap{
 		"default": defaultTo,
-		"asCheck": asCheck,
-		"title":   Title,
-		"code":    code}).Parse(string(content))
+		"ternary": ternary,
+		"indent":  indent,
+		"quote":   quote,
+		"title":   Title}).Parse(string(content))
 }
 
 func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
@@ -46,17 +49,39 @@ func defaultTo(value any, fallback any) any {
 	return value
 }
 
-func asCheck(value any) any {
-	if isTrue, ok := value.(bool); ok {
-		if isTrue {
-			return "✅"
-		} else {
-			return " "
-		}
+func ternary(isTrue bool, ifTrue any, ifFalse any) any {
+	if isTrue {
+		return ifTrue
+	} else {
+		return ifFalse
 	}
-	return value
 }
 
-func code(value any) any {
-	return fmt.Sprintf("`%v`", value)
+func indent(amount uint, value string) string {
+	scanner := bufio.NewScanner(strings.NewReader(value))
+	scanner.Split(bufio.ScanLines)
+
+	buffer := bytes.Buffer{}
+
+	// re-enter first line
+	scanner.Scan()
+	line := scanner.Text()
+	buffer.WriteString(line)
+	buffer.WriteString("\n")
+
+	padding := strings.Repeat(" ", int(amount))
+	for scanner.Scan() {
+		line := scanner.Text()
+		buffer.WriteString(fmt.Sprintf("%s%s\n", padding, line))
+	}
+
+	b := buffer.Bytes()
+	return string(b[:len(b)-1])
+}
+
+func quote(value any) any {
+	if s, ok := value.(string); ok {
+		return fmt.Sprintf(`"%s"`, s)
+	}
+	return value
 }

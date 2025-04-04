@@ -2,11 +2,11 @@ package options
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/common"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
+	ext "github.com/gravitee-io-labs/readme-gen/pkg/schema/extensions"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -36,7 +36,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 
 	schemaFile := common.GetFile(chunk, "schema")
 
-	root, err := schema.Compile(schemaFile)
+	root, err := schema.CompileWithExtensions(schemaFile)
 	if err != nil {
 		return chunks.Processed{}, err
 	}
@@ -45,31 +45,30 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	ctx := schema.VisitContext{}
+	ctx := schema.VisitContext{QueueNodes: true}
 	schema.Visit(root, &options, &ctx)
 
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(name string, att *jsonschema.Schema, parent *jsonschema.Schema, _ *schema.VisitContext) {
-
-	attribute := Attribute{
-		Property:    name,
-		Name:        att.Title,
-		Type:        schema.GetType(att),
-		Constraint:  getConstraint(att),
-		Required:    schema.IsRequired(name, parent),
-		Default:     schema.GetConstantOrDefault(att),
-		IsConstant:  isConstant(att),
-		EL:          isEL(att.Extensions),
-		Secret:      isSecret(att.Extensions),
-		Description: att.Description,
-		Enums:       getEnums(att.Enum),
+func (options *Options) OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
+	att := Attribute{
+		Property:    property,
+		Name:        attribute.Title,
+		Type:        schema.GetType(attribute),
+		Constraint:  getConstraint(attribute),
+		Required:    schema.IsRequired(property, parent),
+		Default:     schema.GetConstantOrDefault(attribute),
+		IsConstant:  isConstant(attribute),
+		EL:          isEL(attribute.Extensions),
+		Secret:      isSecret(attribute.Extensions),
+		Description: attribute.Description,
+		Enums:       attribute.Enum,
 	}
-	options.AddAttribute(attribute)
+	options.AddAttribute(att)
 }
 
-func (options *Options) OnObject(_ string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
+func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
 
 	objectType := "object"
 	if visitCtx.CurrentOneOf.Present {
@@ -79,29 +78,51 @@ func (options *Options) OnObject(_ string, object *jsonschema.Schema, visitCtx *
 		Title: object.Title,
 		Type:  objectType,
 	})
+
 	if visitCtx.CurrentOneOf.Present {
-		oneOf := visitCtx.CurrentOneOf
-		options.AddAttribute(Attribute{
-			Name:     util.Title(oneOf.Property),
-			Property: oneOf.Property,
-			Type:     oneOf.Type,
-			Required: true,
-			Enums:    oneOf.Values,
-			OneOf:    oneOf,
-		})
+		specs := visitCtx.CurrentOneOf.Specs
+		for _, spec := range specs {
+			options.AddAttribute(Attribute{
+				Name:     util.TitleCaseToTitle(util.Title(spec.Property)),
+				Property: spec.Property,
+				Type:     spec.Type,
+				Required: true,
+				Enums:    spec.Values,
+				OneOf:    visitCtx.CurrentOneOf,
+			})
+		}
+
 	}
 }
 
-func (options *Options) OnArray(_ string, array *jsonschema.Schema) {
+func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool) {
 	options.Add(Section{
 		Title: array.Title,
 		Type:  "array",
 	})
 }
 
-func (options *Options) OnOneOf(object *jsonschema.Schema, _ *jsonschema.Schema, visitCtx *schema.VisitContext) {
-	discriminator := schema.GetConstantOrDefault(object.Properties[visitCtx.CurrentOneOf.Property])
-	options.Add(Section{Title: object.Title, OneOf: visitCtx.CurrentOneOf, DiscriminatedBy: discriminator})
+func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext, index int) {
+	specs := visitCtx.CurrentOneOf.Specs
+	discriminatedBy := make(map[string]any)
+	for _, spec := range specs {
+		value := schema.GetConstantOrDefault(oneOf.Properties[spec.Property])
+		discriminatedBy[spec.Property] = value
+	}
+
+	options.Add(Section{Title: oneOf.Title, OneOf: visitCtx.CurrentOneOf, DiscriminatedBy: discriminatedBy})
+}
+
+func (options *Options) OnObjectEnd() {
+	//no op
+}
+
+func (options *Options) OnArrayEnd(bool) {
+	// no op
+}
+
+func (options *Options) OnOneOfEnd() {
+	// no op
 }
 
 func (options *Options) Add(section Section) {
@@ -135,31 +156,16 @@ func isConstant(att *jsonschema.Schema) bool {
 }
 
 func isEL(extensions map[string]jsonschema.ExtSchema) bool {
-	return isTrue(extensions, schema.SecretExtension)
+	return isTrue(extensions, ext.SecretExtension)
 }
 
 func isSecret(extensions map[string]jsonschema.ExtSchema) bool {
-	return isTrue(extensions, schema.SecretExtension)
+	return isTrue(extensions, ext.SecretExtension)
 }
 
-func isTrue(extensions map[string]jsonschema.ExtSchema, ext string) bool {
-	if s, ok := extensions[ext]; ok {
-		return bool(s.(schema.BoolValueSchema))
+func isTrue(extensions map[string]jsonschema.ExtSchema, name string) bool {
+	if s, ok := extensions[name]; ok {
+		return bool(s.(ext.BoolValueSchema))
 	}
 	return false
-}
-
-func getEnums(enum []interface{}) []string {
-	if enum == nil {
-		return nil
-	}
-	return iToa(enum)
-}
-
-func iToa(enum []interface{}) []string {
-	result := make([]string, len(enum))
-	for i := range enum {
-		result[i] = fmt.Sprintf("%v", enum[i])
-	}
-	return result
 }

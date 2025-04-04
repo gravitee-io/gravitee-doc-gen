@@ -7,47 +7,64 @@ import (
 
 type VisitContext struct {
 	CurrentOneOf OneOf
+	QueueNodes   bool
+}
+type pair struct {
+	name   string
+	schema *jsonschema.Schema
 }
 
 func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
-	queue := make(map[string]*jsonschema.Schema)
-
+	queue := make([]pair, 0)
 	for name, schema := range parent.Properties {
 		schema = orRef(schema)
-		if isAttribute(schema) {
+		if IsAttribute(schema) {
 			visitor.OnAttribute(name, schema, parent, visitCtx)
 		}
-		// process at the end to avoid mixing root level attribute and subsections
-		if isObject(schema) || isArray(schema) {
+		pair := pair{name, schema}
+		if visitCtx.QueueNodes && (isObject(schema) || isArray(schema)) {
 			visitor.OnAttribute(name, schema, parent, visitCtx)
-			queue[name] = schema
+			queue = append(queue, pair)
+		} else {
+			visitNode(pair, visitor, visitCtx)
 		}
 	}
 
-	for name, schema := range queue {
-		if isObject(schema) {
-			if IsOneOf(schema) {
-				visitCtx.CurrentOneOf = findDiscriminator(schema)
-			}
-			visitor.OnObject(name, schema, visitCtx)
-			Visit(schema, visitor, visitCtx)
-			visitCtx.CurrentOneOf = OneOf{}
-		}
-		if isArray(schema) {
-			visitor.OnArray(name, schema)
-			if schema.Items != nil {
-				// no support of multiple types
-				Visit(schema.Items.(*jsonschema.Schema), visitor, visitCtx)
-			}
-		}
+	for _, pair := range queue {
+		visitNode(pair, visitor, visitCtx)
 	}
-	for _, schema := range parent.OneOf {
+	for i, schema := range parent.OneOf {
 		schema = orRef(schema)
-		visitor.OnOneOf(schema, parent, visitCtx)
+		visitor.OnOneOfStart(schema, parent, visitCtx, i)
 		Visit(schema, visitor, visitCtx)
+		visitor.OnOneOfEnd()
 	}
 
+}
+
+func visitNode(pair pair, visitor Visitor, visitCtx *VisitContext) {
+	if isObject(pair.schema) {
+		if ContainsOneOfs(pair.schema) {
+			visitCtx.CurrentOneOf = findDiscriminators(pair.schema)
+		}
+		visitor.OnObjectStart(pair.name, pair.schema, visitCtx)
+		Visit(pair.schema, visitor, visitCtx)
+		visitor.OnObjectEnd()
+		visitCtx.CurrentOneOf = OneOf{}
+	}
+	if isArray(pair.schema) {
+		var items *jsonschema.Schema
+		var itemTypeIsObject bool
+		if pair.schema.Items != nil {
+			items = pair.schema.Items.(*jsonschema.Schema)
+			// no support of multiple types
+			itemTypeIsObject = !IsAttribute(items)
+		}
+		visitor.OnArrayStart(pair.name, pair.schema, itemTypeIsObject)
+		Visit(pair.schema.Items.(*jsonschema.Schema), visitor, visitCtx)
+		visitor.OnArrayEnd(itemTypeIsObject)
+	}
 }
 
 func GetType(prop *jsonschema.Schema) string {
@@ -61,40 +78,54 @@ func GetType(prop *jsonschema.Schema) string {
 	return t
 }
 
-func IsOneOf(schema *jsonschema.Schema) bool {
+func ContainsOneOfs(schema *jsonschema.Schema) bool {
 	return schema.OneOf != nil && len(schema.OneOf) > 0
 }
 
-func findDiscriminator(parent *jsonschema.Schema) OneOf {
+func IsAttribute(schema *jsonschema.Schema) bool {
+	return !(isObject(schema) || isArray(schema))
+}
+
+func findDiscriminators(parent *jsonschema.Schema) OneOf {
 	found := make(map[string]int)
 	expected := len(parent.OneOf)
-	values := make([]string, 0, expected)
-	var maxCount int
-	var property string
+	values := make(map[string][]any)
 
 	for _, oneOf := range parent.OneOf {
 		for name, prop := range oneOf.Properties {
 			count := found[name]
-			if GetType(prop) == "string" || GetType(prop) == "" && (prop.Constant != nil && len(prop.Constant) > 0) {
+			if prop.Constant != nil && len(prop.Constant) > 0 {
 				count += 1
 				found[name] = count
-				values = append(values, prop.Constant[0].(string))
-				if maxCount = max(maxCount, count); count == maxCount {
-					property = name
+				array := values[name]
+				if array == nil {
+					array = make([]any, 0)
 				}
+				array = append(array, prop.Constant[0])
+				values[name] = array
 			}
 		}
 	}
-	if maxCount == expected {
-		return OneOf{
-			Property: property,
-			Values:   values,
-			Type:     "string",
-			Parent:   parent.Title,
-			Present:  true,
+
+	result := make([]DiscriminatorSpec, 0)
+	for name, count := range found {
+		if count == expected {
+			spec := DiscriminatorSpec{
+				Values:   values[name],
+				Type:     GetType(parent),
+				Property: name,
+			}
+			result = append(result, spec)
 		}
 	}
-	return OneOf{}
+	oneOf := OneOf{}
+	if len(result) > 0 {
+		oneOf.Parent = parent.Title
+		oneOf.Present = true
+		oneOf.Specs = result
+
+	}
+	return oneOf
 }
 
 func orRef(schema *jsonschema.Schema) *jsonschema.Schema {
@@ -102,10 +133,6 @@ func orRef(schema *jsonschema.Schema) *jsonschema.Schema {
 		return schema.Ref
 	}
 	return schema
-}
-
-func isAttribute(schema *jsonschema.Schema) bool {
-	return !(isObject(schema) || isArray(schema))
 }
 
 func isObject(schema *jsonschema.Schema) bool {
