@@ -3,6 +3,6 @@
 {{ range $_ := .Columns }}| --- {{ end }} |
 {{ range $row := .Rows }}
 {{- range $col := $.Columns -}}
-| {{ default (asTick (index $row.Data $col.Id)) " " -}}
+| {{ default (asCheck (index $row.Data $col.Id)) " " -}}
 {{ end }} |
 {{ end -}}

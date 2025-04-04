@@ -1,14 +1,18 @@
 package options
 
+import "github.com/gravitee-io-labs/readme-gen/pkg/schema"
+
 type Options struct {
 	current  int
 	Sections []Section
 }
 
 type Section struct {
-	Title      string
-	Comment    string
-	Attributes []Attribute
+	Title           string
+	Type            string
+	OneOf           schema.OneOf
+	DiscriminatedBy string
+	Attributes      []Attribute
 }
 
 type Attribute struct {
@@ -18,8 +22,10 @@ type Attribute struct {
 	Constraint  string
 	Required    bool
 	Default     string
+	IsConstant  bool
 	EL          bool
 	Secret      bool
 	Description string
 	Enums       []string
+	OneOf       schema.OneOf
 }

@@ -7,21 +7,21 @@ chunks:
     data:
       table: docs/matrix.yaml
       columns:
-        plugin: Plugin version
-        apim: APIM
-        am: AM
-        cockpit: Cockpit
-        comment: Comment
+        - plugin: Plugin version
+        - apim: APIM
+        - am: AM
+        - cockpit: Cockpit
+        - comment: Comment
     required: true
   - template: docs/usage.md
   - template: "{{ .RMG_ROOT }}/policy/phases.tmpl"
     data:
       table: docs/phases.yaml
       columns:
-        v2: v2 Phases
-        v2-comp: Compatible?
-        v4: v4 Phases
-        v4-comp: Compatible?
+        - v2: v2 Phases
+        - v2-comp: Compatible?
+        - v4: v4 Phases
+        - v4-comp: Compatible?
     type: table
     required: true
   #  - template: "{{ .RMG_ROOT }}/examples.md"
@@ -44,5 +44,5 @@ chunks:
     data:
       table: docs/errors.yaml
       columns:
-        key: Key
-        params: Parameters
+        - key: Key
+        - params: Parameters

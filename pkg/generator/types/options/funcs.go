@@ -7,8 +7,8 @@ import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/common"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
+	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
-	"slices"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -45,19 +45,22 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	schema.Visit(root, &options)
+	ctx := schema.VisitContext{}
+	schema.Visit(root, &options, &ctx)
 
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(name string, att *jsonschema.Schema, parent *jsonschema.Schema) {
+func (options *Options) OnAttribute(name string, att *jsonschema.Schema, parent *jsonschema.Schema, _ *schema.VisitContext) {
+
 	attribute := Attribute{
 		Property:    name,
 		Name:        att.Title,
-		Type:        getType(att),
+		Type:        schema.GetType(att),
 		Constraint:  getConstraint(att),
-		Required:    isRequired(name, parent),
-		Default:     getDefault(att),
+		Required:    schema.IsRequired(name, parent),
+		Default:     schema.GetConstantOrDefault(att),
+		IsConstant:  isConstant(att),
 		EL:          isEL(att.Extensions),
 		Secret:      isSecret(att.Extensions),
 		Description: att.Description,
@@ -66,21 +69,39 @@ func (options *Options) OnAttribute(name string, att *jsonschema.Schema, parent 
 	options.AddAttribute(attribute)
 }
 
-func (options *Options) OnObject(_ string, object *jsonschema.Schema) {
+func (options *Options) OnObject(_ string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
+
+	objectType := "object"
+	if visitCtx.CurrentOneOf.Present {
+		objectType = "oneOf"
+	}
 	options.Add(Section{
 		Title: object.Title,
+		Type:  objectType,
 	})
+	if visitCtx.CurrentOneOf.Present {
+		oneOf := visitCtx.CurrentOneOf
+		options.AddAttribute(Attribute{
+			Name:     util.Title(oneOf.Property),
+			Property: oneOf.Property,
+			Type:     oneOf.Type,
+			Required: true,
+			Enums:    oneOf.Values,
+			OneOf:    oneOf,
+		})
+	}
 }
 
 func (options *Options) OnArray(_ string, array *jsonschema.Schema) {
 	options.Add(Section{
-		Title:   array.Title,
-		Comment: "array",
+		Title: array.Title,
+		Type:  "array",
 	})
 }
 
-func (options *Options) OnOneOf(object *jsonschema.Schema) {
-	options.Add(Section{Title: object.Title})
+func (options *Options) OnOneOf(object *jsonschema.Schema, _ *jsonschema.Schema, visitCtx *schema.VisitContext) {
+	discriminator := schema.GetConstantOrDefault(object.Properties[visitCtx.CurrentOneOf.Property])
+	options.Add(Section{Title: object.Title, OneOf: visitCtx.CurrentOneOf, DiscriminatedBy: discriminator})
 }
 
 func (options *Options) Add(section Section) {
@@ -97,17 +118,6 @@ func (s *Section) Add(attribute Attribute) {
 	s.Attributes = append(s.Attributes, attribute)
 }
 
-func getType(att *jsonschema.Schema) string {
-	if len(att.Types) == 0 {
-		return ""
-	}
-	t := att.Types[0]
-	if att.Enum != nil && len(att.Enum) > 0 {
-		return "enum (" + t + ")"
-	}
-	return t
-}
-
 func getConstraint(att *jsonschema.Schema) string {
 	switch {
 	case att.Pattern != nil:
@@ -120,19 +130,8 @@ func getConstraint(att *jsonschema.Schema) string {
 	return ""
 }
 
-func isRequired(name string, parent *jsonschema.Schema) bool {
-	required := parent.Required
-	return required != nil && slices.Contains(required, name)
-}
-
-func getDefault(att *jsonschema.Schema) string {
-	if att.Constant != nil {
-		return fmt.Sprintf("%v (const)", att.Constant)
-	}
-	if att.Default == nil {
-		return ""
-	}
-	return fmt.Sprintf("%v", att.Default)
+func isConstant(att *jsonschema.Schema) bool {
+	return att.Constant != nil
 }
 
 func isEL(extensions map[string]jsonschema.ExtSchema) bool {

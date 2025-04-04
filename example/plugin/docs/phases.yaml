@@ -1,18 +1,22 @@
 rows:
   - data:
       v2: onRequest
+      v2-comp: false
       v4: onRequest
+      v4-comp: true
   - data:
       v2: onResponse
+      v2-comp: false
       v4: onResponse
+      v4-comp: true
   - data:
       v2: onRequestContent
       v2-comp: true
       v4: onMessageRequest
-      v4-comp: true
+      v4-comp: false
   - data:
       v2: onResponseContent
       v2-comp: true
       v4: onMessageResponse
-      v4-comp: true
+      v4-comp: false
 
