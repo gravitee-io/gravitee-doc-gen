@@ -3,14 +3,13 @@ package config
 import (
 	"fmt"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
-	"path/filepath"
-	"strings"
 )
 
 const UnknownDataType = DataType("")
 const TableDataType = DataType("table")
 const CodeDataType = DataType("code")
 const Options = DataType("options")
+const Examples = DataType("examples")
 
 type Config struct {
 	MainTemplate string  `yaml:"mainTemplate"`
@@ -25,8 +24,7 @@ type Chunk struct {
 }
 
 func (c Chunk) Id() string {
-	id := strings.TrimSuffix(filepath.Base(c.Template), filepath.Ext(c.Template))
-	return util.Title(id)
+	return util.Title(util.BaseFileNoExt(c.Template))
 }
 
 func (c Chunk) String() string {

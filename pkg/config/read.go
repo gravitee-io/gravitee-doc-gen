@@ -10,18 +10,13 @@ import (
 	"path"
 )
 
-const rootEnvVar = "RMG_ROOT"
 const defaultMainTemplateFile = "README.tmpl"
 
-func Read(plugin Plugin) (Config, error) {
+func Read(rootDir string, plugin Plugin) (Config, error) {
 
-	root := os.Getenv(rootEnvVar)
-	if root == "" {
-		return Config{}, errors.New(rootEnvVar + " is not set")
-	}
-
-	specificConfig := path.Join(root, plugin.Type, plugin.Id+".yaml")
-	defaultConfig := path.Join(root, plugin.Type, "/default.yaml")
+	// TODO make a ConfigFileResolver
+	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id+".yaml")
+	defaultConfig := path.Join(rootDir, plugin.Type, "/default.yaml")
 	var configFile string
 	if stat, err := os.Stat(specificConfig); err == nil && !stat.IsDir() {
 		configFile = specificConfig
@@ -32,17 +27,17 @@ func Read(plugin Plugin) (Config, error) {
 	}
 
 	fmt.Println("README Generation config: ", configFile)
-	rendered, err := util.RenderTemplateFromFile(configFile, map[string]interface{}{rootEnvVar: root, PluginChunkId: plugin})
+	rendered, err := util.RenderTemplateFromFile(configFile, map[string]interface{}{"RootDir": rootDir, PluginChunkId: plugin})
 
-	defaultMainTemplate := path.Join(root, plugin.Type, defaultMainTemplateFile)
+	defaultMainTemplate := path.Join(rootDir, plugin.Type, defaultMainTemplateFile)
 	if err != nil {
-		return Config{
-			MainTemplate: defaultMainTemplate,
-		}, err
+		return Config{}, err
 	}
 
 	// read the config
-	config := Config{}
+	config := Config{
+		MainTemplate: defaultMainTemplate,
+	}
 	err = yaml.Unmarshal(rendered, &config)
 	return config, err
 

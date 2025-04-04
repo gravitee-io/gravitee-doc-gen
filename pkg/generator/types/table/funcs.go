@@ -40,14 +40,14 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-	matrix, err := os.ReadFile(common.GetDataFile(chunk))
+	rows, err := os.ReadFile(common.GetDataFile(chunk))
 	if err != nil {
 		return chunks.Processed{}, err
 	}
 
 	table := Table{}
 	processed := chunks.Processed{Data: &table}
-	err = yaml.Unmarshal(matrix, processed.Data)
+	err = yaml.Unmarshal(rows, processed.Data)
 	if err != nil {
 		return chunks.Processed{}, err
 	}
@@ -59,19 +59,23 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 func getColumns(chunk config.Chunk) []Columns {
 	if cols, ok := chunk.Data["columns"]; ok && cols != nil {
 		if colsMaps, ok := cols.([]interface{}); ok && colsMaps != nil {
-			columns := make([]Columns, 0)
-			for _, colsMap := range colsMaps {
-				if colMap, ok := colsMap.(map[string]interface{}); ok && len(colMap) == 1 {
-					for id, label := range colMap {
-						columns = append(columns, Columns{Id: id, Label: label.(string)})
-					}
-				} else {
-					panic("one columns spec should a single key/value: " + chunk.String())
-				}
-			}
-			return columns
+			return getColumnsFromMap(chunk, colsMaps)
 		}
 		panic("columns should be a list: " + chunk.String())
 	}
 	panic("no columns definition for chunk: " + chunk.String())
+}
+
+func getColumnsFromMap(chunk config.Chunk, colsMaps []interface{}) []Columns {
+	columns := make([]Columns, 0)
+	for _, colsMap := range colsMaps {
+		if colMap, ok := colsMap.(map[string]interface{}); ok && len(colMap) == 1 {
+			for id, label := range colMap {
+				columns = append(columns, Columns{Id: id, Label: label.(string)})
+			}
+		} else {
+			panic("one columns spec should a single key/value: " + chunk.String())
+		}
+	}
+	return columns
 }

@@ -2,33 +2,30 @@ package config
 
 import (
 	"errors"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
 	"github.com/rickar/props"
-	"os"
 )
-
-const file = "src/main/resources/plugin.properties"
 
 const PluginChunkId = "Plugin"
 
 func ReadPlugin() (Plugin, error) {
 
-	file, err := os.Open(file)
-	if err != nil {
-		return Plugin{}, err
-	}
-	properties := props.NewProperties()
-	err = properties.Load(file)
+	plugin, err := bootstrap.Registry.UpdateData("plugin", func(data any) (any, error) {
+		properties := data.(*props.Properties)
+		plugin := Plugin{
+			Id:    properties.GetDefault("id", ""),
+			Type:  properties.GetDefault("type", ""),
+			Title: properties.GetDefault("description", ""),
+		}
+		return plugin, plugin.Check()
+	})
+
 	if err != nil {
 		return Plugin{}, err
 	}
 
-	plugin := Plugin{
-		Id:    properties.GetDefault("id", ""),
-		Type:  properties.GetDefault("type", ""),
-		Title: properties.GetDefault("description", ""),
-	}
+	return plugin.(Plugin), nil
 
-	return plugin, plugin.Check()
 }
 
 func (p Plugin) Check() error {

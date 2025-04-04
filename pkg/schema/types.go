@@ -5,16 +5,23 @@ import (
 )
 
 type Visitor interface {
-	OnAttribute(name string, schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
-	OnObject(name string, schema *jsonschema.Schema, visitCtx *VisitContext)
-	OnArray(name string, schema *jsonschema.Schema)
-	OnOneOf(schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
+	OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
+	OnObjectStart(property string, object *jsonschema.Schema, visitCtx *VisitContext)
+	OnObjectEnd()
+	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool)
+	OnArrayEnd(itemTypeIsObject bool)
+	OnOneOfStart(schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext, index int)
+	OnOneOfEnd()
 }
 
 type OneOf struct {
-	Values   []string
-	Parent   string
+	Parent  string
+	Present bool
+	Specs   []DiscriminatorSpec
+}
+
+type DiscriminatorSpec struct {
+	Values   []any
 	Property string
 	Type     string
-	Present  bool
 }

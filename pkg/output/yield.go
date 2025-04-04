@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
@@ -16,7 +17,7 @@ import (
 const generatedFromMarker = "<!-- generated-start -->"
 const readmeFileName = "README.md"
 
-func Yield(cfg config.Config, pl config.Plugin, generated []chunks.Generated, write bool) error {
+func Yield(cfg config.Config, generated []chunks.Generated, write bool) error {
 
 	buf := make([]byte, 0)
 	buffer := bytes.NewBuffer(buf)
@@ -33,7 +34,7 @@ func Yield(cfg config.Config, pl config.Plugin, generated []chunks.Generated, wr
 	for _, chunk := range generated {
 		data[chunk.Id] = chunk
 	}
-	data[config.PluginChunkId] = pl
+	data[config.PluginChunkId] = bootstrap.Registry.GetData("plugin")
 
 	// render template
 	if rendered, err := util.RenderTemplateFromFile(cfg.MainTemplate, data); err == nil {

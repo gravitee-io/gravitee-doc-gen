@@ -3,6 +3,10 @@
 {{ range $_ := .Columns }}| --- {{ end }} |
 {{ range $row := .Rows }}
 {{- range $col := $.Columns -}}
-| {{ default (asCheck (index $row.Data $col.Id)) " " -}}
+{{ if eq (printf "%T" (index $row.Data $col.Id)) "bool" -}}
+| {{ ternary (index $row.Data $col.Id) "✅" " " -}}
+{{ else -}}
+| {{ default (index $row.Data $col.Id) " " -}}
+{{ end -}}
 {{ end }} |
 {{ end -}}
