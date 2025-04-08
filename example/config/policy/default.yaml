@@ -1,4 +1,9 @@
-mainTemplate: "{{ .RootDir }}/{{ .Plugin.Type }}/README.tmpl"
+outputs:
+ - template : "{{ .RootDir }}/{{ .Plugin.Type }}/README.tmpl"
+   target: README.md
+   processExisting: true
+ - template : "{{ .RootDir }}/{{ .Plugin.Type }}/POLICY_STUDIO_DOC.tmpl"
+   target: POLICY_STUDIO_DOC.md
 chunks:
   - template: docs/overview.md
     required: true

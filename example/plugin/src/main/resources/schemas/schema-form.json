@@ -88,7 +88,10 @@
         "defaulted"
       ],
       "examples": [
-        "a",["some","many"],["c","d"], null
+        "a",
+        ["some","many"],
+        ["c","d"],
+        null
       ]
     },
     "url": {
@@ -192,7 +195,8 @@
               "examples": [
                 null,
                 null,
-                "proxy.acme.com"
+                "proxy.acme.com",
+                null
               ]
             },
             "port":{
@@ -202,7 +206,8 @@
               "examples": [
                 null,
                 null,
-                3524
+                3524,
+                null
               ]
             },
             "username":{
@@ -212,7 +217,8 @@
               "examples": [
                 null,
                 null,
-                "admin"
+                "admin",
+                null
               ]
             },
             "password":{
@@ -223,7 +229,8 @@
               "examples": [
                 null,
                 null,
-                "[redacted]"
+                "[redacted]",
+                null
               ]
             }
           },

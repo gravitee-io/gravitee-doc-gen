@@ -1,2 +1,3 @@
-dataFiles:
-  - src/main/resources/plugin.properties
+data:
+  - file: src/main/resources/plugin.properties
+    exportedAs: Plugin

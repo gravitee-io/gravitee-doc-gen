@@ -1,44 +1,32 @@
 package config
 
 import (
-	"errors"
 	"fmt"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 
 	"gopkg.in/yaml.v3"
-	"os"
-	"path"
 )
 
-const defaultMainTemplateFile = "README.tmpl"
+type FileResolver func(string) (string, error)
 
-func Read(rootDir string, plugin Plugin) (Config, error) {
-
-	// TODO make a ConfigFileResolver
-	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id+".yaml")
-	defaultConfig := path.Join(rootDir, plugin.Type, "/default.yaml")
-	var configFile string
-	if stat, err := os.Stat(specificConfig); err == nil && !stat.IsDir() {
-		configFile = specificConfig
-	} else if stat, err := os.Stat(defaultConfig); err == nil && !stat.IsDir() {
-		configFile = defaultConfig
-	} else {
-		return Config{}, errors.New(fmt.Sprintf("Cannot find %s or %s ", specificConfig, defaultConfig))
-	}
-
-	fmt.Println("README Generation config: ", configFile)
-	rendered, err := util.RenderTemplateFromFile(configFile, map[string]interface{}{"RootDir": rootDir, PluginChunkId: plugin})
-
-	defaultMainTemplate := path.Join(rootDir, plugin.Type, defaultMainTemplateFile)
+func Read(rootDir string, resolver FileResolver) (Config, error) {
+	configFile, err := resolver(rootDir)
 	if err != nil {
 		return Config{}, err
 	}
+	fmt.Println("Generation config: ", configFile)
+
+	data := make(map[string]interface{})
+	for key, export := range bootstrap.Registry.GetExports() {
+		data[export] = bootstrap.Registry.GetData(key)
+	}
+	data["RootDir"] = rootDir
+	rendered, err2 := util.RenderTemplateFromFile(configFile, data)
 
 	// read the config
-	config := Config{
-		MainTemplate: defaultMainTemplate,
-	}
-	err = yaml.Unmarshal(rendered, &config)
-	return config, err
+	config := Config{}
 
+	err2 = yaml.Unmarshal(rendered, &config)
+	return config, err2
 }

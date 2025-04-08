@@ -7,6 +7,8 @@ import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator"
+	"os"
+	"path"
 )
 
 func Load(rootDir string) ([]chunks.Ready, config.Config, error) {
@@ -18,13 +20,12 @@ func Load(rootDir string) ([]chunks.Ready, config.Config, error) {
 	}
 
 	// TODO remove this
-	pl, err := config.ReadPlugin()
+	_, err = config.ReadPlugin()
 	if err != nil {
 		return nil, config.Config{}, err
 	}
 
-	// TODO pass ConfigFileResolver
-	cfg, err := config.Read(rootDir, pl)
+	cfg, err := config.Read(rootDir, resolveConfigFile)
 	if err != nil {
 		return nil, cfg, err
 	}
@@ -34,4 +35,20 @@ func Load(rootDir string) ([]chunks.Ready, config.Config, error) {
 		return nil, config.Config{}, err
 	}
 	return ready, cfg, nil
+}
+
+func resolveConfigFile(rootDir string) (string, error) {
+	data := bootstrap.Registry.GetData("plugin")
+	plugin := data.(config.Plugin)
+	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id+".yaml")
+	defaultConfig := path.Join(rootDir, plugin.Type, "/default.yaml")
+	var configFile string
+	if stat, err := os.Stat(specificConfig); err == nil && !stat.IsDir() {
+		configFile = specificConfig
+	} else if stat, err := os.Stat(defaultConfig); err == nil && !stat.IsDir() {
+		configFile = defaultConfig
+	} else {
+		return "", errors.New(fmt.Sprintf("Cannot find %s or %s ", specificConfig, defaultConfig))
+	}
+	return configFile, nil
 }

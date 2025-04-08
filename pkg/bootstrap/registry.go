@@ -10,10 +10,12 @@ import (
 type registry struct {
 	data     map[string]interface{}
 	handlers map[string]Handler
+	exports  map[string]string
 }
 
 var Registry = &registry{
 	data:     make(map[string]interface{}),
+	exports:  make(map[string]string),
 	handlers: make(map[string]Handler),
 }
 
@@ -40,7 +42,15 @@ func (r *registry) GetData(name string) any {
 	panic(fmt.Sprintf("'%s' bootstrap data does not exist", name))
 }
 
-func (r *registry) load(file string) (any, error) {
+func (r *registry) GetExports() map[string]string {
+	clone := make(map[string]string)
+	for k, v := range r.exports {
+		clone[k] = v
+	}
+	return clone
+}
+
+func (r *registry) load(file string, export string) (any, error) {
 	stat, err := os.Stat(file)
 	if err != nil {
 		return nil, err
@@ -54,7 +64,9 @@ func (r *registry) load(file string) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.data[filepath.Base(util.BaseFileNoExt(file))] = val
+		key := filepath.Base(util.BaseFileNoExt(file))
+		r.data[key] = val
+		r.exports[key] = export
 		return val, nil
 	} else {
 		panic(fmt.Sprintf("no '%s' handler for bootstrap file: %s ", filepath.Ext(file), file))

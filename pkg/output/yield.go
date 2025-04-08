@@ -14,30 +14,33 @@ import (
 	"os"
 )
 
-const generatedFromMarker = "<!-- generated-start -->"
-const readmeFileName = "README.md"
+const generatedMarker = "<!-- GENERATED CODE - DO NOT ALTER THIS OR THE FOLLOWING LINES -->"
 
-func Yield(cfg config.Config, generated []chunks.Generated, write bool) error {
+func Yield(output config.Output, generated []chunks.Generated, write bool) error {
 
-	buf := make([]byte, 0)
-	buffer := bytes.NewBuffer(buf)
+	buffer := bytes.Buffer{}
 
-	// Read README.md Keep what is before marker
-	buffer.Write(readUntilMarker())
-	// add marker for next generation
-	buffer.WriteString("\n")
-	buffer.WriteString(generatedFromMarker)
-	buffer.WriteString("\n")
+	if output.ProcessExisting {
+		// Read target file with what is before the marker
+		buffer.Write(readUntilMarker(output.Target))
+		// add marker for next generation
+		buffer.WriteString("\n")
+		buffer.WriteString(generatedMarker)
+		buffer.WriteString("\n")
+	}
 
 	// chunks to map
 	data := make(map[string]any)
 	for _, chunk := range generated {
 		data[chunk.Id] = chunk
 	}
-	data[config.PluginChunkId] = bootstrap.Registry.GetData("plugin")
+
+	for key, export := range bootstrap.Registry.GetExports() {
+		data[export] = bootstrap.Registry.GetData(key)
+	}
 
 	// render template
-	if rendered, err := util.RenderTemplateFromFile(cfg.MainTemplate, data); err == nil {
+	if rendered, err := util.RenderTemplateFromFile(output.Template, data); err == nil {
 		// add to buffer
 		buffer.Write(rendered)
 	} else {
@@ -45,20 +48,20 @@ func Yield(cfg config.Config, generated []chunks.Generated, write bool) error {
 	}
 
 	// write buffer
-	_, err := buffer.WriteTo(chooseWriter(write))
+	_, err := buffer.WriteTo(chooseWriter(write, output.Target))
 
 	return err
 }
 
-func chooseWriter(write bool) io.Writer {
+func chooseWriter(write bool, file string) io.Writer {
 	if write {
-		return File{}
+		return File{To: file}
 	}
-	return Console{}
+	return Console{To: file}
 }
 
-func readUntilMarker() []byte {
-	file, err := os.Open(readmeFileName)
+func readUntilMarker(target string) []byte {
+	file, err := os.Open(target)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +75,7 @@ func readUntilMarker() []byte {
 	found := false
 	for scanner.Scan() {
 		b := scanner.Bytes()
-		if bytes.Contains(b, []byte(generatedFromMarker)) {
+		if bytes.Contains(b, []byte(generatedMarker)) {
 			found = true
 			break
 		} else {

@@ -6,8 +6,6 @@ import (
 	"github.com/rickar/props"
 )
 
-const PluginChunkId = "Plugin"
-
 func ReadPlugin() (Plugin, error) {
 
 	plugin, err := bootstrap.Registry.UpdateData("plugin", func(data any) (any, error) {

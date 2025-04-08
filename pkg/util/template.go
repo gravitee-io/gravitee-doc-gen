@@ -24,11 +24,13 @@ func CompileTemplateWithFunctions(file string) (*template.Template, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return template.New(file).Funcs(template.FuncMap{
 		"default": defaultTo,
 		"ternary": ternary,
 		"indent":  indent,
 		"quote":   quote,
+		"icz":     increase,
 		"title":   Title}).Parse(string(content))
 }
 
@@ -84,4 +86,8 @@ func quote(value any) any {
 		return fmt.Sprintf(`"%s"`, s)
 	}
 	return value
+}
+
+func increase(value int) int {
+	return value + 1
 }
