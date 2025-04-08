@@ -1,0 +1,32 @@
+{
+  "url":"http://localhost:8080/api",
+  "errorCondition": "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}",
+  "errorStatusCode": "500",
+  "exitOnError": false,
+  "fireAndForget": false,
+  "method": "GET",
+  "proxy": {
+    "enabled": true,
+    "host": "proxy.acme.com",
+    "password": "[redacted]",
+    "port": 3524,
+    "type": "SOCKS5",
+    "useSystemProxy": false,
+    "username": "admin"
+  },
+  "scope": "REQUEST",
+  "ssl": {
+    "hostnameVerifier": true,
+    "trustAll": false
+  },
+  "tags": [
+    "c",
+    "d"
+  ],
+  "variables": [
+    {
+      "name": "field",
+      "value": "{#jsonPath(#calloutResponse.content, '$.field')}"
+    }
+  ]
+}

@@ -48,7 +48,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	ctx := schema.VisitContext{QueueNodes: true}
+	ctx := schema.VisitContext{QueueNodes: true, AutoDefaultBooleans: true}
 	schema.Visit(root, &options, &ctx)
 
 	return chunks.Processed{Data: options}, err
@@ -62,7 +62,7 @@ func (options *Options) OnAttribute(property string, attribute *jsonschema.Schem
 		TypeItem:    schema.GetTypeItem(attribute),
 		Constraint:  getConstraint(attribute),
 		Required:    schema.IsRequired(property, parent),
-		Default:     schema.GetConstantOrDefault(attribute),
+		Default:     schema.GetConstantOrDefault(attribute, visitCtx.AutoDefaultBooleans),
 		IsConstant:  isConstant(attribute),
 		EL:          isEL(attribute.Extensions),
 		Secret:      isSecret(attribute.Extensions),
@@ -99,7 +99,7 @@ func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visit
 	}
 }
 
-func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool) {
+func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool, _ *schema.VisitContext) {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,
@@ -112,7 +112,7 @@ func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschem
 	specs := visitCtx.CurrentOneOf.Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {
-		value := schema.GetConstantOrDefault(oneOf.Properties[spec.Property])
+		value := schema.GetConstantOrDefault(oneOf.Properties[spec.Property], visitCtx.AutoDefaultBooleans)
 		discriminatedBy[spec.Property] = value
 	}
 

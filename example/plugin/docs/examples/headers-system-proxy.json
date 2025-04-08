@@ -1,0 +1,18 @@
+{
+  "url":"http://localhost:8080/api",
+  "errorStatusCode": "500",
+  "exitOnError": false,
+  "method": "GET",
+  "proxy": {
+    "enabled": true,
+    "useSystemProxy": true
+  },
+  "ssl": {
+    "hostnameVerifier": true,
+    "trustAll": false
+  },
+  "tags": [
+    "some",
+    "many"
+  ]
+}

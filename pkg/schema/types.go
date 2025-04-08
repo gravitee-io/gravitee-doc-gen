@@ -8,7 +8,7 @@ type Visitor interface {
 	OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
 	OnObjectStart(property string, object *jsonschema.Schema, visitCtx *VisitContext)
 	OnObjectEnd()
-	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool)
+	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool, ctx *VisitContext)
 	OnArrayEnd(itemTypeIsObject bool)
 	OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
 	OnOneOfEnd()

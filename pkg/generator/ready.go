@@ -37,7 +37,7 @@ func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 			unique[chunk.Id()] = true
 		} else {
 
-			tpl, err := util.CompileTemplateWithFunctions(chunk.Template)
+			tpl, err := util.TemplateWithFunctions(chunk.Template)
 			if err != nil {
 				return nil, err
 			}

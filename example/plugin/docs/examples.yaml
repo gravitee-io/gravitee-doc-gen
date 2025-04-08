@@ -1,0 +1,31 @@
+specs:
+  - title: V4 API With default
+    templateKey: v4ApiPolicy
+    language: json
+    useSchemaDefaults: true
+    properties:
+      phase: request
+  - title: V4 API CRD With default
+    templateKey: v4ApiCRDPolicy
+    language: yaml
+    useSchemaDefaults: true
+    properties:
+      phase: request
+  - title: V4 API with headers and system proxy
+    templateKey: v4ApiPolicy
+    language: json
+    properties:
+      phase: request
+    file: docs/examples/headers-system-proxy.json
+  - title: V4 API with headers and custom proxy
+    templateKey: v4ApiPolicy
+    language: json
+    properties:
+      phase: request
+    file: docs/examples/headers-custom-proxy.json
+  - title: V4 API CRD with ssl pem content
+    templateKey: v4ApiCRDPolicy
+    language: yaml
+    properties:
+      phase: request
+    file: docs/examples/ssl-pem-content.json
