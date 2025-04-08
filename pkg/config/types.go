@@ -11,9 +11,15 @@ const CodeDataType = DataType("code")
 const Options = DataType("options")
 const Examples = DataType("examples")
 
+type Output struct {
+	Template        string `yaml:"template"`
+	Target          string `yaml:"target"`
+	ProcessExisting bool   `yaml:"processExisting"`
+}
+
 type Config struct {
-	MainTemplate string  `yaml:"mainTemplate"`
-	Chunks       []Chunk `yaml:"chunks"`
+	Outputs []Output
+	Chunks  []Chunk `yaml:"chunks"`
 }
 
 type Chunk struct {
@@ -43,6 +49,7 @@ type Schema struct {
 	Shared string `yaml:"shared"`
 }
 
+// TODO move this to base package
 type Plugin struct {
 	Id    string
 	Type  string

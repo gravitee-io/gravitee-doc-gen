@@ -6,15 +6,22 @@ import (
 	"path/filepath"
 )
 
+type data struct {
+	Filename   string `yaml:"file"`
+	ExportedAs string `yaml:"exportedAs"`
+}
+
+type fileContent struct {
+	Data []data `yaml:"data"`
+}
+
 func Load(rootDir string) error {
 	bootstrapFile := filepath.Join(rootDir, "bootstrap.yaml")
 	_, err := os.Stat(bootstrapFile)
 	if err != nil {
 		return err
 	}
-	type fileContent struct {
-		DataFiles []string `yaml:"dataFiles"`
-	}
+
 	bootstrap := &fileContent{}
 	content, err := os.ReadFile(bootstrapFile)
 	err = yaml.Unmarshal(content, bootstrap)
@@ -22,8 +29,8 @@ func Load(rootDir string) error {
 		return err
 	}
 
-	for _, file := range bootstrap.DataFiles {
-		_, err := Registry.load(file)
+	for _, data := range bootstrap.Data {
+		_, err := Registry.load(data.Filename, data.ExportedAs)
 		if err != nil {
 			return err
 		}

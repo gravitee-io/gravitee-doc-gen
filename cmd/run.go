@@ -63,9 +63,11 @@ func run(_ *cobra.Command, _ []string) {
 	} else {
 		failIf(loadErr)
 		failIf(genError)
-		fmt.Println("README Generated... writing")
-		err := output.Yield(cfg, generated, optionsData.Write)
-		failIf(err)
+		fmt.Println("Chunks generated... writing outputs")
+		for _, out := range cfg.Outputs {
+			err := output.Yield(out, generated, optionsData.Write)
+			failIf(err)
+		}
 	}
 
 }

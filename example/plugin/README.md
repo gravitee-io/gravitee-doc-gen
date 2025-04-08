@@ -1,23 +1,22 @@
-Hello, I should stay here!!
-<!-- generated-start -->
+This should stay here
+<!-- GENERATED CODE - DO NOT ALTER THIS OR THE FOLLOWING LINES -->
 # Test policy
 
 ## Overview
 This my almost empty overview
 
-with some *markup* in it : 
-
-### Hey!
-Hello!
-
-## Foo
-
-Bar!
+with some *markup* in it
 
 
 
-    ## Errors
-    You can use the response template feature to override the default response provided by the policy.
+## Usage
+Stuff that are complicated
+
+
+
+
+## Errors
+You can use the response template feature to override the default response provided by the policy.
 These templates are be defined at the API level, in "Entrypoint" section for V4 Apis, or in "Response Templates" for V2 APIs.
 
 The error keys sent by this policy are as follows:
@@ -28,7 +27,6 @@ The error keys sent by this policy are as follows:
 | API_KEY_INVALID_KEY| - |
 
 
-<!-- extended-section-start -->
 
 ## Phases
 The phases checked below are supported by the `test` policy:
@@ -118,12 +116,12 @@ Warning: this some heavy doc
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-
+| No properties | | | | | | | 
 
 #### Proxy Options: Use proxy configured at system level `enabled = true` `useSystemProxy = true` 
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-
+| No properties | | | | | | | 
 
 #### Proxy Options: Use proxy for client connections `enabled = true` `useSystemProxy = false` 
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
@@ -133,6 +131,129 @@ Warning: this some heavy doc
 | Proxy port<br>`port`| integer| ✅| |  |  | Proxy port to connect to|
 | Proxy Type<br>`type`| enum (string)|  | `SOCKS5`|  |  | The type of the proxy<br>Values:`SOCKS4` `SOCKS5` |
 | Proxy username<br>`username`| string|  | |  |  | Optional proxy username|
+
+
+#### SSL Options (Object)
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Verify Host<br>`hostnameVerifier`| boolean|  | `true`|  |  | Use to enable host name verification|
+| Key store<br>`keyStore`| object|  | |  |  | <br/>See "Key store" section|
+| Trust all<br>`trustAll`| boolean|  | |  |  | Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.|
+| Truststore<br>`trustStore`| object|  | |  |  | <br/>See "Truststore" section|
+
+
+#### Key store (OneOf)
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Type<br>`type`| object| ✅| |  |  | <br/>See "Type" sectionType of Key store<br>Values:`""` `JKS` `JKS` `PKCS12` `PKCS12` `PEM` `PEM` |
+
+
+#### Key store: None `type = ""` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| No properties | | | | | | | 
+
+#### Key store: JKS with path `type = "JKS"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
+| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
+| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
+| Path to key store<br>`path`| string| ✅| |  |  | Path to the key store file|
+
+
+#### Key store: JKS with content `type = "JKS"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
+| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
+| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
+| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
+
+
+#### Key store: PKCS#12 / PFX with path `type = "PKCS12"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
+| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
+| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
+| Path to key store<br>`path`| string| ✅| |  |  | Path to the key store file|
+
+
+#### Key store: PKCS#12 / PFX with content `type = "PKCS12"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
+| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
+| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
+| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
+
+
+#### Key store: PEM with path `type = "PEM"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Path to cert file<br>`certPath`| string| ✅| |  |  | Path to cert file (.PEM)|
+| Path to private key file<br>`keyPath`| string| ✅| |  |  | Path to private key file (.PEM)|
+
+
+#### Key store: PEM with content `type = "PEM"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Certificate<br>`certContent`| string| ✅| |  |  | |
+| Private key<br>`keyContent`| string| ✅| |  |  | |
+
+
+#### Truststore (OneOf)
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Type<br>`type`| object| ✅| |  |  | <br/>See "Type" sectionType of Truststore<br>Values:`""` `JKS` `JKS` `PKCS12` `PKCS12` `PEM` `PEM` |
+
+
+#### Truststore: None `type = ""` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| No properties | | | | | | | 
+
+#### Truststore: JKS with path `type = "JKS"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
+| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
+
+
+#### Truststore: JKS with content `type = "JKS"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
+
+
+#### Truststore: PKCS#12 / PFX with path `type = "PKCS12"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
+| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
+
+
+#### Truststore: PKCS#12 / PFX with content `type = "PKCS12"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
+
+
+#### Truststore: PEM with path `type = "PEM"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
+| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
+
+
+#### Truststore: PEM with content `type = "PEM"` 
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
+| Password<br>`password`| string| ✅| |  |  | Truststore password|
 
 
 #### Context variables (Array)
@@ -176,6 +297,10 @@ Warning: this some heavy doc
                 "fireAndForget": false,
                 "method": "GET",
                 "scope": "REQUEST",
+                "ssl": {
+                  "hostnameVerifier": true,
+                  "trustAll": false
+                },
                 "tags": [
                   "defaulted"
                 ],
@@ -228,6 +353,10 @@ Warning: this some heavy doc
                   "useSystemProxy": true
                 },
                 "scope": "REQUEST",
+                "ssl": {
+                  "hostnameVerifier": true,
+                  "trustAll": false
+                },
                 "tags": [
                   "some",
                   "many"
@@ -281,6 +410,9 @@ spec:
                 useSystemProxy: false
                 username: admin
               scope: REQUEST
+              ssl:
+                hostnameVerifier: true
+                trustAll: false
               tags:
                 - c
                 - d
@@ -315,6 +447,16 @@ spec:
               fireAndForget: false
               method: GET
               scope: REQUEST
+              ssl:
+                hostnameVerifier: true
+                trustAll: false
+                trustStore:
+                  content: |-
+                    --- BEGIN CERTIFICATE ---
+              
+                    --- END CERTIFICATE ---
+                  password: '[redacted]'
+                  type: PEM
               tags:
                 - defaulted
               variables:

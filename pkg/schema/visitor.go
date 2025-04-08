@@ -19,11 +19,10 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
 	queue := make([]property, 0)
 
-	ordered := orderProperties(parent)
+	ordered := orderedAndResolved(parent)
 
 	for _, property := range ordered {
 		name, schema := property.name, property.schema
-		schema = orRef(schema)
 		if IsAttribute(schema) {
 			visitor.OnAttribute(name, schema, parent, visitCtx)
 		}
@@ -39,6 +38,7 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 	for _, pair := range queue {
 		visitNode(pair, visitor, visitCtx)
 	}
+
 	for _, schema := range parent.OneOf {
 		schema = orRef(schema)
 		visitor.OnOneOfStart(schema, parent, visitCtx)
@@ -48,10 +48,10 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
 }
 
-func orderProperties(parent *jsonschema.Schema) []property {
+func orderedAndResolved(parent *jsonschema.Schema) []property {
 	ordered := make([]property, 0, len(parent.Properties))
 	for name, schema := range parent.Properties {
-		ordered = append(ordered, property{name: name, schema: schema})
+		ordered = append(ordered, property{name: name, schema: orRef(schema)})
 	}
 
 	sort.Slice(ordered, func(i, j int) bool {
