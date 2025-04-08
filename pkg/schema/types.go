@@ -10,7 +10,7 @@ type Visitor interface {
 	OnObjectEnd()
 	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool)
 	OnArrayEnd(itemTypeIsObject bool)
-	OnOneOfStart(schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext, index int)
+	OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
 	OnOneOfEnd()
 }
 

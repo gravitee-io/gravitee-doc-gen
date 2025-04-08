@@ -102,7 +102,7 @@ func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool)
 	})
 }
 
-func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext, index int) {
+func (options *Options) OnOneOfStart(schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
 	specs := visitCtx.CurrentOneOf.Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {

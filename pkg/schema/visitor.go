@@ -36,7 +36,7 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 	}
 	for i, schema := range parent.OneOf {
 		schema = orRef(schema)
-		visitor.OnOneOfStart(schema, parent, visitCtx, i)
+		visitor.OnOneOfStart(schema, parent, visitCtx)
 		Visit(schema, visitor, visitCtx)
 		visitor.OnOneOfEnd()
 	}

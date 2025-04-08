@@ -74,10 +74,20 @@
       "default": "GET",
       "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "CONNECT", "OPTIONS", "TRACE"]
     },
-    "useSystemProxy": {
-      "title": "Use system proxy",
-      "description": "Use the system proxy configured by your administrator.",
-      "type": "boolean"
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "description": "Some tags",
+      "items": {
+        "type": "string",
+        "minItems": 1
+      },
+      "default": [
+        "defaulted"
+      ],
+      "examples": [
+        "a",["some","many"],["c","d"], null
+      ]
     },
     "url": {
       "title": "URL",

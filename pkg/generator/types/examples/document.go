@@ -38,7 +38,7 @@ func (b *DocumentBuilder) OnAttribute(property string, attribute *jsonschema.Sch
 	}
 }
 
-func (b *DocumentBuilder) OnObjectStart(property string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
+func (b *DocumentBuilder) OnObjectStart(property string, _ *jsonschema.Schema, _ *schema.VisitContext) {
 	b.Add(property, NewObject(property))
 }
 
@@ -47,7 +47,14 @@ func (b *DocumentBuilder) OnArrayStart(property string, array *jsonschema.Schema
 	if itemTypeIsObject {
 		b.Add("", NewObject(property))
 	} else {
-		b.Add("", b.getExampleValue(array))
+		value := b.getExampleValue(array)
+		if items, ok := value.([]interface{}); ok {
+			for _, i := range items {
+				b.Add("", i)
+			}
+		} else {
+			b.Add("", value)
+		}
 	}
 }
 
@@ -60,10 +67,9 @@ func (b *DocumentBuilder) OnArrayEnd(itemTypeIsObject bool) {
 		b.Pop()
 	}
 	b.Pop()
-
 }
 
-func (b *DocumentBuilder) OnOneOfStart(oneOf *jsonschema.Schema, _ *jsonschema.Schema, _ *schema.VisitContext, currentOneOfIndex int) {
+func (b *DocumentBuilder) OnOneOfStart(oneOf *jsonschema.Schema, _ *jsonschema.Schema, _ *schema.VisitContext) {
 
 	if !slices.Equal(b.getAncestors(), b.example.OneOfFilter.Path) {
 		b.skipAttributes = true
