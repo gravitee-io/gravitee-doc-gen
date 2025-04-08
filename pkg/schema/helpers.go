@@ -9,12 +9,12 @@ func IsRequired(name string, parent *jsonschema.Schema) bool {
 	required := parent.Required
 	return required != nil && slices.Contains(required, name)
 }
-func GetConstantOrDefault(att *jsonschema.Schema) any {
+func GetConstantOrDefault(att *jsonschema.Schema, defaultBoolean bool) any {
 	if att.Constant != nil {
 		return att.Constant[0]
 	}
 	def := att.Default
-	if def == nil && GetType(att) == "boolean" {
+	if def == nil && GetType(att) == "boolean" && defaultBoolean {
 		return false
 	}
 	return def

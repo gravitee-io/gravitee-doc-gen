@@ -7,13 +7,17 @@ import (
 )
 
 type VisitContext struct {
-	CurrentOneOf OneOf
-	QueueNodes   bool
+	CurrentOneOf        OneOf
+	QueueNodes          bool
+	AutoDefaultBooleans bool
 }
 type property struct {
 	name   string
 	schema *jsonschema.Schema
 }
+
+// TODO move to util and use anywhere !
+type Unstructured map[string]interface{}
 
 func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
@@ -79,7 +83,7 @@ func visitNode(prop property, visitor Visitor, visitCtx *VisitContext) {
 			// no support of multiple types
 			itemTypeIsObject = !IsAttribute(items)
 		}
-		visitor.OnArrayStart(prop.name, prop.schema, itemTypeIsObject)
+		visitor.OnArrayStart(prop.name, prop.schema, itemTypeIsObject, visitCtx)
 		Visit(prop.schema.Items.(*jsonschema.Schema), visitor, visitCtx)
 		visitor.OnArrayEnd(itemTypeIsObject)
 	}

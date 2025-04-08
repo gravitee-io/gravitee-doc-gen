@@ -44,7 +44,12 @@ chunks:
   - template: "{{ .RootDir }}/examples.tmpl"
     type: examples
     data:
+      examples: docs/examples.yaml
       schema: src/main/resources/schemas/schema-form.json
+      # templates
+      # - language
+      #   id
+      #   file
       v4ApiPolicy: "{{ .RootDir }}/policy/api-v4-snippet.json.tmpl"
       v4ApiCRDPolicy: "{{ .RootDir }}/policy/crd-api-v4-snippet.yaml.tmpl"
     required: true

@@ -304,8 +304,10 @@ Warning: this some heavy doc
                 "tags": [
                   "defaulted"
                 ],
+                "url": "http://localhost:8080/api",
                 "variables": [
                   {
+                    "name": "field",
                     "value": "{#jsonPath(#calloutResponse.content, '$.field')}"
                   }
                 ]
@@ -316,6 +318,44 @@ Warning: this some heavy doc
     ]
   }
 }
+
+```
+*V4 API CRD With default*
+```yaml
+apiVersion: "gravitee.io/v1alpha1"
+kind: "ApiV4Definition"
+metadata:
+    name: "test-example-v4-gko-api"
+spec:
+    name: "Test policy Example V4 GKO API"
+    type: "PROXY"
+    flows:
+      - name: "Common Flow"
+        enabled: true
+        selectors:
+          - type: "HTTP"
+            path: "/"
+            pathOperator: "STARTS_WITH"
+        request:
+          - name: "Test policy"
+            enabled: true
+            policy: "test"
+            configuration:
+              errorCondition: '{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}'
+              errorStatusCode: "500"
+              exitOnError: false
+              fireAndForget: false
+              method: GET
+              scope: REQUEST
+              ssl:
+                hostnameVerifier: true
+                trustAll: false
+              tags:
+                - defaulted
+              url: http://localhost:8080/api
+              variables:
+                - name: field
+                  value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
 
 ```
 *V4 API with headers and system proxy*
@@ -343,16 +383,14 @@ Warning: this some heavy doc
             "policy": "test",
             "configuration":
               {
-                "errorCondition": "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}",
+                "url":"http://localhost:8080/api",
                 "errorStatusCode": "500",
                 "exitOnError": false,
-                "fireAndForget": false,
                 "method": "GET",
                 "proxy": {
                   "enabled": true,
                   "useSystemProxy": true
                 },
-                "scope": "REQUEST",
                 "ssl": {
                   "hostnameVerifier": true,
                   "trustAll": false
@@ -360,11 +398,6 @@ Warning: this some heavy doc
                 "tags": [
                   "some",
                   "many"
-                ],
-                "variables": [
-                  {
-                    "value": "{#jsonPath(#calloutResponse.content, '$.field')}"
-                  }
                 ]
               }
           }
@@ -375,49 +408,68 @@ Warning: this some heavy doc
 }
 
 ```
-*V4 API CRD with headers and custom proxy*
-```yaml
-apiVersion: "gravitee.io/v1alpha1"
-kind: "ApiV4Definition"
-metadata:
-    name: "test-example-v4-gko-api"
-spec:
-    name: "Test policy Example V4 GKO API"
-    type: "PROXY"
-    flows:
-      - name: "Common Flow"
-        enabled: true
-        selectors:
-          - type: "HTTP"
-            path: "/"
-            pathOperator: "STARTS_WITH"
-        request:
-          - name: "Test policy"
-            enabled: true
-            policy: "test"
-            configuration:
-              errorCondition: '{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}'
-              errorStatusCode: "500"
-              exitOnError: false
-              fireAndForget: false
-              method: GET
-              proxy:
-                enabled: true
-                host: proxy.acme.com
-                password: '[redacted]'
-                port: 3524
-                type: SOCKS5
-                useSystemProxy: false
-                username: admin
-              scope: REQUEST
-              ssl:
-                hostnameVerifier: true
-                trustAll: false
-              tags:
-                - c
-                - d
-              variables:
-                - value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
+*V4 API with headers and custom proxy*
+```json
+{
+  "api": {
+    "definitionVersion": "V4",
+    "type": "PROXY",
+    "name": "Test policy Example v4 API",
+    "flows": [
+      {
+        "name": "Common Flow",
+        "enabled": true,
+        "selectors": [
+          {
+            "type": "HTTP",
+            "path": "/",
+            "pathOperator": "STARTS_WITH"
+          }
+        ],
+        "request": [
+          {
+            "name": "Test policy",
+            "enabled": true,
+            "policy": "test",
+            "configuration":
+              {
+                "url":"http://localhost:8080/api",
+                "errorCondition": "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}",
+                "errorStatusCode": "500",
+                "exitOnError": false,
+                "fireAndForget": false,
+                "method": "GET",
+                "proxy": {
+                  "enabled": true,
+                  "host": "proxy.acme.com",
+                  "password": "[redacted]",
+                  "port": 3524,
+                  "type": "SOCKS5",
+                  "useSystemProxy": false,
+                  "username": "admin"
+                },
+                "scope": "REQUEST",
+                "ssl": {
+                  "hostnameVerifier": true,
+                  "trustAll": false
+                },
+                "tags": [
+                  "c",
+                  "d"
+                ],
+                "variables": [
+                  {
+                    "name": "field",
+                    "value": "{#jsonPath(#calloutResponse.content, '$.field')}"
+                  }
+                ]
+              }
+          }
+        ]
+      }
+    ]
+  }
+}
 
 ```
 *V4 API CRD with ssl pem content*
@@ -441,26 +493,24 @@ spec:
             enabled: true
             policy: "test"
             configuration:
-              errorCondition: '{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}'
               errorStatusCode: "500"
               exitOnError: false
-              fireAndForget: false
               method: GET
-              scope: REQUEST
               ssl:
-                hostnameVerifier: true
-                trustAll: false
-                trustStore:
-                  content: |-
-                    --- BEGIN CERTIFICATE ---
+                  hostnameVerifier: true
+                  trustAll: false
+                  trustStore:
+                      content: |-
+                          --- BEGIN CERTIFICATE ---
               
-                    --- END CERTIFICATE ---
-                  password: '[redacted]'
-                  type: PEM
+                          --- END CERTIFICATE ---
+                      password: '[redacted]'
+                      type: PEM
               tags:
-                - defaulted
+                  - defaulted
+              url: http://localhost:8080/api
               variables:
-                - value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
+                  - value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
 
 ```
 

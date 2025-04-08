@@ -12,14 +12,14 @@ import (
 )
 
 func RenderTemplateFromFile(file string, data interface{}) ([]byte, error) {
-	tpl, err := CompileTemplateWithFunctions(file)
+	tpl, err := TemplateWithFunctions(file)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Cannot parse template %s: %s", file, err.Error()))
 	}
 	return RenderTemplate(tpl, data)
 }
 
-func CompileTemplateWithFunctions(file string) (*template.Template, error) {
+func TemplateWithFunctions(file string) (*template.Template, error) {
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err

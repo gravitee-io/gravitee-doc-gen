@@ -2,62 +2,6 @@
   "$id": "urn:jsonschema:io:gravitee:policy:callout:configuration:CalloutHttpPolicyConfiguration",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "x-readme-examples": [
-    {
-      "title": "V4 API With default",
-      "template": "v4ApiPolicy",
-      "language": "json",
-      "useDefaults": true,
-      "properties": {
-        "phase": "request"
-      }
-    },
-    {
-      "title": "V4 API with headers and system proxy",
-      "template": "v4ApiPolicy",
-      "language": "json",
-      "properties": {
-        "phase": "request"
-      },
-      "oneOfFilter": {
-        "path": ["proxy"],
-        "discriminators": {
-          "enabled": true,
-          "useSystemProxy": true
-        }
-      }
-    },
-    {
-      "title": "V4 API CRD with headers and custom proxy",
-      "template": "v4ApiCRDPolicy",
-      "language": "yaml",
-      "properties": {
-        "phase": "request"
-      },
-      "oneOfFilter": {
-        "path": ["proxy"],
-        "discriminators": {
-          "enabled": true,
-          "useSystemProxy": false
-        }
-      }
-    },
-    {
-      "title": "V4 API CRD with ssl pem content",
-      "template": "v4ApiCRDPolicy",
-      "language": "yaml",
-      "properties": {
-        "phase": "request"
-      },
-      "oneOfFilter": {
-        "path": ["ssl","trustStore"],
-        "discriminators": {
-          "type": "PEM"
-        },
-        "index": 1
-      }
-    }
-  ],
   "properties": {
     "scope": {
       "title": "Scope",
@@ -86,12 +30,6 @@
       "uniqueItems": true,
       "default": [
         "defaulted"
-      ],
-      "examples": [
-        "a",
-        ["some","many"],
-        ["c","d"],
-        null
       ]
     },
     "url": {
@@ -100,7 +38,8 @@
       "maxLength": 150,
       "type": "string",
       "x-secret": true,
-      "x-el": true
+      "x-el": true,
+      "examples": ["http://localhost:8080/api"]
     },
     "ratio": {
       "title": "Ratio",
@@ -193,10 +132,7 @@
               "title":"Proxy host",
               "description":"Proxy host to connect to",
               "examples": [
-                null,
-                null,
-                "proxy.acme.com",
-                null
+                "proxy.acme.com"
               ]
             },
             "port":{
@@ -204,10 +140,7 @@
               "title":"Proxy port",
               "description":"Proxy port to connect to",
               "examples": [
-                null,
-                null,
-                3524,
-                null
+                3524
               ]
             },
             "username":{
@@ -215,10 +148,7 @@
               "title":"Proxy username",
               "description":"Optional proxy username",
               "examples": [
-                null,
-                null,
-                "admin",
-                null
+                "admin"
               ]
             },
             "password":{
@@ -227,10 +157,7 @@
               "description":"Optional proxy password",
               "format":"password",
               "examples": [
-                null,
-                null,
-                "[redacted]",
-                null
+                "[redacted]"
               ]
             }
           },
@@ -294,7 +221,8 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "examples": ["field"]
           },
           "value": {
             "title": "Value",
@@ -511,9 +439,6 @@
       "description": "Truststore password",
       "format": "password",
       "examples": [
-        null,
-        null,
-        null,
         "[redacted]"
       ],
       "gioConfig": {
@@ -534,9 +459,6 @@
       "description": "Binary content as Base64",
       "format": "text",
       "examples": [
-        null,
-        null,
-        null,
         "--- BEGIN CERTIFICATE ---\n\n--- END CERTIFICATE ---"
       ]
     },
