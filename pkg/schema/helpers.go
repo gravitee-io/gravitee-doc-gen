@@ -13,5 +13,16 @@ func GetConstantOrDefault(att *jsonschema.Schema) any {
 	if att.Constant != nil {
 		return att.Constant[0]
 	}
-	return att.Default
+	def := att.Default
+	if def == nil && GetType(att) == "boolean" {
+		return false
+	}
+	return def
+}
+
+func GetTypeItem(attribute *jsonschema.Schema) string {
+	if GetType(attribute) == "array" {
+		return GetType(attribute.Items.(*jsonschema.Schema))
+	}
+	return ""
 }

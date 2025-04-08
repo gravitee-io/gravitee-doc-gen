@@ -30,6 +30,7 @@ type Attribute struct {
 	Name        string
 	Property    string
 	Type        string
+	TypeItem    string
 	Constraint  string
 	Required    bool
 	Default     any

@@ -14,7 +14,7 @@
 | {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end -}}
 | {{ ternary .EL "✅" " " -}}
 | {{ ternary .Secret "✅" " " -}}
-| {{ .Description -}}{{ if or (eq .Type "object") (eq .Type "array") }}<br/>See "{{ .Name }}" section{{ end -}}
+| {{ .Description -}}{{ if or (eq .Type "object") (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section{{ end -}}
 {{ if .OneOf.Present -}}
 {{ if ne .Description "" -}}<br>{{ end -}}
 {{ .Name}} of {{ .OneOf.Parent -}}

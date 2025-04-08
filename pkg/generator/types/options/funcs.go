@@ -9,6 +9,9 @@ import (
 	ext "github.com/gravitee-io-labs/readme-gen/pkg/schema/extensions"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
+	"math/big"
+	"strconv"
+	"strings"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -56,6 +59,7 @@ func (options *Options) OnAttribute(property string, attribute *jsonschema.Schem
 		Property:    property,
 		Name:        attribute.Title,
 		Type:        schema.GetType(attribute),
+		TypeItem:    schema.GetTypeItem(attribute),
 		Constraint:  getConstraint(attribute),
 		Required:    schema.IsRequired(property, parent),
 		Default:     schema.GetConstantOrDefault(attribute),
@@ -96,13 +100,15 @@ func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visit
 }
 
 func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool) {
-	options.Add(Section{
-		Title: array.Title,
-		Type:  "array",
-	})
+	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
+		options.Add(Section{
+			Title: array.Title,
+			Type:  "array",
+		})
+	}
 }
 
-func (options *Options) OnOneOfStart(schema *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
+func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
 	specs := visitCtx.CurrentOneOf.Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {
@@ -140,15 +146,68 @@ func (s *Section) Add(attribute Attribute) {
 }
 
 func getConstraint(att *jsonschema.Schema) string {
+	constraints := make([]string, 0)
+
 	switch {
 	case att.Pattern != nil:
-		return att.Pattern.String()
-	case att.Minimum != nil:
-		return att.Minimum.String()
-	case att.Maximum != nil:
-		return att.Maximum.String()
+		constraints = append(constraints, att.Pattern.String())
+	case att.MinItems >= 0 || att.MaxItems >= 0:
+		constraints = append(constraints, "["+valueOrZero(att.MinItems))
+		constraints = append(constraints, valueOrInfinity(att.MaxItems)+"]")
+		fallthrough
+	case att.UniqueItems:
+		constraints = append(constraints, "unique")
+	case att.Minimum != nil || att.Maximum != nil || att.ExclusiveMinimum != nil || att.ExclusiveMaximum != nil:
+		constraints = append(constraints, startBound(att.Minimum, att.ExclusiveMinimum))
+		constraints = append(constraints, endBound(att.Maximum, att.ExclusiveMaximum))
+	case att.MinLength >= 0 || att.MaxLength >= 0:
+		constraints = append(constraints, "["+valueOrZero(att.MinLength))
+		constraints = append(constraints, valueOrInfinity(att.MaxLength)+"]")
 	}
-	return ""
+
+	return strings.Join(constraints, ", ")
+}
+
+func startBound(inclusive *big.Rat, exclusive *big.Rat) string {
+	if inclusive == nil && exclusive == nil {
+		return "[-Inf"
+	} else if exclusive != nil {
+		return "(" + ratToString(exclusive)
+	} else {
+		return "[" + ratToString(inclusive)
+	}
+}
+
+func endBound(inclusive *big.Rat, exclusive *big.Rat) string {
+	if inclusive == nil && exclusive == nil {
+		return "+Inf]"
+	} else if exclusive != nil {
+		return ratToString(exclusive) + ")"
+	} else {
+		return ratToString(inclusive) + "]"
+	}
+}
+
+func ratToString(number *big.Rat) string {
+	if number.IsInt() {
+		return number.Num().String()
+	}
+	n, _ := number.FloatPrec()
+	return number.FloatString(n)
+}
+
+func valueOrInfinity(value int) string {
+	if value < 0 {
+		return "+Inf"
+	}
+	return strconv.Itoa(value)
+}
+
+func valueOrZero(value int) string {
+	if value < 0 {
+		return "0"
+	}
+	return strconv.Itoa(value)
 }
 
 func isConstant(att *jsonschema.Schema) bool {

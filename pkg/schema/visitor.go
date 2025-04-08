@@ -3,38 +3,43 @@ package schema
 import (
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"slices"
+	"sort"
 )
 
 type VisitContext struct {
 	CurrentOneOf OneOf
 	QueueNodes   bool
 }
-type pair struct {
+type property struct {
 	name   string
 	schema *jsonschema.Schema
 }
 
 func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
-	queue := make([]pair, 0)
-	for name, schema := range parent.Properties {
+	queue := make([]property, 0)
+
+	ordered := orderProperties(parent)
+
+	for _, property := range ordered {
+		name, schema := property.name, property.schema
 		schema = orRef(schema)
 		if IsAttribute(schema) {
 			visitor.OnAttribute(name, schema, parent, visitCtx)
 		}
-		pair := pair{name, schema}
+
 		if visitCtx.QueueNodes && (isObject(schema) || isArray(schema)) {
 			visitor.OnAttribute(name, schema, parent, visitCtx)
-			queue = append(queue, pair)
+			queue = append(queue, property)
 		} else {
-			visitNode(pair, visitor, visitCtx)
+			visitNode(property, visitor, visitCtx)
 		}
 	}
 
 	for _, pair := range queue {
 		visitNode(pair, visitor, visitCtx)
 	}
-	for i, schema := range parent.OneOf {
+	for _, schema := range parent.OneOf {
 		schema = orRef(schema)
 		visitor.OnOneOfStart(schema, parent, visitCtx)
 		Visit(schema, visitor, visitCtx)
@@ -43,26 +48,39 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
 }
 
-func visitNode(pair pair, visitor Visitor, visitCtx *VisitContext) {
-	if isObject(pair.schema) {
-		if ContainsOneOfs(pair.schema) {
-			visitCtx.CurrentOneOf = findDiscriminators(pair.schema)
+func orderProperties(parent *jsonschema.Schema) []property {
+	ordered := make([]property, 0, len(parent.Properties))
+	for name, schema := range parent.Properties {
+		ordered = append(ordered, property{name: name, schema: schema})
+	}
+
+	sort.Slice(ordered, func(i, j int) bool {
+		return ordered[i].name < ordered[j].name
+	})
+	return ordered
+
+}
+
+func visitNode(prop property, visitor Visitor, visitCtx *VisitContext) {
+	if isObject(prop.schema) {
+		if ContainsOneOfs(prop.schema) {
+			visitCtx.CurrentOneOf = findDiscriminators(prop.schema)
 		}
-		visitor.OnObjectStart(pair.name, pair.schema, visitCtx)
-		Visit(pair.schema, visitor, visitCtx)
+		visitor.OnObjectStart(prop.name, prop.schema, visitCtx)
+		Visit(prop.schema, visitor, visitCtx)
 		visitor.OnObjectEnd()
 		visitCtx.CurrentOneOf = OneOf{}
 	}
-	if isArray(pair.schema) {
+	if isArray(prop.schema) {
 		var items *jsonschema.Schema
 		var itemTypeIsObject bool
-		if pair.schema.Items != nil {
-			items = pair.schema.Items.(*jsonschema.Schema)
+		if prop.schema.Items != nil {
+			items = prop.schema.Items.(*jsonschema.Schema)
 			// no support of multiple types
 			itemTypeIsObject = !IsAttribute(items)
 		}
-		visitor.OnArrayStart(pair.name, pair.schema, itemTypeIsObject)
-		Visit(pair.schema.Items.(*jsonschema.Schema), visitor, visitCtx)
+		visitor.OnArrayStart(prop.name, prop.schema, itemTypeIsObject)
+		Visit(prop.schema.Items.(*jsonschema.Schema), visitor, visitCtx)
 		visitor.OnArrayEnd(itemTypeIsObject)
 	}
 }
