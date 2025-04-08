@@ -1,0 +1,375 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "authorizations": {
+      "type": "array",
+      "title": "ACLs",
+      "description": "Define ACLs (Access Control Lists) in order to determine what users are having access to what resources.",
+      "items": {
+        "type": "object",
+        "title": "ACL",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "title": "Condition",
+            "description": "The condition for which the following ACL should be be applicable (supports EL)."
+          },
+          "resources": {
+            "type": "array",
+            "title": "Resources",
+            "items": {
+              "$ref": "#/definitions/resource"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["resources"]
+      },
+      "gioConfig": {
+        "uiBorder": "none"
+      }
+    },
+    "resource": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Topic",
+          "allOf": [
+            {
+              "$ref": "#/definitions/resourcePatternBase"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "TOPIC"
+                },
+                "operations": {
+                  "$ref": "#/definitions/topicOperations"
+                }
+              }
+            }
+          ],
+          "required": ["operations"],
+          "gioConfig": {
+            "uiBorder": "none"
+          }
+        },
+        {
+          "type": "object",
+          "title": "Cluster",
+          "properties": {
+            "type": {
+              "const": "CLUSTER"
+            },
+            "operations": {
+              "$ref": "#/definitions/clusterOperations"
+            }
+          },
+          "required": ["operations"],
+          "gioConfig": {
+            "uiBorder": "none"
+          }
+        },
+        {
+          "type": "object",
+          "title": "Group",
+          "allOf": [
+            {
+              "$ref": "#/definitions/resourcePatternBase"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "GROUP"
+                },
+                "operations": {
+                  "$ref": "#/definitions/groupOperations"
+                }
+              }
+            }
+          ],
+          "required": ["operations"],
+          "gioConfig": {
+            "uiBorder": "none"
+          }
+        },
+        {
+          "type": "object",
+          "title": "Transactional ID",
+          "allOf": [
+            {
+              "$ref": "#/definitions/resourcePatternBase"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "TRANSACTIONAL_ID"
+                },
+                "operations": {
+                  "$ref": "#/definitions/transactionalIdOperations"
+                }
+              }
+            }
+          ],
+          "required": ["operations"],
+          "gioConfig": {
+            "uiBorder": "none"
+          }
+        }
+      ]
+    },
+    "resourcePatternBase": {
+      "type": "object",
+      "properties": {
+        "resourcePatternType": {
+          "$ref": "#/definitions/resourcePatternType"
+        }
+      },
+      "dependencies": {
+        "resourcePatternType": {
+          "oneOf": [
+            {
+              "properties": {
+                "resourcePatternType": {
+                  "const": "MATCH"
+                },
+                "resourcePattern": {
+                  "type": "string",
+                  "title": "Resource Pattern",
+                  "gioConfig": {
+                    "banner": {
+                      "title": "Resource Pattern (Support EL) (Support comma separated values)",
+                      "text": "Prefixed, literal or wildcard resource pattern, e.g. \"my-prefix-\", \"my-topic\" or \"*\". <a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#use-prefixed-acls\" target=\"_blank\">More info</a>"
+                    }
+                  }
+                }
+              },
+              "required": ["resourcePattern"],
+              "gioConfig": {
+                "uiBorder": "none"
+              }
+            },
+            {
+              "properties": {
+                "resourcePatternType": {
+                  "const": "LITERAL"
+                },
+                "resourcePattern": {
+                  "type": "string",
+                  "title": "Resource Pattern",
+                  "gioConfig": {
+                    "banner": {
+                      "title": "Resource Pattern (Support EL) (Support comma separated values)",
+                      "text": "Literal resource pattern or wildcard, e.g. \"my-topic\" or \"*\". <a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#use-literal-acls\" target=\"_blank\">More info</a>"
+                    }
+                  }
+                }
+              },
+              "required": ["resourcePattern"],
+              "gioConfig": {
+                "uiBorder": "none"
+              }
+            },
+            {
+              "properties": {
+                "resourcePatternType": {
+                  "const": "PREFIXED"
+                },
+                "resourcePattern": {
+                  "type": "string",
+                  "title": "Resource Pattern",
+                  "gioConfig": {
+                    "banner": {
+                      "title": "Resource Pattern (Support EL) (Support comma separated values)",
+                      "text": "Prefixed resource pattern, e.g. \"my-prefix-\". <a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#use-prefixed-acls\" target=\"_blank\">More info</a>"
+                    }
+                  }
+                }
+              },
+              "required": ["resourcePattern"],
+              "gioConfig": {
+                "uiBorder": "none"
+              }
+            },
+            {
+              "properties": {
+                "resourcePatternType": {
+                  "const": "EXPRESSION"
+                },
+                "resourcePattern": {
+                  "type": "string",
+                  "title": "Resource Pattern",
+                  "gioConfig": {
+                    "banner": {
+                      "title": "Resource Pattern (Support EL) (Support comma separated values)",
+                      "text": "Expression resource pattern, e.g. \"foo.?.bar.?*\" matches \"foo.1.bar.xyz\" <br> '*' matches zero or more characters <br> '?' matches exactly one character"
+                    }
+                  }
+                }
+              },
+              "required": ["resourcePattern"],
+              "gioConfig": {
+                "uiBorder": "none"
+              }
+            },
+            {
+              "properties": {
+                "resourcePatternType": {
+                  "const": "ANY"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "required": ["resourcePatternType"]
+    },
+    "resourcePatternType": {
+      "type": "string",
+      "title": "Resource Pattern Type",
+      "default": "ANY",
+      "enum": ["ANY", "MATCH", "LITERAL", "PREFIXED", "EXPRESSION"],
+      "gioConfig": {
+        "enumLabelMap": {
+          "ANY": "ANY: Gives access to all resources",
+          "MATCH": "MATCH: Resources matching either the literal, wildcard or prefixed resource pattern",
+          "LITERAL": "LITERAL: Resource matching the exact resource pattern provided",
+          "PREFIXED": "PREFIXED: Resources prefixed with the provided resource pattern",
+          "EXPRESSION": "EXPRESSION: Resources matching the expression"
+        }
+      }
+    },
+    "topicOperations": {
+      "type": "array",
+      "title": "Topic operations",
+      "uniqueItems": true,
+      "gioConfig": {
+        "banner": {
+          "title": "Topic resource operations",
+          "text": "<a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#topic-resource-type-operations\" target=\"_blank\">More info</a>"
+        }
+      },
+      "items": {
+        "type": "string",
+        "title": "Operation",
+        "description": "Operation",
+        "enum": [
+          "TOPIC_ALTER",
+          "TOPIC_ALTER_CONFIGS",
+          "TOPIC_CREATE",
+          "TOPIC_DELETE",
+          "TOPIC_DESCRIBE",
+          "TOPIC_DESCRIBE_CONFIGS",
+          "TOPIC_READ",
+          "TOPIC_WRITE"
+        ],
+        "gioConfig": {
+          "banner": {
+            "title": "Topic resource operations",
+            "text": "<a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#topic-resource-type-operations\" target=\"_blank\">More info</a>"
+          },
+          "enumLabelMap": {
+            "TOPIC_ALTER": "Alter",
+            "TOPIC_ALTER_CONFIGS": "AlterConfigs",
+            "TOPIC_CREATE": "Create",
+            "TOPIC_DELETE": "Delete",
+            "TOPIC_DESCRIBE": "Describe",
+            "TOPIC_DESCRIBE_CONFIGS": "DescribeConfigs",
+            "TOPIC_READ": "Read",
+            "TOPIC_WRITE": "Write"
+          }
+        }
+      }
+    },
+    "clusterOperations": {
+      "type": "array",
+      "title": "Cluster operations",
+      "uniqueItems": true,
+      "gioConfig": {
+        "banner": {
+          "title": "Cluster resource operations",
+          "text": "<a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#cluster-resource-operations\" target=\"_blank\">More info</a>"
+        }
+      },
+      "items": {
+        "type": "string",
+        "title": "Operation",
+        "description": "Operation",
+        "enum": [
+          "CLUSTER_ALTER",
+          "CLUSTER_ALTER_CONFIGS",
+          "CLUSTER_CLUSTER_ACTION",
+          "CLUSTER_CREATE",
+          "CLUSTER_DESCRIBE",
+          "CLUSTER_DESCRIBE_CONFIGS"
+        ],
+        "gioConfig": {
+          "enumLabelMap": {
+            "CLUSTER_ALTER": "Alter",
+            "CLUSTER_ALTER_CONFIGS": "AlterConfigs",
+            "CLUSTER_CLUSTER_ACTION": "ClusterAction",
+            "CLUSTER_CREATE": "Create",
+            "CLUSTER_DESCRIBE": "Describe",
+            "CLUSTER_DESCRIBE_CONFIGS": "DescribeConfigs"
+          }
+        }
+      }
+    },
+    "groupOperations": {
+      "type": "array",
+      "title": "Group operations",
+      "uniqueItems": true,
+      "gioConfig": {
+        "banner": {
+          "title": "Group resource operations",
+          "text": "<a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#group-resource-type-operations\" target=\"_blank\">More info</a>"
+        }
+      },
+      "items": {
+        "type": "string",
+        "title": "Operation",
+        "description": "Operation",
+        "enum": ["GROUP_DELETE", "GROUP_DESCRIBE", "GROUP_READ"],
+        "gioConfig": {
+          "enumLabelMap": {
+            "GROUP_DELETE": "Delete",
+            "GROUP_DESCRIBE": "Describe",
+            "GROUP_READ": "Read"
+          }
+        }
+      }
+    },
+    "transactionalIdOperations": {
+      "type": "array",
+      "title": "Transactional ID resource type operations",
+      "uniqueItems": true,
+      "gioConfig": {
+        "banner": {
+          "title": "Transactional ID resource type operations",
+          "text": "<a href=\"https://docs.confluent.io/platform/current/security/authorization/acls/overview.html#transactional-id-resource-type-operations\" target=\"_blank\">More info</a>"
+        }
+      },
+      "items": {
+        "type": "string",
+        "title": "Operation",
+        "description": "Operation",
+        "enum": ["TRANSACTIONAL_ID_DESCRIBE", "TRANSACTIONAL_ID_WRITE"],
+        "gioConfig": {
+          "enumLabelMap": {
+            "TRANSACTIONAL_ID_DESCRIBE": "Describe",
+            "TRANSACTIONAL_ID_WRITE": "Write"
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "authorizations": {
+      "$ref": "#/definitions/authorizations"
+    }
+  },
+  "required": ["authorizations"],
+  "additionalProperties": false
+}

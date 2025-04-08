@@ -78,26 +78,35 @@ Warning: this some heavy doc
 #### 
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Tags<br>`tags`| array|  | `[defaulted]`|  |  | Some tags<br/>See "Tags" section|
-| Proxy Options<br>`proxy`| object|  | |  |  | <br/>See "Proxy Options" section|
-| URL<br>`url`| string| ✅| | ✅| ✅| |
-| Context variables<br>`variables`| array|  | |  |  | <br/>See "Context variables" section|
-| Fire & forget<br>`fireAndForget`| boolean|  | |  |  | Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.|
-| Exit on error<br>`exitOnError`| boolean| ✅| |  |  | Terminate the request if the error condition is true|
 | Request body<br>`body`| string|  | |  |  | |
-| Scope<br>`scope`| enum (string)|  | `REQUEST`|  |  | Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.<br>Values:`REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT` |
-| Error response body<br>`errorContent`| string|  | |  |  | The body response of the error if the condition is true (support EL)|
-| HTTP Method<br>`method`| enum (string)| ✅| `GET`|  |  | HTTP method to invoke the endpoint.<br>Values:`GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE` |
-| Request Headers<br>`headers`| array|  | |  |  | <br/>See "Request Headers" section|
+| Description<br>`description`| string<br>[0, 1000]|  | |  |  | |
 | Error condition<br>`errorCondition`| string|  | `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`|  |  | The condition which will be verified to end the request (support EL).|
+| Error response body<br>`errorContent`| string|  | |  |  | The body response of the error if the condition is true (support EL)|
 | Error status code<br>`errorStatusCode`| enum (string)|  | `500`|  |  | HTTP Status Code send to the consumer if the condition is true<br>Values:`100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507` |
+| Exit on error<br>`exitOnError`| boolean| ✅| |  |  | Terminate the request if the error condition is true|
+| Fire & forget<br>`fireAndForget`| boolean|  | |  |  | Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.|
+| Request Headers<br>`headers`| array|  | |  |  | <br/>See "Request Headers" section|
+| Lower bounds<br>`lowerBounds`| number<br>(1, 5]|  | |  |  | |
+| HTTP Method<br>`method`| enum (string)| ✅| `GET`|  |  | HTTP method to invoke the endpoint.<br>Values:`GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE` |
+| Middle bounds<br>`middleBounds`| number<br>[5, 10.333333333333]|  | |  |  | |
+| Open lower bound<br>`openLowerBounds`| number<br>[-Inf, 10]|  | |  |  | |
+| Open upper bound<br>`openUpperBounds`| number<br>[10, +Inf]|  | |  |  | |
+| Proxy Options<br>`proxy`| object|  | |  |  | <br/>See "Proxy Options" section|
+| Ratio<br>`ratio`| number<br>[0, 1]|  | |  |  | |
+| Scope<br>`scope`| enum (string)|  | `REQUEST`|  |  | Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.<br>Values:`REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT` |
 | SSL Options<br>`ssl`| object|  | |  |  | <br/>See "SSL Options" section|
+| Tags<br>`tags`| array<br>[1, 3], unique|  | `[defaulted]`|  |  | Some tags|
+| Upper bounds<br>`upperBounds`| number<br>[10.25, 15)|  | |  |  | |
+| URL<br>`url`| string<br>[1, 150]| ✅| | ✅| ✅| |
+| Context variables<br>`variables`| array|  | |  |  | <br/>See "Context variables" section|
 
 
-#### Tags (Array)
+#### Request Headers (Array)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| No properties | | | | | | | 
+| Name<br>`name`| string|  | |  |  | |
+| Value<br>`value`| string|  | | ✅| ✅| |
+
 
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
@@ -119,148 +128,18 @@ Warning: this some heavy doc
 #### Proxy Options: Use proxy for client connections `enabled = true` `useSystemProxy = false` 
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Proxy username<br>`username`| string|  | |  |  | Optional proxy username|
-| Proxy password<br>`password`| string|  | |  |  | Optional proxy password|
-| Proxy Type<br>`type`| enum (string)|  | `SOCKS5`|  |  | The type of the proxy<br>Values:`SOCKS4` `SOCKS5` |
 | Proxy host<br>`host`| string| ✅| |  |  | Proxy host to connect to|
+| Proxy password<br>`password`| string|  | |  |  | Optional proxy password|
 | Proxy port<br>`port`| integer| ✅| |  |  | Proxy port to connect to|
+| Proxy Type<br>`type`| enum (string)|  | `SOCKS5`|  |  | The type of the proxy<br>Values:`SOCKS4` `SOCKS5` |
+| Proxy username<br>`username`| string|  | |  |  | Optional proxy username|
 
 
 #### Context variables (Array)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Name<br>`name`| string|  | |  |  | |
 | Value<br>`value`| string|  | `{#jsonPath(#calloutResponse.content, '$.field')}`|  |  | |
-| Name<br>`name`| string|  | |  |  | |
-
-
-#### Request Headers (Array)
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Value<br>`value`| string|  | | ✅| ✅| |
-| Name<br>`name`| string|  | |  |  | |
-
-
-#### SSL Options (Object)
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Key store<br>`keyStore`| object|  | |  |  | <br/>See "Key store" section|
-| Verify Host<br>`hostnameVerifier`| boolean|  | `true`|  |  | Use to enable host name verification|
-| Trust all<br>`trustAll`| boolean|  | |  |  | Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.|
-| Truststore<br>`trustStore`| object|  | |  |  | <br/>See "Truststore" section|
-
-
-#### Key store (OneOf)
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Type<br>`type`| object| ✅| |  |  | <br/>See "Type" sectionType of Key store<br>Values:`""` `JKS` `JKS` `PKCS12` `PKCS12` `PEM` `PEM` |
-| No properties | | | | | | | 
-
-#### Key store: None `type = ""` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| No properties | | | | | | | 
-
-#### Key store: JKS with path `type = "JKS"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Path to key store<br>`path`| string| ✅| |  |  | Path to the key store file|
-| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
-| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
-| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
-
-
-#### Key store: JKS with content `type = "JKS"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
-| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
-| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
-| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
-
-
-#### Key store: PKCS#12 / PFX with path `type = "PKCS12"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
-| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
-| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
-| Path to key store<br>`path`| string| ✅| |  |  | Path to the key store file|
-
-
-#### Key store: PKCS#12 / PFX with content `type = "PKCS12"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Password to use to open the key store|
-| Alias for the key<br>`alias`| string|  | |  |  | Alias of the key to use in case the key store contains more than one key|
-| Key Password<br>`keyPassword`| string|  | |  |  | Password to use to access the key when protected by password|
-| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
-
-
-#### Key store: PEM with path `type = "PEM"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Path to cert file<br>`certPath`| string| ✅| |  |  | Path to cert file (.PEM)|
-| Path to private key file<br>`keyPath`| string| ✅| |  |  | Path to private key file (.PEM)|
-
-
-#### Key store: PEM with content `type = "PEM"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Certificate<br>`certContent`| string| ✅| |  |  | |
-| Private key<br>`keyContent`| string| ✅| |  |  | |
-
-
-#### Truststore (OneOf)
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Type<br>`type`| object| ✅| |  |  | <br/>See "Type" sectionType of Truststore<br>Values:`""` `JKS` `JKS` `PKCS12` `PKCS12` `PEM` `PEM` |
-| No properties | | | | | | | 
-
-#### Truststore: None `type = ""` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| No properties | | | | | | | 
-
-#### Truststore: JKS with path `type = "JKS"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
-
-
-#### Truststore: JKS with content `type = "JKS"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
-
-
-#### Truststore: PKCS#12 / PFX with path `type = "PKCS12"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
-
-
-#### Truststore: PKCS#12 / PFX with content `type = "PKCS12"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
-
-
-#### Truststore: PEM with path `type = "PEM"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Path to truststore<br>`path`| string| ✅| |  |  | Path to the truststore file|
-
-
-#### Truststore: PEM with content `type = "PEM"` 
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Password<br>`password`| string| ✅| |  |  | Truststore password|
-| Content<br>`content`| string| ✅| |  |  | Binary content as Base64|
 
 
 
@@ -297,10 +176,6 @@ Warning: this some heavy doc
                 "fireAndForget": false,
                 "method": "GET",
                 "scope": "REQUEST",
-                "ssl": {
-                  "hostnameVerifier": true,
-                  "trustAll": false
-                },
                 "tags": [
                   "defaulted"
                 ],
@@ -353,10 +228,6 @@ Warning: this some heavy doc
                   "useSystemProxy": true
                 },
                 "scope": "REQUEST",
-                "ssl": {
-                  "hostnameVerifier": true,
-                  "trustAll": false
-                },
                 "tags": [
                   "some",
                   "many"
@@ -410,9 +281,6 @@ spec:
                 useSystemProxy: false
                 username: admin
               scope: REQUEST
-              ssl:
-                hostnameVerifier: true
-                trustAll: false
               tags:
                 - c
                 - d
@@ -447,16 +315,6 @@ spec:
               fireAndForget: false
               method: GET
               scope: REQUEST
-              ssl:
-                hostnameVerifier: true
-                trustAll: false
-                trustStore:
-                  content: |-
-                    --- BEGIN CERTIFICATE ---
-              
-                    --- END CERTIFICATE ---
-                  password: '[redacted]'
-                  type: PEM
               tags:
                 - defaulted
               variables:

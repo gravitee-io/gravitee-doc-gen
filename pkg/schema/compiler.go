@@ -8,7 +8,6 @@ import (
 func CompileWithExtensions(schemaFile string) (*jsonschema.Schema, error) {
 
 	compiler := jsonschema.NewCompiler()
-	compiler.Draft = jsonschema.Draft7
 	compiler.ExtractAnnotations = true
 	compiler.RegisterExtension(extensions.SecretExtension, nil, &extensions.BoolValueCompiler{Ext: extensions.SecretExtension})
 	compiler.RegisterExtension(extensions.ElExtension, nil, &extensions.BoolValueCompiler{Ext: extensions.ElExtension})
