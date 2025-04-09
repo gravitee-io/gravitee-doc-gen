@@ -1,10 +1,13 @@
 package bootstrap
 
 import (
+	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 )
+
+const RootDirDataKey = "rootDir"
 
 type data struct {
 	Filename   string `yaml:"file"`
@@ -22,15 +25,20 @@ func Load(rootDir string) error {
 		return err
 	}
 
+	// add this here so any one can use it
+	registry.data["rootDir"] = rootDir
+	registry.exports["rootDir"] = "RootDir"
+
+	content, err := util.RenderTemplateFromFile(bootstrapFile, GetExported())
+
 	bootstrap := &fileContent{}
-	content, err := os.ReadFile(bootstrapFile)
 	err = yaml.Unmarshal(content, bootstrap)
 	if err != nil {
 		return err
 	}
 
 	for _, data := range bootstrap.Data {
-		_, err := Registry.load(data.Filename, data.ExportedAs)
+		_, err := load(data.Filename, data.ExportedAs)
 		if err != nil {
 			return err
 		}

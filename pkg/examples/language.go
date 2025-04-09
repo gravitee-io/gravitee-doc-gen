@@ -25,8 +25,8 @@ func From(language string) Language {
 	}
 }
 
-func (l Language) String() string {
-	switch l {
+func (l *Language) String() string {
+	switch *l {
 	case JSON:
 		return "json"
 	case YAML:
@@ -37,8 +37,8 @@ func (l Language) String() string {
 	panic("unknown language")
 }
 
-func (l Language) Serialize(object any) (string, error) {
-	switch l {
+func (l *Language) Serialize(object any) (string, error) {
+	switch *l {
 	case JSON:
 		buffer := bytes.Buffer{}
 		e := json.NewEncoder(&buffer)
@@ -63,4 +63,20 @@ func (l Language) Serialize(object any) (string, error) {
 		return buffer.String(), err
 	}
 	panic("unknown language")
+}
+func (l *Language) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+	*l = From(str)
+	return nil
+}
+func (l *Language) UnmarshalYAML(value *yaml.Node) error {
+	var str string
+	if err := value.Decode(&str); err != nil {
+		return err
+	}
+	*l = From(str)
+	return nil
 }

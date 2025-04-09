@@ -42,16 +42,18 @@ chunks:
     data:
       schema: src/main/resources/schemas/schema-form.json
   - template: "{{ .RootDir }}/examples.tmpl"
-    type: examples
+    exportedAs: GenExamples
+    type: gen-examples
     data:
       examples: docs/examples.yaml
       schema: src/main/resources/schemas/schema-form.json
-      # templates
-      # - language
-      #   id
-      #   file
-      v4ApiPolicy: "{{ .RootDir }}/policy/api-v4-snippet.json.tmpl"
-      v4ApiCRDPolicy: "{{ .RootDir }}/policy/crd-api-v4-snippet.yaml.tmpl"
+    required: true
+  - template: "{{ .RootDir }}/examples.tmpl"
+    exportedAs: RawExamples
+    type: raw-examples
+    data:
+      examples: docs/examples.yaml
+      schema: src/main/resources/schemas/schema-form.json
     required: true
   - template: "{{ .RootDir }}/gateway_config.tmpl"
     type: code

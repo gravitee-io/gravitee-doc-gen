@@ -25,7 +25,7 @@ func FileExists(filename string) bool {
 	return err == nil && !info.IsDir()
 }
 
-func GetDataFile(chunk config.Chunk) string {
+func GetDataTypeFile(chunk config.Chunk) string {
 	return GetFile(chunk, string(chunk.Type))
 }
 

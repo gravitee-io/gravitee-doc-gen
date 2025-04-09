@@ -22,7 +22,7 @@ func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 		}
 		exists, err := validate(chunk)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("cannot validate data of type '%s' for template %s [index: %d]: %s", chunk.Type, chunk.Template, i, err.Error()))
+			return nil, errors.New(fmt.Sprintf("cannot validate chuck of type '%s' for template %s [index: %d]: %s", chunk.Type, chunk.Template, i, err.Error()))
 		}
 
 		if !exists {
@@ -36,38 +36,49 @@ func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 			})
 			unique[chunk.Id()] = true
 		} else {
-
-			tpl, err := util.TemplateWithFunctions(chunk.Template)
+			ready, err := generateChunk(chunk, i, unique)
 			if err != nil {
 				return nil, err
 			}
-
-			handle, err := Registry.GetTypeHandler(chunk.Type)
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("cannot load type handler data %s [index: %d]: %s", chunk.Template, i, err.Error()))
-			}
-
-			if processed, err := handle(chunk); err == nil {
-				result = append(result, chunks.Ready{
-					Consumable: chunks.Consumable{
-						Id:     chunk.Id(),
-						Exists: exists,
-					},
-					CompiledTemplate: tpl,
-					Processed:        processed,
-				})
-				unique[chunk.Id()] = true
-			} else {
-				return nil, err
-			}
+			result = append(result, ready)
 		}
 
 	}
 
 	if len(unique) != len(result) {
-		return nil, errors.New("some chunks are using the same template filename, this is not allowed")
+		return nil, errors.New("some chunks are using the same template filename, for those set 'exportedAs' with a name to use in the template")
 	}
 
 	return result, nil
 
+}
+
+func generateChunk(chunk config.Chunk, index int, unique map[string]bool) (chunks.Ready, error) {
+	tpl, err := util.TemplateWithFunctions(chunk.Template)
+	if err != nil {
+		return chunks.Ready{}, err
+	}
+
+	handle, err := Registry.GetTypeHandler(chunk.Type)
+	if err != nil {
+		return chunks.Ready{}, errors.New(fmt.Sprintf("cannot load type handler data %s [index: %d]: %s", chunk.Template, index, err.Error()))
+	}
+
+	var done chunks.Processed
+	if processed, err := handle(chunk); err != nil {
+		return chunks.Ready{}, err
+	} else {
+		done = processed
+	}
+
+	ready := chunks.Ready{
+		Consumable: chunks.Consumable{
+			Id:     chunk.Id(),
+			Exists: true,
+		},
+		CompiledTemplate: tpl,
+		Processed:        done,
+	}
+	unique[chunk.Id()] = true
+	return ready, nil
 }

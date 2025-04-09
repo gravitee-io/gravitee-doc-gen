@@ -6,10 +6,6 @@ import (
 )
 
 const UnknownDataType = DataType("")
-const TableDataType = DataType("table")
-const CodeDataType = DataType("code")
-const Options = DataType("options")
-const Examples = DataType("examples")
 
 type Output struct {
 	Template        string `yaml:"template"`
@@ -23,13 +19,17 @@ type Config struct {
 }
 
 type Chunk struct {
-	Template string         `yaml:"template"`
-	Type     DataType       `yaml:"type"`
-	Data     map[string]any `yaml:"data"`
-	Required bool           `yaml:"required"`
+	ExportedAs string         `yaml:"exportedAs"`
+	Template   string         `yaml:"template"`
+	Type       DataType       `yaml:"type"`
+	Data       map[string]any `yaml:"data"`
+	Required   bool           `yaml:"required"`
 }
 
 func (c Chunk) Id() string {
+	if c.ExportedAs != "" {
+		return c.ExportedAs
+	}
 	return util.Title(util.BaseFileNoExt(c.Template))
 }
 
@@ -47,11 +47,4 @@ type RawData struct {
 type Schema struct {
 	Main   string `yaml:"main"`
 	Shared string `yaml:"shared"`
-}
-
-// TODO move this to base package
-type Plugin struct {
-	Id    string
-	Type  string
-	Title string
 }

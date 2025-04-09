@@ -16,9 +16,6 @@ type property struct {
 	schema *jsonschema.Schema
 }
 
-// TODO move to util and use anywhere !
-type Unstructured map[string]interface{}
-
 func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 
 	queue := make([]property, 0)
