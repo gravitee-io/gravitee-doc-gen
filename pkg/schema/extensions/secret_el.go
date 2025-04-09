@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+// TODO group that into gioConfig
+
 const (
 	SecretExtension = "x-secret"
 	ElExtension     = "x-el"

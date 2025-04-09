@@ -8,9 +8,11 @@ import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
+	"github.com/gravitee-io-labs/readme-gen/pkg/core"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"io"
 	"log"
+	"maps"
 	"os"
 )
 
@@ -30,14 +32,12 @@ func Yield(output config.Output, generated []chunks.Generated, write bool) error
 	}
 
 	// chunks to map
-	data := make(map[string]any)
+	data := core.Unstructured{}
 	for _, chunk := range generated {
 		data[chunk.Id] = chunk
 	}
 
-	for key, export := range bootstrap.Registry.GetExports() {
-		data[export] = bootstrap.Registry.GetData(key)
-	}
+	maps.Copy(data, bootstrap.GetExported())
 
 	// render template
 	if rendered, err := util.RenderTemplateFromFile(output.Template, data); err == nil {

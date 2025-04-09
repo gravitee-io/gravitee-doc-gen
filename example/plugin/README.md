@@ -109,8 +109,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 | Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
+| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -266,7 +266,7 @@ Warning: this some heavy doc
 
 
 ## Examples
-*V4 API With default*
+*V4 Proxy API With Defaults*
 ```json
 {
   "api": {
@@ -320,7 +320,7 @@ Warning: this some heavy doc
 }
 
 ```
-*V4 API CRD With default*
+*CRD for V4 Proxy API With Defaults*
 ```yaml
 apiVersion: "gravitee.io/v1alpha1"
 kind: "ApiV4Definition"
@@ -358,6 +358,7 @@ spec:
                   value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
 
 ```
+
 *V4 API with headers and system proxy*
 ```json
 {
@@ -493,25 +494,24 @@ spec:
             enabled: true
             policy: "test"
             configuration:
-              errorStatusCode: "500"
+              url: http://localhost:8080/api
+              errorStatusCode: '500'
               exitOnError: false
               method: GET
               ssl:
-                  hostnameVerifier: true
-                  trustAll: false
-                  trustStore:
-                      content: |-
-                          --- BEGIN CERTIFICATE ---
+                hostnameVerifier: true
+                trustAll: false
+                trustStore:
+                  content: |-
+                    --- BEGIN CERTIFICATE ---
               
-                          --- END CERTIFICATE ---
-                      password: '[redacted]'
-                      type: PEM
+                    --- END CERTIFICATE ---
+                  password: "[redacted]"
+                  type: PEM
               tags:
-                  - defaulted
-              url: http://localhost:8080/api
+                - defaulted
               variables:
-                  - value: '{#jsonPath(#calloutResponse.content, ''$.field'')}'
+                - value: "{#jsonPath(#calloutResponse.content, '$.field')}"
 
 ```
-
 

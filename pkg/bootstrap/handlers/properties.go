@@ -5,9 +5,7 @@ import (
 	"os"
 )
 
-// TODO handle more cases
-
-const Properties = ".properties"
+const PropertiesExt = ".properties"
 
 func PropertiesFileHandler(propFile string) (any, error) {
 	file, err := os.Open(propFile)

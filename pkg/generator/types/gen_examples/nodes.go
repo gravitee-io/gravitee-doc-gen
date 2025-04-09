@@ -1,4 +1,4 @@
-package examples
+package gen_examples
 
 import (
 	"encoding/json"

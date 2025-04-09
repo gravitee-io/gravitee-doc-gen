@@ -29,7 +29,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 	if err != nil || chunk.Required && !tmplExists {
 		return false, err
 	}
-	tableFile := common.GetDataFile(chunk)
+	tableFile := common.GetDataTypeFile(chunk)
 	tableFileExists := common.FileExists(tableFile)
 
 	if chunk.Required && !tableFileExists {
@@ -40,7 +40,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-	rows, err := os.ReadFile(common.GetDataFile(chunk))
+	rows, err := os.ReadFile(common.GetDataTypeFile(chunk))
 	if err != nil {
 		return chunks.Processed{}, err
 	}

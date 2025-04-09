@@ -1,0 +1,18 @@
+url: http://localhost:8080/api
+errorStatusCode: '500'
+exitOnError: false
+method: GET
+ssl:
+  hostnameVerifier: true
+  trustAll: false
+  trustStore:
+    content: |-
+      --- BEGIN CERTIFICATE ---
+
+      --- END CERTIFICATE ---
+    password: "[redacted]"
+    type: PEM
+tags:
+  - defaulted
+variables:
+  - value: "{#jsonPath(#calloutResponse.content, '$.field')}"

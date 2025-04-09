@@ -22,12 +22,12 @@ type Code struct {
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-	codeFile := common.GetDataFile(chunk)
+	codeFile := common.GetDataTypeFile(chunk)
 	content, err := os.ReadFile(codeFile)
 	if err != nil {
 		return chunks.Processed{}, err
 	}
-	
+
 	code := Code{}
 	err = yaml.Unmarshal(content, &code)
 	if err != nil {
@@ -60,7 +60,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 	if err != nil || chunk.Required && !tmplExists {
 		return false, err
 	}
-	codeFile := common.GetDataFile(chunk)
+	codeFile := common.GetDataTypeFile(chunk)
 	codeFileExists := common.FileExists(codeFile)
 
 	if chunk.Required && !codeFileExists {

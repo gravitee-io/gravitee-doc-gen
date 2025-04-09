@@ -1,25 +1,27 @@
-package examples
+package gen_examples
 
 import (
+	"github.com/gravitee-io-labs/readme-gen/pkg/examples"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"slices"
 )
 
 type DocumentBuilder struct {
-	language               Language
+	language               examples.Language
 	root                   *Object
-	example                ExampleSpec
+	example                examples.GenExampleSpec
 	stack                  []Stackable
 	skipAttributes         bool
 	oneOfIndex             int
 	lastDiscriminatorValue map[string]interface{}
 }
 
-func NewDocumentBuilder(example ExampleSpec) *DocumentBuilder {
+func NewDocumentBuilder(example examples.GenExampleSpec) *DocumentBuilder {
 	root := NewObject("")
+	ref, _ := example.TemplateFromRef()
 	return &DocumentBuilder{
-		language:               From(example.Language),
+		language:               ref.Language,
 		stack:                  []Stackable{root},
 		root:                   root,
 		example:                example,
@@ -107,7 +109,7 @@ func (b *DocumentBuilder) OnOneOfEnd() {
 func (b *DocumentBuilder) Marshall() (string, error) {
 	return b.language.Serialize(b.root.Fields)
 }
-func (b *DocumentBuilder) MarshallWithLanguage(language Language) (string, error) {
+func (b *DocumentBuilder) MarshallWithLanguage(language examples.Language) (string, error) {
 	return language.Serialize(b.root.Fields)
 }
 
@@ -178,18 +180,9 @@ func (b *DocumentBuilder) getAncestors() []string {
 func (b *DocumentBuilder) getExampleValue(att *jsonschema.Schema, ctx *schema.VisitContext) any {
 	var value any
 	def := schema.GetConstantOrDefault(att, ctx.AutoDefaultBooleans)
-	if b.example.UseSchemaDefaults {
-		value = def
-		if value == nil && len(att.Examples) > 0 {
-			value = att.Examples[0]
-		}
-	} else {
-		if len(att.Examples) > 0 {
-			value = att.Examples[0]
-		}
-		if value == nil {
-			value = def
-		}
+	value = def
+	if value == nil && len(att.Examples) > 0 {
+		value = att.Examples[0]
 	}
 
 	return value

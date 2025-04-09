@@ -1,0 +1,27 @@
+templates:
+# implies this file exists: {{.RootDir}}/{{.Plugin.Type}}/v2-api.json.tmpl
+#                        or {{.RootDir}}/{{.Plugin.Type}}/{{.Plugin.Id}}/v2-api.json.tmpl
+  - id: v2-api
+    title: V2 API With Defaults
+    language: json
+  - id: v4-api-proxy
+    title: V4 Proxy API With Defaults
+    language: json
+  - id: v4-api-message
+    title: V4 Message API With Defaults
+    language: json
+  - id: v4-api-kafka-native
+    title: V4 Kafka Native API With Defaults
+    language: json
+  - id: v2-api-crd
+    title: CRD for V2 API With Defaults
+    language: yaml
+  - id: v4-api-crd-proxy
+    title: CRD for V4 Proxy API With Defaults
+    language: yaml
+  - id: v4-api-crd-message
+    title: CRD for V4 Message API With Defaults
+    language: yaml
+  - id: v4-api-crd-kafka-native
+    title: CRD for V4 Kafka Native API With Defaults
+    language: yaml
