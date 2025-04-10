@@ -1,14 +1,47 @@
 package gen_examples
 
 import (
+	"errors"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/examples"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
+	"strings"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
-	return examples.TypeValidator(chunk, &examples.GenExampleProvider{})
+	provider := &examples.GenExampleProvider{}
+	ok, err := examples.TypeValidator(chunk, provider)
+	if err != nil {
+		return false, err
+	}
+	if ok {
+		return validateExamples(chunk, provider)
+	}
+	return ok, nil
+}
+
+func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider) (bool, error) {
+
+	err := examples.LoadConfig(chunk, provider)
+	if err != nil {
+		return true, err
+	}
+
+	for _, spec := range provider.ExampleSpecs() {
+		s, _, _ := examples.CompileSchema(spec, chunk)
+		ev := &exampleValidation{
+			errors: make([]string, 0),
+			path:   make([]string, 0),
+		}
+		schema.Visit(s, ev, &schema.VisitContext{AutoDefaultBooleans: true})
+		if len(ev.errors) > 0 {
+			return false, errors.New(strings.Join(ev.errors, "\n"))
+		}
+	}
+
+	return true, nil
+
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
