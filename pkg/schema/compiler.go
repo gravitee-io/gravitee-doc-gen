@@ -13,7 +13,6 @@ func CompileWithExtensions(schemaFile string) (*jsonschema.Schema, error) {
 func CompilerWithExtensions() *jsonschema.Compiler {
 	compiler := jsonschema.NewCompiler()
 	compiler.ExtractAnnotations = true
-	compiler.RegisterExtension(extensions.SecretExtension, nil, &extensions.BoolValueCompiler{Ext: extensions.SecretExtension})
-	compiler.RegisterExtension(extensions.ElExtension, nil, &extensions.BoolValueCompiler{Ext: extensions.ElExtension})
+	compiler.RegisterExtension(extensions.GioConfigExtension, nil, &extensions.GioConfigCompiler{})
 	return compiler
 }

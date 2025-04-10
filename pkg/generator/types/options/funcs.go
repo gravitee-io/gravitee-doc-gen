@@ -64,8 +64,8 @@ func (options *Options) OnAttribute(property string, attribute *jsonschema.Schem
 		Required:    schema.IsRequired(property, parent),
 		Default:     schema.GetConstantOrDefault(attribute, visitCtx.AutoDefaultBooleans),
 		IsConstant:  isConstant(attribute),
-		EL:          isEL(attribute.Extensions),
-		Secret:      isSecret(attribute.Extensions),
+		EL:          isEL(attribute),
+		Secret:      isSecret(attribute),
 		Description: attribute.Description,
 		Enums:       attribute.Enum,
 	}
@@ -214,17 +214,17 @@ func isConstant(att *jsonschema.Schema) bool {
 	return att.Constant != nil
 }
 
-func isEL(extensions map[string]jsonschema.ExtSchema) bool {
-	return isTrue(extensions, ext.SecretExtension)
+func isEL(att *jsonschema.Schema) bool {
+	return getGioConfig(att).El
 }
 
-func isSecret(extensions map[string]jsonschema.ExtSchema) bool {
-	return isTrue(extensions, ext.SecretExtension)
+func isSecret(att *jsonschema.Schema) bool {
+	return getGioConfig(att).Secret
 }
 
-func isTrue(extensions map[string]jsonschema.ExtSchema, name string) bool {
-	if s, ok := extensions[name]; ok {
-		return bool(s.(ext.BoolValueSchema))
+func getGioConfig(att *jsonschema.Schema) *ext.GioConfigSchema {
+	if gioConfig, ok := att.Extensions[ext.GioConfigExtension]; ok {
+		return gioConfig.(*ext.GioConfigSchema)
 	}
-	return false
+	return &ext.GioConfigSchema{}
 }

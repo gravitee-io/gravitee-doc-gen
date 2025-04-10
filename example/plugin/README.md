@@ -78,7 +78,7 @@ Warning: this some heavy doc
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
 | Request body<br>`body`| string|  | |  |  | |
 | Description<br>`description`| string<br>[0, 1000]|  | |  |  | |
-| Error condition<br>`errorCondition`| string|  | `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`|  |  | The condition which will be verified to end the request (support EL).|
+| Error condition<br>`errorCondition`| string|  | `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`| ✅|  | The condition which will be verified to end the request (support EL).|
 | Error response body<br>`errorContent`| string|  | |  |  | The body response of the error if the condition is true (support EL)|
 | Error status code<br>`errorStatusCode`| enum (string)|  | `500`|  |  | HTTP Status Code send to the consumer if the condition is true<br>Values:`100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507` |
 | Exit on error<br>`exitOnError`| boolean| ✅| |  |  | Terminate the request if the error condition is true|
