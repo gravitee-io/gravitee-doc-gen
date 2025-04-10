@@ -22,7 +22,7 @@ func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 		}
 		exists, err := validate(chunk)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("cannot validate chuck of type '%s' for template %s [index: %d]: %s", chunk.Type, chunk.Template, i, err.Error()))
+			return nil, errors.New(fmt.Sprintf("cannot validate chunk of type '%s' for template %s [index: %d]:\n %s", chunk.Type, chunk.Template, i, err.Error()))
 		}
 
 		if !exists {
