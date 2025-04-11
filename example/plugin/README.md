@@ -552,7 +552,7 @@ errorCondition: "{#calloutResponse.status >= 400 and #calloutResponse.status <= 
 errorContent: 
 # Error status code (enum (string))
 # HTTP Status Code send to the consumer if the condition is true
-errorStatusCode: 500 # Possible values: "400" "402" "429" "507" "200" "412" "423" "502" "401" "202" "204" "304" "408" "415" "416" "500" "100" "504" "505" "501" "205" "207" "102" "410" "414" "409" "201" "203" "206" "301" "305" "307" "503" "101" "302" "303" "403" "406" "407" "413" "417" "300" "405" "411" "422" "424" "404" 
+errorStatusCode: 500 # Possible values: "401" "411" "414" "424" "101" "200" "205" "307" "404" "412" "413" "417" "100" "207" "301" "302" "305" "406" "415" "500" "206" "300" "202" "203" "303" "405" "429" "507" "504" "102" "201" "402" "407" "408" "416" "422" "505" "304" "400" "403" "423" "204" "409" "410" "501" "502" "503" 
 # Exit on error (boolean)
 # Terminate the request if the error condition is true
 exitOnError: 
@@ -567,16 +567,13 @@ headers:
     value: 
 # HTTP Method (enum (string))
 # HTTP method to invoke the endpoint.
-method: GET # Possible values: "POST" "OPTIONS" "GET" "DELETE" "PATCH" "HEAD" "CONNECT" "TRACE" "PUT" 
+method: GET # Possible values: "PUT" "DELETE" "PATCH" "GET" "POST" "HEAD" "CONNECT" "OPTIONS" "TRACE" 
 # Proxy Options
 proxy: 
   # 
   enabled:  # Possible values: false true 
   # 
   useSystemProxy:  # Possible values: false true 
-  # Proxy password
-  # When enabled = true and useSystemProxy = false
-  password: [redacted]
   # Proxy port
   # When enabled = true and useSystemProxy = false
   port: 3524
@@ -589,6 +586,9 @@ proxy:
   # Proxy host
   # When enabled = true and useSystemProxy = false
   host: proxy.acme.com
+  # Proxy password
+  # When enabled = true and useSystemProxy = false
+  password: [redacted]
 # Scope (enum (string))
 # Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
 scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
@@ -600,34 +600,34 @@ ssl:
   # Key store
   keyStore: 
     # 
-    type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+    type:  # Possible values: "JKS" "PKCS12" "PEM" "" 
     # Alias for the key
     # When type = 'JKS' or 'PKCS12'
     alias: 
-    # Password
+    # Path to key store
     # When type = 'JKS' or 'PKCS12'
-    password: 
+    path: 
     # Content
     # When type = 'JKS' or 'PKCS12'
     content: 
+    # Path to cert file
+    # When type = 'PEM'
+    certPath: 
+    # Certificate
+    # When type = 'PEM'
+    certContent: 
     # Private key
     # When type = 'PEM'
     keyContent: 
     # Key Password
-    # When type = 'JKS' or 'PKCS12'
+    # When type = 'PKCS12' or 'JKS'
     keyPassword: 
-    # Path to key store
+    # Password
     # When type = 'JKS' or 'PKCS12'
-    path: 
-    # Path to cert file
-    # When type = 'PEM'
-    certPath: 
+    password: 
     # Path to private key file
     # When type = 'PEM'
     keyPath: 
-    # Certificate
-    # When type = 'PEM'
-    certContent: 
   # Trust all (boolean)
   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
   trustAll: 
