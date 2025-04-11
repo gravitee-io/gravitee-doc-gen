@@ -92,9 +92,6 @@ They are easy to implement, two functions: 1 to validate the `data` part of the 
 - `api-type`
     - Let the user define if what API works with
     - Structure to be defined with archi team
-- `title-level-shift`
-    - Include a md file and move their titles level
-    - useful to include changelogs at the right title level
 - `schema-to-env`
     - turns a json schema into documented env variable that can be rendered in a template 
 
@@ -118,3 +115,5 @@ As part of this tool some go templates have been added to ease formatting
     - joins a set (`map[any]bool`) with separator and surround the string values with user input
 - `title` 
     - Upper case the first letter
+- `mvmdheader`
+    -  Include a md file and move their titles level

@@ -193,15 +193,19 @@ func getValue(attribute *jsonschema.Schema, visitCtx *schema.VisitContext) any {
 
 func getEnums(attribute *jsonschema.Schema, property string, oneOf schema.OneOf) []any {
 	if oneOf.IsZero() {
-		return fromSlice(attribute.Enum).toSlice()
+		return attribute.Enum
 	}
 	enums := make([]any, 0)
 	for _, spec := range oneOf.Specs {
 		if spec.Property == property {
-			enums = append(enums, spec.Values...)
+			for _, v := range spec.Values {
+				if !slices.Contains(enums, v) {
+					enums = append(enums, v)
+				}
+			}
 		}
 	}
-	return fromSlice(enums).toSlice()
+	return enums
 }
 
 func encode(value any, isString bool) any {
@@ -231,7 +235,7 @@ func (s *schemaVisitor) addOneOfProperty(property string, attribute *jsonschema.
 				When: make(map[string]set),
 			},
 		}
-		oneOfProp.Value = getValue(attribute, visitCtx)
+		oneOfProp.Value = encode(getValue(attribute, visitCtx), schema.GetType(attribute) == "string")
 		oneOfProp.Title = attribute.Title
 		oneOfProp.Enums = fromSlice(attribute.Enum).toSlice()
 		s.updateWhen(visitCtx, parent, &oneOfProp)

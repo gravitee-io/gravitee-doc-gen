@@ -26,14 +26,16 @@ func TemplateWithFunctions(file string) (*template.Template, error) {
 	}
 
 	return template.New(file).Funcs(template.FuncMap{
-		"default": defaultTo,
-		"ternary": ternary,
-		"indent":  indent,
-		"pad":     pad,
-		"quote":   quote,
-		"icz":     increase,
-		"joinset": joinset,
-		"title":   Title}).Parse(string(content))
+		"default":    defaultTo,
+		"ternary":    ternary,
+		"indent":     indent,
+		"pad":        pad,
+		"quote":      quote,
+		"icz":        increase,
+		"joinset":    joinset,
+		"mvmdheader": moveMarkdownHeader,
+		"title":      Title},
+	).Parse(string(content))
 }
 
 func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
@@ -61,8 +63,9 @@ func ternary(isTrue bool, ifTrue any, ifFalse any) any {
 	}
 }
 
-func indent(amount uint, value string) string {
-	scanner := bufio.NewScanner(strings.NewReader(value))
+func indent(amount int, value any) string {
+	str := fmt.Sprintf("%v", value)
+	scanner := bufio.NewScanner(strings.NewReader(str))
 	scanner.Split(bufio.ScanLines)
 
 	buffer := bytes.Buffer{}
@@ -73,7 +76,7 @@ func indent(amount uint, value string) string {
 	buffer.WriteString(line)
 	buffer.WriteString("\n")
 
-	padding := strings.Repeat(" ", int(amount))
+	padding := strings.Repeat(" ", amount)
 	for scanner.Scan() {
 		line := scanner.Text()
 		buffer.WriteString(fmt.Sprintf("%s%s\n", padding, line))
@@ -108,4 +111,28 @@ func joinset(set map[any]bool, separator string, surrounding string) string {
 		}
 	}
 	return strings.Join(items, separator)
+}
+
+func moveMarkdownHeader(level int, header string) string {
+	scanner := bufio.NewScanner(strings.NewReader(header))
+	scanner.Split(bufio.ScanLines)
+	buffer := bytes.Buffer{}
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) > 0 {
+			var found bool
+			var c = -1
+			for line[0] == '#' {
+				found = true
+				line = line[1:]
+				c++
+			}
+			newLevel := strings.Repeat("#", level+c)
+			if found {
+				buffer.WriteString(newLevel + line + "\n")
+			}
+		}
+		buffer.WriteString(line + "\n")
+	}
+	return buffer.String()
 }
