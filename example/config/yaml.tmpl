@@ -3,5 +3,5 @@
 {{ pad .Pad }}# {{ .Description }}{{ else }}{{- /* hack to remove the line when description */ -}}{{ end }}{{ if .When }}
 {{ pad .Pad }}# When {{ $when := 1 }}{{ $size := len .When }}{{ range $p,$vals := .When -}}
 {{ $p }} = {{ joinset $vals " or " "'"}}{{ if gt $size $when }} and {{ end }}{{ $when = icz $when }}{{ end }}{{- /* hack to remove the line when description */ -}}{{ end }}
-{{ pad .Pad }}{{ if .ArrayStart }}- {{ end }}{{ if .Property }}{{ .Property }}: {{ end }}{{ if .Value }}{{ .Value }}{{ end }}{{ if .Enums }} # Possible values: {{ range $_,$e := .Enums -}}{{ quote $e }} {{ end -}}{{ end }}
+{{ pad .Pad }}{{ if .ArrayStart }}- {{ end }}{{ if .Property }}{{ .Property }}: {{ end }}{{ if .Value }}{{ indent .Pad .Value }}{{ end }}{{ if .Enums }} # Possible values: {{ range $_,$e := .Enums -}}{{ quote $e }} {{ end -}}{{ end }}
 {{ end }}

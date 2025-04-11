@@ -63,4 +63,7 @@ chunks:
     type: schema-to-yaml
     data:
       schema: src/main/resources/schemas/schema-form.json
-
+  - template: CHANGELOG.md
+    exportedAs: ChangeLog
+    required: true
+    
