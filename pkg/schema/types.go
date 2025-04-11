@@ -7,7 +7,7 @@ import (
 type Visitor interface {
 	OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
 	OnObjectStart(property string, object *jsonschema.Schema, visitCtx *VisitContext)
-	OnObjectEnd()
+	OnObjectEnd(visitCtx *VisitContext)
 	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool, ctx *VisitContext)
 	OnArrayEnd(itemTypeIsObject bool)
 	OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
@@ -18,6 +18,10 @@ type OneOf struct {
 	Parent  string
 	Present bool
 	Specs   []DiscriminatorSpec
+}
+
+func (o OneOf) IsZero() bool {
+	return o.Parent == "" && o.Present == false && len(o.Specs) == 0
 }
 
 type DiscriminatorSpec struct {

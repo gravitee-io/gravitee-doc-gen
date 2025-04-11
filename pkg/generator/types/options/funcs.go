@@ -119,7 +119,7 @@ func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschem
 	options.Add(Section{Title: oneOf.Title, OneOf: visitCtx.CurrentOneOf, DiscriminatedBy: discriminatedBy})
 }
 
-func (options *Options) OnObjectEnd() {
+func (options *Options) OnObjectEnd(*schema.VisitContext) {
 	//no op
 }
 

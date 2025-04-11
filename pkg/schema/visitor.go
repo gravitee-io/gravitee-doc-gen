@@ -69,8 +69,8 @@ func visitNode(prop property, visitor Visitor, visitCtx *VisitContext) {
 		}
 		visitor.OnObjectStart(prop.name, prop.schema, visitCtx)
 		Visit(prop.schema, visitor, visitCtx)
-		visitor.OnObjectEnd()
 		visitCtx.CurrentOneOf = OneOf{}
+		visitor.OnObjectEnd(visitCtx)
 	}
 	if isArray(prop.schema) {
 		var items *jsonschema.Schema

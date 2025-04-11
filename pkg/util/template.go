@@ -29,8 +29,10 @@ func TemplateWithFunctions(file string) (*template.Template, error) {
 		"default": defaultTo,
 		"ternary": ternary,
 		"indent":  indent,
+		"pad":     pad,
 		"quote":   quote,
 		"icz":     increase,
+		"joinset": joinset,
 		"title":   Title}).Parse(string(content))
 }
 
@@ -90,4 +92,20 @@ func quote(value any) any {
 
 func increase(value int) int {
 	return value + 1
+}
+
+func pad(amount int) string {
+	return strings.Repeat(" ", amount)
+}
+
+func joinset(set map[any]bool, separator string, surrounding string) string {
+	items := make([]string, 0)
+	for value, _ := range set {
+		if s, ok := value.(string); ok {
+			items = append(items, fmt.Sprintf("%s%s%s", surrounding, s, surrounding))
+		} else {
+			items = append(items, fmt.Sprintf("%v", value))
+		}
+	}
+	return strings.Join(items, separator)
 }

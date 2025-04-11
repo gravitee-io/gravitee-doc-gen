@@ -59,4 +59,8 @@ chunks:
     type: code
     data:
       code: docs/gateway-config.yaml
+  - template: "{{ .RootDir }}/yaml.tmpl"
+    type: schema-to-yaml
+    data:
+      schema: src/main/resources/schemas/schema-form.json
 
