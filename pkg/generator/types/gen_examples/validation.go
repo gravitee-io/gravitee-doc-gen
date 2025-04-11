@@ -38,7 +38,7 @@ func (e *exampleValidation) OnAttribute(property string, attribute *jsonschema.S
 func (e *exampleValidation) OnObjectStart(property string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
 	e.path = append(e.path, property)
 }
-func (e *exampleValidation) OnObjectEnd() {
+func (e *exampleValidation) OnObjectEnd(*schema.VisitContext) {
 	e.path = e.path[:len(e.path)-1]
 }
 func (e *exampleValidation) OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool, ctx *schema.VisitContext) {

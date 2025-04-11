@@ -521,3 +521,146 @@ spec:
 
 ```
 
+
+As Yaml with comments
+```yaml
+# Request body (string)
+body: 
+# Constraint test bed
+# For the sake of testing
+constraints: 
+  # Description (string)
+  description: 
+  # Lower bounds (number)
+  lowerBounds: 
+  # Middle bounds (number)
+  middleBounds: 
+  # Open lower bound (number)
+  openLowerBounds: 
+  # Open upper bound (number)
+  openUpperBounds: 
+  # Ratio (number)
+  ratio: 
+  # Upper bounds (number)
+  upperBounds: 
+# Error condition (string)
+# The condition which will be verified to end the request (support EL).
+errorCondition: "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}"
+
+# Error response body (string)
+# The body response of the error if the condition is true (support EL)
+errorContent: 
+# Error status code (enum (string))
+# HTTP Status Code send to the consumer if the condition is true
+errorStatusCode: 500 # Possible values: "400" "402" "429" "507" "200" "412" "423" "502" "401" "202" "204" "304" "408" "415" "416" "500" "100" "504" "505" "501" "205" "207" "102" "410" "414" "409" "201" "203" "206" "301" "305" "307" "503" "101" "302" "303" "403" "406" "407" "413" "417" "300" "405" "411" "422" "424" "404" 
+# Exit on error (boolean)
+# Terminate the request if the error condition is true
+exitOnError: 
+# Fire & forget (boolean)
+# Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.
+fireAndForget: 
+# Request Headers
+headers: 
+  # Name (string)
+  - name: 
+    # Value (string)
+    value: 
+# HTTP Method (enum (string))
+# HTTP method to invoke the endpoint.
+method: GET # Possible values: "POST" "OPTIONS" "GET" "DELETE" "PATCH" "HEAD" "CONNECT" "TRACE" "PUT" 
+# Proxy Options
+proxy: 
+  # 
+  enabled:  # Possible values: false true 
+  # 
+  useSystemProxy:  # Possible values: false true 
+  # Proxy password
+  # When enabled = true and useSystemProxy = false
+  password: [redacted]
+  # Proxy port
+  # When enabled = true and useSystemProxy = false
+  port: 3524
+  # Proxy Type
+  # When enabled = true and useSystemProxy = false
+  type: SOCKS5 # Possible values: "SOCKS4" "SOCKS5" 
+  # Proxy username
+  # When enabled = true and useSystemProxy = false
+  username: admin
+  # Proxy host
+  # When enabled = true and useSystemProxy = false
+  host: proxy.acme.com
+# Scope (enum (string))
+# Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
+scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
+# SSL Options
+ssl: 
+  # Verify Host (boolean)
+  # Use to enable host name verification
+  hostnameVerifier: true
+  # Key store
+  keyStore: 
+    # 
+    type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+    # Alias for the key
+    # When type = 'JKS' or 'PKCS12'
+    alias: 
+    # Password
+    # When type = 'JKS' or 'PKCS12'
+    password: 
+    # Content
+    # When type = 'JKS' or 'PKCS12'
+    content: 
+    # Private key
+    # When type = 'PEM'
+    keyContent: 
+    # Key Password
+    # When type = 'JKS' or 'PKCS12'
+    keyPassword: 
+    # Path to key store
+    # When type = 'JKS' or 'PKCS12'
+    path: 
+    # Path to cert file
+    # When type = 'PEM'
+    certPath: 
+    # Path to private key file
+    # When type = 'PEM'
+    keyPath: 
+    # Certificate
+    # When type = 'PEM'
+    certContent: 
+  # Trust all (boolean)
+  # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
+  trustAll: 
+  # Truststore
+  trustStore: 
+    # 
+    type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+    # Path to truststore
+    # When type = 'PEM' or 'JKS' or 'PKCS12'
+    path: 
+    # Content
+    # When type = 'PEM' or 'JKS' or 'PKCS12'
+    content: --- BEGIN CERTIFICATE ---
+
+--- END CERTIFICATE ---
+    # Password
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    password: [redacted]
+# Tags
+# Some tags
+tags: 
+  # 
+  - defaulted
+# URL (string)
+url: http://localhost:8080/api
+
+# Context variables
+variables: 
+  # Name (string)
+  - name: field
+
+    # Value (string)
+    value: "{#jsonPath(#calloutResponse.content, '$.field')}"
+
+
+```

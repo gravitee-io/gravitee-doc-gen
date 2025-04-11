@@ -48,8 +48,8 @@ func (b *DocumentBuilder) OnArrayStart(property string, array *jsonschema.Schema
 	} else {
 		value := b.getExampleValue(array, ctx)
 		if items, ok := value.([]interface{}); ok {
-			for _, i := range items {
-				b.Add("", i)
+			for _, v := range items {
+				b.Add("", v)
 			}
 		} else {
 			b.Add("", value)
@@ -57,7 +57,7 @@ func (b *DocumentBuilder) OnArrayStart(property string, array *jsonschema.Schema
 	}
 }
 
-func (b *DocumentBuilder) OnObjectEnd() {
+func (b *DocumentBuilder) OnObjectEnd(*schema.VisitContext) {
 	b.Pop()
 }
 
