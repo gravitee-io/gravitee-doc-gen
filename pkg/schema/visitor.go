@@ -7,16 +7,50 @@ import (
 )
 
 type VisitContext struct {
-	CurrentOneOf        OneOf
-	QueueNodes          bool
-	AutoDefaultBooleans bool
+	currentOneOf        OneOf
+	queueNodes          bool
+	autoDefaultBooleans bool
+	nodeStack           *NodeStack
 }
+
+func (v *VisitContext) CurrentOneOf() OneOf {
+	return v.currentOneOf
+}
+
+func (v *VisitContext) IsAutoDefaultBooleans() bool {
+	return v.autoDefaultBooleans
+}
+
+func (v *VisitContext) NodeStack() *NodeStack {
+	return v.nodeStack
+}
+
+func (v *VisitContext) IsQueueNodes() bool {
+	return v.queueNodes
+}
+
+func (v *VisitContext) SetCurrentOneOf(oneOf OneOf) {
+	v.currentOneOf = oneOf
+}
+
+func NewVisitContext(queueNodes bool, autoDefaultBooleans bool) *VisitContext {
+	return NewVisitContextWithRootNode(NewObject(""), queueNodes, autoDefaultBooleans)
+}
+func NewVisitContextWithRootNode(root *Object, queueNodes bool, autoDefaultBooleans bool) *VisitContext {
+	return &VisitContext{
+		currentOneOf:        OneOf{},
+		queueNodes:          queueNodes,
+		autoDefaultBooleans: autoDefaultBooleans,
+		nodeStack:           NewNodeStack(root),
+	}
+}
+
 type property struct {
 	name   string
 	schema *jsonschema.Schema
 }
 
-func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
+func Visit(ctx *VisitContext, visitor Visitor, parent *jsonschema.Schema) {
 
 	queue := make([]property, 0)
 
@@ -25,26 +59,26 @@ func Visit(parent *jsonschema.Schema, visitor Visitor, visitCtx *VisitContext) {
 	for _, property := range ordered {
 		name, schema := property.name, property.schema
 		if IsAttribute(schema) {
-			visitor.OnAttribute(name, schema, parent, visitCtx)
+			visitor.OnAttribute(ctx, name, schema, parent)
 		}
 
-		if visitCtx.QueueNodes && (isObject(schema) || isArray(schema)) {
-			visitor.OnAttribute(name, schema, parent, visitCtx)
+		if ctx.IsQueueNodes() && (isObject(schema) || isArray(schema)) {
+			visitor.OnAttribute(ctx, name, schema, parent)
 			queue = append(queue, property)
 		} else {
-			visitNode(property, visitor, visitCtx)
+			visitNode(ctx, property, visitor)
 		}
 	}
 
 	for _, pair := range queue {
-		visitNode(pair, visitor, visitCtx)
+		visitNode(ctx, pair, visitor)
 	}
 
 	for _, schema := range parent.OneOf {
 		schema = orRef(schema)
-		visitor.OnOneOfStart(schema, parent, visitCtx)
-		Visit(schema, visitor, visitCtx)
-		visitor.OnOneOfEnd()
+		visitor.OnOneOfStart(ctx, schema, parent)
+		Visit(ctx, visitor, schema)
+		visitor.OnOneOfEnd(ctx)
 	}
 
 }
@@ -62,15 +96,15 @@ func orderedAndResolved(parent *jsonschema.Schema) []property {
 
 }
 
-func visitNode(prop property, visitor Visitor, visitCtx *VisitContext) {
+func visitNode(ctx *VisitContext, prop property, visitor Visitor) {
 	if isObject(prop.schema) {
 		if ContainsOneOfs(prop.schema) {
-			visitCtx.CurrentOneOf = findDiscriminators(prop.schema)
+			ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
 		}
-		visitor.OnObjectStart(prop.name, prop.schema, visitCtx)
-		Visit(prop.schema, visitor, visitCtx)
-		visitCtx.CurrentOneOf = OneOf{}
-		visitor.OnObjectEnd(visitCtx)
+		visitor.OnObjectStart(ctx, prop.name, prop.schema)
+		Visit(ctx, visitor, prop.schema)
+		ctx.SetCurrentOneOf(OneOf{})
+		visitor.OnObjectEnd(ctx)
 	}
 	if isArray(prop.schema) {
 		var items *jsonschema.Schema
@@ -80,9 +114,9 @@ func visitNode(prop property, visitor Visitor, visitCtx *VisitContext) {
 			// no support of multiple types
 			itemTypeIsObject = !IsAttribute(items)
 		}
-		visitor.OnArrayStart(prop.name, prop.schema, itemTypeIsObject, visitCtx)
-		Visit(prop.schema.Items.(*jsonschema.Schema), visitor, visitCtx)
-		visitor.OnArrayEnd(itemTypeIsObject)
+		visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
+		Visit(ctx, visitor, prop.schema.Items.(*jsonschema.Schema))
+		visitor.OnArrayEnd(ctx, itemTypeIsObject)
 	}
 }
 

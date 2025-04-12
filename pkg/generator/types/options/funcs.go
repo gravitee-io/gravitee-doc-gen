@@ -48,13 +48,13 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	ctx := schema.VisitContext{QueueNodes: true, AutoDefaultBooleans: true}
-	schema.Visit(root, &options, &ctx)
+	ctx := schema.NewVisitContext(true, true)
+	schema.Visit(ctx, &options, root)
 
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
+func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -62,7 +62,7 @@ func (options *Options) OnAttribute(property string, attribute *jsonschema.Schem
 		TypeItem:    schema.GetTypeItem(attribute),
 		Constraint:  getConstraint(attribute),
 		Required:    schema.IsRequired(property, parent),
-		Default:     schema.GetConstantOrDefault(attribute, visitCtx.AutoDefaultBooleans),
+		Default:     schema.GetConstantOrDefault(attribute, ctx),
 		IsConstant:  isConstant(attribute),
 		EL:          isEL(attribute),
 		Secret:      isSecret(attribute),
@@ -72,10 +72,10 @@ func (options *Options) OnAttribute(property string, attribute *jsonschema.Schem
 	options.AddAttribute(att)
 }
 
-func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visitCtx *schema.VisitContext) {
+func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string, object *jsonschema.Schema) {
 
 	objectType := "object"
-	if visitCtx.CurrentOneOf.Present {
+	if ctx.CurrentOneOf().Present {
 		objectType = "oneOf"
 	}
 	options.Add(Section{
@@ -83,8 +83,8 @@ func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visit
 		Type:  objectType,
 	})
 
-	if visitCtx.CurrentOneOf.Present {
-		specs := visitCtx.CurrentOneOf.Specs
+	if ctx.CurrentOneOf().Present {
+		specs := ctx.CurrentOneOf().Specs
 		for _, spec := range specs {
 			options.AddAttribute(Attribute{
 				Name:     util.TitleCaseToTitle(util.Title(spec.Property)),
@@ -92,14 +92,14 @@ func (options *Options) OnObjectStart(_ string, object *jsonschema.Schema, visit
 				Type:     spec.Type,
 				Required: true,
 				Enums:    spec.Values,
-				OneOf:    visitCtx.CurrentOneOf,
+				OneOf:    ctx.CurrentOneOf(),
 			})
 		}
 
 	}
 }
 
-func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool, _ *schema.VisitContext) {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,
@@ -108,26 +108,26 @@ func (options *Options) OnArrayStart(_ string, array *jsonschema.Schema, _ bool,
 	}
 }
 
-func (options *Options) OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *schema.VisitContext) {
-	specs := visitCtx.CurrentOneOf.Specs
+func (options *Options) OnOneOfStart(ctx *schema.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
+	specs := ctx.CurrentOneOf().Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {
-		value := schema.GetConstantOrDefault(oneOf.Properties[spec.Property], visitCtx.AutoDefaultBooleans)
+		value := schema.GetConstantOrDefault(oneOf.Properties[spec.Property], ctx)
 		discriminatedBy[spec.Property] = value
 	}
 
-	options.Add(Section{Title: oneOf.Title, OneOf: visitCtx.CurrentOneOf, DiscriminatedBy: discriminatedBy})
+	options.Add(Section{Title: oneOf.Title, OneOf: ctx.CurrentOneOf(), DiscriminatedBy: discriminatedBy})
 }
 
 func (options *Options) OnObjectEnd(*schema.VisitContext) {
 	//no op
 }
 
-func (options *Options) OnArrayEnd(bool) {
+func (options *Options) OnArrayEnd(*schema.VisitContext, bool) {
 	// no op
 }
 
-func (options *Options) OnOneOfEnd() {
+func (options *Options) OnOneOfEnd(*schema.VisitContext) {
 	// no op
 }
 

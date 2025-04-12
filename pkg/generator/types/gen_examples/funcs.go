@@ -34,7 +34,7 @@ func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider)
 			errors: make([]string, 0),
 			path:   make([]string, 0),
 		}
-		schema.Visit(s, ev, &schema.VisitContext{AutoDefaultBooleans: true})
+		schema.Visit(schema.NewVisitContext(false, true), ev, s)
 		if len(ev.errors) > 0 {
 			return false, errors.New(strings.Join(ev.errors, "\n"))
 		}
@@ -53,9 +53,11 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 	genSpec := spec.(examples.GenExampleSpec)
 
 	validationSchema, _, _ := examples.CompileSchema(genSpec, chunk)
+
 	object := NewDocumentBuilder(genSpec)
 
-	schema.Visit(validationSchema, object, &schema.VisitContext{})
+	context := schema.NewVisitContextWithRootNode(object.root, false, false)
+	schema.Visit(context, object, validationSchema)
 
 	codeToEmbed, err := object.Marshall()
 	if err != nil {

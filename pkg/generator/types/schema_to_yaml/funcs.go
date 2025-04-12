@@ -32,7 +32,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	}
 	schemaVisitor := newSchemaVisitor()
 	schemaVisitor.padding = 2
-	schema.Visit(compiled, &schemaVisitor, &schema.VisitContext{AutoDefaultBooleans: true})
+	schema.Visit(schema.NewVisitContext(false, true), &schemaVisitor, compiled)
 
 	processed := chunks.Processed{Data: schemaVisitor}
 	return processed, nil

@@ -45,7 +45,7 @@ func (p Plugin) Validate() error {
 func PluginRelatedFile(filename string) (string, error) {
 	plugin := bootstrap.GetData("plugin").(Plugin)
 	rootDir := bootstrap.GetData(bootstrap.RootDirDataKey).(string)
-	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id, filename+".yaml")
+	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id, filename)
 	defaultConfig := path.Join(rootDir, plugin.Type, filename)
 	if _, err := os.Stat(specificConfig); err == nil {
 		return specificConfig, nil

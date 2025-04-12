@@ -1,46 +1,81 @@
-package gen_examples
+package schema
 
 import (
 	"encoding/json"
 	"strconv"
 )
 
-type Stackable interface {
-	IsArray() bool
+type NodeType int
+
+const (
+	AttributeNode          = iota
+	ObjectNode    NodeType = 1
+	ArrayNode     NodeType = 2
+)
+
+type Node interface {
+	Type() NodeType
 	Name() string
 	IsEmpty() bool
 }
 
+type baseNode struct {
+	name string
+}
+
 type Object struct {
-	name   string
+	baseNode
 	Fields map[string]interface{} `json:",inline"`
 }
 
 type Array struct {
-	name  string
+	baseNode
 	Items []interface{} `json:",inline" `
+}
+
+type Attribute struct {
+	baseNode
+	Value any `json:",inline"`
 }
 
 func NewObject(name string) *Object {
 	return &Object{
-		name:   name,
-		Fields: make(map[string]interface{}),
+		baseNode: baseNode{name: name},
+		Fields:   make(map[string]interface{}),
 	}
 }
 
 func NewArray(name string) *Array {
 	return &Array{
-		name:  name,
-		Items: make([]interface{}, 0),
+		baseNode: baseNode{name: name},
+		Items:    make([]interface{}, 0),
 	}
+}
+
+func NewAttribute(name string) *Attribute {
+	return &Attribute{
+		baseNode: baseNode{name: name},
+	}
+}
+
+func (a Attribute) Name() string {
+	return a.name
+}
+
+func (_ Attribute) Type() NodeType {
+	return ObjectNode
+}
+
+func (a Attribute) IsEmpty() bool {
+	return a.Value == nil
 }
 
 func (o Object) Name() string {
 	return o.name
 }
 
-func (_ Object) IsArray() bool {
-	return false
+func (_ Object) Type() NodeType {
+	return ObjectNode
 }
 
 func (o Object) IsEmpty() bool {
@@ -59,8 +94,8 @@ func (a Array) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Items)
 }
 
-func (_ Array) IsArray() bool {
-	return true
+func (_ Array) Type() NodeType {
+	return ArrayNode
 }
 
 func (a Array) Name() string {
