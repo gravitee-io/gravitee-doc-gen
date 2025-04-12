@@ -1,14 +1,16 @@
 package schema
 
 import (
+	"bytes"
 	"encoding/json"
+	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"strconv"
 )
 
 type NodeType int
 
 const (
-	AttributeNode          = iota
+	AttributeNode NodeType = iota
 	ObjectNode    NodeType = 1
 	ArrayNode     NodeType = 2
 )
@@ -30,7 +32,7 @@ type Object struct {
 
 type Array struct {
 	baseNode
-	Items []interface{} `json:",inline" `
+	Items []interface{} `json:",inline"`
 }
 
 type Attribute struct {
@@ -52,9 +54,16 @@ func NewArray(name string) *Array {
 	}
 }
 
-func NewAttribute(name string) *Attribute {
+func NewAttribute(name string, value any) *Attribute {
 	return &Attribute{
 		baseNode: baseNode{name: name},
+		Value:    value,
+	}
+}
+func NewValue(value any) *Attribute {
+	return &Attribute{
+		baseNode: baseNode{},
+		Value:    value,
 	}
 }
 
@@ -63,11 +72,26 @@ func (a Attribute) Name() string {
 }
 
 func (_ Attribute) Type() NodeType {
-	return ObjectNode
+	return AttributeNode
 }
 
 func (a Attribute) IsEmpty() bool {
 	return a.Value == nil
+}
+
+func (a Attribute) MarshalJSON() ([]byte, error) {
+	buffer := bytes.Buffer{}
+	e := json.NewEncoder(&buffer)
+	e.SetEscapeHTML(false)
+	err := e.Encode(a.Value)
+	if err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
+func (a Attribute) String() string {
+	return a.name + "=" + util.AnyToString(a.Value)
 }
 
 func (o Object) Name() string {
@@ -90,10 +114,6 @@ func (o Object) String() string {
 	return o.name + " (object), len: " + strconv.Itoa(len(o.Fields))
 }
 
-func (a Array) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Items)
-}
-
 func (_ Array) Type() NodeType {
 	return ArrayNode
 }
@@ -104,6 +124,10 @@ func (a Array) Name() string {
 
 func (a Array) IsEmpty() bool {
 	return len(a.Items) == 0
+}
+
+func (a Array) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.Items)
 }
 
 func (a Array) String() string {

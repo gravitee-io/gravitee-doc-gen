@@ -573,6 +573,9 @@ proxy:
   enabled:  # Possible values: false true 
   # 
   useSystemProxy:  # Possible values: false true 
+  # Proxy host
+  # When enabled = true and useSystemProxy = false
+  host: proxy.acme.com
   # Proxy password
   # When enabled = true and useSystemProxy = false
   password: "[redacted]"
@@ -585,9 +588,6 @@ proxy:
   # Proxy username
   # When enabled = true and useSystemProxy = false
   username: admin
-  # Proxy host
-  # When enabled = true and useSystemProxy = false
-  host: proxy.acme.com
 # Scope (enum (string))
 # Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
 scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
@@ -601,29 +601,29 @@ ssl:
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
     # Alias for the key
-    # When type = 'JKS' or 'PKCS12'
+    # When type = 'PKCS12' or 'JKS'
     alias: 
-    # Password
-    # When type = 'JKS' or 'PKCS12'
-    password: 
-    # Path to private key file
-    # When type = 'PEM'
-    keyPath: 
-    # Certificate
-    # When type = 'PEM'
-    certContent: 
     # Key Password
     # When type = 'JKS' or 'PKCS12'
     keyPassword: 
     # Path to key store
     # When type = 'JKS' or 'PKCS12'
     path: 
-    # Content
-    # When type = 'PKCS12' or 'JKS'
-    content: 
     # Path to cert file
     # When type = 'PEM'
     certPath: 
+    # Password
+    # When type = 'JKS' or 'PKCS12'
+    password: 
+    # Content
+    # When type = 'PKCS12' or 'JKS'
+    content: 
+    # Path to private key file
+    # When type = 'PEM'
+    keyPath: 
+    # Certificate
+    # When type = 'PEM'
+    certContent: 
     # Private key
     # When type = 'PEM'
     keyContent: 
@@ -634,6 +634,9 @@ ssl:
   trustStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+    # Password
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    password: "[redacted]"
     # Path to truststore
     # When type = 'JKS' or 'PKCS12' or 'PEM'
     path: 
@@ -643,9 +646,6 @@ ssl:
         --- BEGIN CERTIFICATE ---
     
         --- END CERTIFICATE ---
-    # Password
-    # When type = 'PEM' or 'JKS' or 'PKCS12'
-    password: "[redacted]"
 # Tags
 # Some tags
 tags: 

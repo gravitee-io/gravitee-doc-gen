@@ -54,7 +54,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
+func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) func() any {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -70,6 +70,7 @@ func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, a
 		Enums:       attribute.Enum,
 	}
 	options.AddAttribute(att)
+	return nil
 }
 
 func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string, object *jsonschema.Schema) {
@@ -99,13 +100,14 @@ func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string,
 	}
 }
 
-func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) func() any {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,
 			Type:  "array",
 		})
 	}
+	return nil
 }
 
 func (options *Options) OnOneOfStart(ctx *schema.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {

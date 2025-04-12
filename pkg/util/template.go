@@ -64,8 +64,7 @@ func ternary(isTrue bool, ifTrue any, ifFalse any) any {
 }
 
 func indent(amount int, value any) string {
-	str := fmt.Sprintf("%v", value)
-	scanner := bufio.NewScanner(strings.NewReader(str))
+	scanner := bufio.NewScanner(strings.NewReader(AnyToString(value)))
 	scanner.Split(bufio.ScanLines)
 
 	buffer := bytes.Buffer{}
@@ -78,8 +77,7 @@ func indent(amount int, value any) string {
 
 	padding := strings.Repeat(" ", amount)
 	for scanner.Scan() {
-		line := scanner.Text()
-		buffer.WriteString(fmt.Sprintf("%s%s\n", padding, line))
+		buffer.WriteString(fmt.Sprintf("%s%s\n", padding, scanner.Text()))
 	}
 
 	b := buffer.Bytes()
@@ -103,11 +101,11 @@ func pad(amount int) string {
 
 func joinset(set map[any]bool, separator string, surrounding string) string {
 	items := make([]string, 0)
-	for value, _ := range set {
+	for value := range set {
 		if s, ok := value.(string); ok {
 			items = append(items, fmt.Sprintf("%s%s%s", surrounding, s, surrounding))
 		} else {
-			items = append(items, fmt.Sprintf("%v", value))
+			items = append(items, AnyToString(value))
 		}
 	}
 	return strings.Join(items, separator)

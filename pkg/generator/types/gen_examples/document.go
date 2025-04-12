@@ -27,43 +27,33 @@ func NewDocumentBuilder(example examples.GenExampleSpec) *DocumentBuilder {
 	}
 }
 
-func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
+func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, _ string, attribute *jsonschema.Schema, _ *jsonschema.Schema) func() any {
 	if !b.skipAttributes && schema.IsAttribute(attribute) && !attribute.Deprecated {
 		if value := schema.GetDefaultOrFirstExample(attribute, ctx); value != nil {
-			b.Add(property, value, ctx)
-		}
-	}
-}
-
-func (b *DocumentBuilder) OnObjectStart(ctx *schema.VisitContext, property string, _ *jsonschema.Schema) {
-	b.Add(property, schema.NewObject(property), ctx)
-}
-
-func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) {
-	b.Add(property, schema.NewArray(property), ctx)
-	if itemTypeIsObject {
-		b.Add("", schema.NewObject(property), ctx)
-	} else {
-		value := schema.GetDefaultOrFirstExample(array, ctx)
-		if items, ok := value.([]interface{}); ok {
-			for _, v := range items {
-				b.Add("", v, ctx)
+			return func() any {
+				return value
 			}
-		} else {
-			b.Add("", value, ctx)
 		}
 	}
+	return nil
 }
 
-func (b *DocumentBuilder) OnObjectEnd(ctx *schema.VisitContext) {
-	ctx.NodeStack().Pop()
+func (b *DocumentBuilder) OnObjectStart(*schema.VisitContext, string, *jsonschema.Schema) {
+	// no op
 }
 
-func (b *DocumentBuilder) OnArrayEnd(ctx *schema.VisitContext, itemTypeIsObject bool) {
-	if itemTypeIsObject {
-		ctx.NodeStack().Pop()
+func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, _ string, array *jsonschema.Schema, _ bool) func() any {
+	return func() any {
+		return schema.GetDefaultOrFirstExample(array, ctx)
 	}
-	ctx.NodeStack().Pop()
+}
+
+func (b *DocumentBuilder) OnObjectEnd(*schema.VisitContext) {
+	// no op
+}
+
+func (b *DocumentBuilder) OnArrayEnd(*schema.VisitContext, bool) {
+	// no op
 }
 
 func (b *DocumentBuilder) OnOneOfStart(ctx *schema.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
@@ -107,10 +97,7 @@ func (b *DocumentBuilder) OnOneOfEnd(*schema.VisitContext) {
 func (b *DocumentBuilder) Marshall() (string, error) {
 	return b.language.Serialize(b.root.Fields)
 }
+
 func (b *DocumentBuilder) MarshallWithLanguage(language examples.Language) (string, error) {
 	return language.Serialize(b.root.Fields)
-}
-
-func (b *DocumentBuilder) Add(name string, value interface{}, ctx *schema.VisitContext) {
-	ctx.NodeStack().Add(ctx, name, value)
 }

@@ -73,15 +73,15 @@ type schemaVisitor struct {
 	oneOfDiscriminators []string
 }
 
-func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
+func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) func() any {
 
 	if s.oneOfStarted && !s.isOneOfProperty(property, ctx.CurrentOneOf()) {
 		s.addOneOfProperty(ctx, property, attribute, parent)
-		return
+		return nil
 	}
 
 	if s.oneOfStarted && slices.Contains(s.oneOfDiscriminators, property) {
-		return
+		return nil
 	}
 
 	if s.oneOfStarted {
@@ -104,9 +104,10 @@ func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, a
 		s.pad += 2
 		s.firstArrayItem = false
 	}
+	return nil
 }
 
-func (s *schemaVisitor) OnObjectStart(ctx *schema.VisitContext, property string, object *jsonschema.Schema) {
+func (s *schemaVisitor) OnObjectStart(_ *schema.VisitContext, property string, object *jsonschema.Schema) {
 	if s.inArray {
 		return
 	}
@@ -138,7 +139,7 @@ func (s *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) {
+func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) func() any {
 	s.Lines = append(s.Lines, line{
 		baseLine: baseLine{
 			Title:       array.Title,
@@ -163,9 +164,10 @@ func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, 
 			})
 		}
 	}
+	return nil
 }
 
-func (s *schemaVisitor) OnArrayEnd(ctx *schema.VisitContext, itemTypeIsObject bool) {
+func (s *schemaVisitor) OnArrayEnd(_ *schema.VisitContext, itemTypeIsObject bool) {
 	s.firstArrayItem = false
 	s.inArray = false
 	if itemTypeIsObject {
