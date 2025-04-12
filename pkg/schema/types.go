@@ -5,13 +5,13 @@ import (
 )
 
 type Visitor interface {
-	OnAttribute(property string, attribute *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
-	OnObjectStart(property string, object *jsonschema.Schema, visitCtx *VisitContext)
-	OnObjectEnd(visitCtx *VisitContext)
-	OnArrayStart(property string, array *jsonschema.Schema, itemTypeIsObject bool, ctx *VisitContext)
-	OnArrayEnd(itemTypeIsObject bool)
-	OnOneOfStart(oneOf *jsonschema.Schema, parent *jsonschema.Schema, visitCtx *VisitContext)
-	OnOneOfEnd()
+	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema)
+	OnObjectStart(ctx *VisitContext, property string, object *jsonschema.Schema)
+	OnObjectEnd(ctx *VisitContext)
+	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool)
+	OnArrayEnd(ctx *VisitContext, itemTypeIsObject bool)
+	OnOneOfStart(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
+	OnOneOfEnd(*VisitContext)
 }
 
 type OneOf struct {
