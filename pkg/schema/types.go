@@ -5,10 +5,10 @@ import (
 )
 
 type Visitor interface {
-	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema)
+	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) (valueSupplier func() any)
 	OnObjectStart(ctx *VisitContext, property string, object *jsonschema.Schema)
 	OnObjectEnd(ctx *VisitContext)
-	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool)
+	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) func() any
 	OnArrayEnd(ctx *VisitContext, itemTypeIsObject bool)
 	OnOneOfStart(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
 	OnOneOfEnd(*VisitContext)

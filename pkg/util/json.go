@@ -2,10 +2,11 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gravitee-io-labs/readme-gen/pkg/core"
 )
 
-func AnyArrayToStructArray[I any](array interface{}) ([]I, error) {
+func AnyArrayToStructArray[I any](array []any) ([]I, error) {
 	a := make([]I, 0)
 	bytes, err := json.Marshal(array)
 	if err != nil {
@@ -29,4 +30,8 @@ func AnyMapToStruct[T any](object *core.Unstructured) (*T, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+func AnyToString(v any) string {
+	return fmt.Sprintf("%v", v)
 }

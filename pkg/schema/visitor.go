@@ -34,9 +34,14 @@ func (v *VisitContext) SetCurrentOneOf(oneOf OneOf) {
 }
 
 func NewVisitContext(queueNodes bool, autoDefaultBooleans bool) *VisitContext {
-	return NewVisitContextWithRootNode(NewObject(""), queueNodes, autoDefaultBooleans)
+	return &VisitContext{
+		currentOneOf:        OneOf{},
+		queueNodes:          queueNodes,
+		autoDefaultBooleans: autoDefaultBooleans,
+	}
 }
-func NewVisitContextWithRootNode(root *Object, queueNodes bool, autoDefaultBooleans bool) *VisitContext {
+
+func NewVisitContextWithStack(root *Object, queueNodes bool, autoDefaultBooleans bool) *VisitContext {
 	return &VisitContext{
 		currentOneOf:        OneOf{},
 		queueNodes:          queueNodes,
@@ -59,7 +64,12 @@ func Visit(ctx *VisitContext, visitor Visitor, parent *jsonschema.Schema) {
 	for _, property := range ordered {
 		name, schema := property.name, property.schema
 		if IsAttribute(schema) {
-			visitor.OnAttribute(ctx, name, schema, parent)
+			supplier := visitor.OnAttribute(ctx, name, schema, parent)
+			if supplier != nil {
+				if value := supplier(); value != nil && ctx.nodeStack != nil {
+					ctx.NodeStack().add(ctx, NewAttribute(property.name, value))
+				}
+			}
 		}
 
 		if ctx.IsQueueNodes() && (isObject(schema) || isArray(schema)) {
@@ -98,26 +108,63 @@ func orderedAndResolved(parent *jsonschema.Schema) []property {
 
 func visitNode(ctx *VisitContext, prop property, visitor Visitor) {
 	if isObject(prop.schema) {
-		if ContainsOneOfs(prop.schema) {
-			ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
-		}
-		visitor.OnObjectStart(ctx, prop.name, prop.schema)
-		Visit(ctx, visitor, prop.schema)
-		ctx.SetCurrentOneOf(OneOf{})
-		visitor.OnObjectEnd(ctx)
+		visitObject(ctx, prop, visitor)
 	}
 	if isArray(prop.schema) {
-		var items *jsonschema.Schema
-		var itemTypeIsObject bool
-		if prop.schema.Items != nil {
-			items = prop.schema.Items.(*jsonschema.Schema)
-			// no support of multiple types
-			itemTypeIsObject = !IsAttribute(items)
-		}
-		visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
-		Visit(ctx, visitor, prop.schema.Items.(*jsonschema.Schema))
-		visitor.OnArrayEnd(ctx, itemTypeIsObject)
+		visitArray(ctx, prop, visitor)
 	}
+}
+
+func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
+	var items *jsonschema.Schema
+	var itemTypeIsObject bool
+	if prop.schema.Items != nil {
+		items = prop.schema.Items.(*jsonschema.Schema)
+		// no support of multiple types
+		itemTypeIsObject = !IsAttribute(items)
+	}
+	supplier := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
+	if ctx.NodeStack() != nil {
+		addArrayToStack(ctx, prop, itemTypeIsObject, supplier)
+	}
+	Visit(ctx, visitor, prop.schema.Items.(*jsonschema.Schema))
+	visitor.OnArrayEnd(ctx, itemTypeIsObject)
+	if itemTypeIsObject {
+		ctx.NodeStack().pop()
+	}
+	ctx.NodeStack().pop()
+}
+
+func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, supplier func() any) {
+	ctx.NodeStack().add(ctx, NewArray(prop.name))
+	if itemTypeIsObject {
+		ctx.NodeStack().add(ctx, NewObject(prop.name))
+	} else if supplier != nil {
+		if value := supplier(); value != nil {
+			if items, ok := value.([]interface{}); ok {
+				for _, v := range items {
+					ctx.NodeStack().add(ctx, NewValue(v))
+				}
+			} else {
+				ctx.NodeStack().add(ctx, NewValue(value))
+			}
+		}
+	}
+}
+
+func visitObject(ctx *VisitContext, prop property, visitor Visitor) {
+	if ContainsOneOfs(prop.schema) {
+		ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
+	}
+	visitor.OnObjectStart(ctx, prop.name, prop.schema)
+	if ctx.NodeStack() != nil {
+		ctx.NodeStack().add(ctx, NewObject(prop.name))
+
+	}
+	Visit(ctx, visitor, prop.schema)
+	ctx.SetCurrentOneOf(OneOf{})
+	visitor.OnObjectEnd(ctx)
+	ctx.NodeStack().pop()
 }
 
 func GetType(prop *jsonschema.Schema) string {

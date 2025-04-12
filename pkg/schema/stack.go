@@ -10,36 +10,48 @@ func NewNodeStack(root Node) *NodeStack {
 	}
 }
 
-func (s *NodeStack) Add(ctx *VisitContext, name string, value interface{}) {
-	node := ctx.NodeStack().Peek()
+func (s *NodeStack) add(ctx *VisitContext, toAdd Node) {
+	if s == nil {
+		panic("stack is nil, cannot add node to stack. stack it should created with the visitor")
+	}
+	node := ctx.NodeStack().peek()
 	if node.Type() == ArrayNode {
 		array := node.(*Array)
-		array.Items = append(array.Items, value)
-	} else {
-		node.(*Object).Fields[name] = value
+		array.Items = append(array.Items, toAdd)
+	} else if node.Type() == ObjectNode {
+		node.(*Object).Fields[toAdd.Name()] = toAdd
 	}
 
-	if val, ok := value.(Node); ok {
-		ctx.NodeStack().Push(val)
+	if toAdd.Type() != AttributeNode {
+		ctx.NodeStack().push(toAdd)
 	}
 }
 
-func (s *NodeStack) Push(value Node) {
+func (s *NodeStack) push(value Node) {
+	if s == nil {
+		return
+	}
 	s.stack = append(s.stack, value)
 }
 
-func (s *NodeStack) Peek() Node {
+func (s *NodeStack) peek() Node {
+	if s == nil {
+		panic("stack is nil, cannot add node to stack. stack it should created with the visitor.")
+	}
 	if len(s.stack) == 0 {
 		return nil
 	}
 	return s.stack[len(s.stack)-1]
 }
 
-func (s *NodeStack) Pop() {
+func (s *NodeStack) pop() {
+	if s == nil {
+		return
+	}
 	// check if current needs to be removed
 	var property string
 	var remove bool
-	node := s.Peek()
+	node := s.peek()
 	if node != nil && node.IsEmpty() {
 		property = node.Name()
 		remove = true
@@ -48,7 +60,7 @@ func (s *NodeStack) Pop() {
 	s.stack = removeLast[Node](s.stack)
 
 	if remove {
-		if last := s.Peek(); last.Type() == ArrayNode {
+		if last := s.peek(); last.Type() == ArrayNode {
 			array := last.(*Array)
 			array.Items = removeLast(array.Items)
 		} else if last.Type() == ObjectNode {
@@ -67,6 +79,10 @@ func removeLast[T any](slice []T) []T {
 }
 
 func (s *NodeStack) GetNames() []string {
+	if s == nil {
+		panic("stack is nil, cannot get names. stack it should created with the visitor.")
+
+	}
 	result := make([]string, 0, len(s.stack))
 	for _, node := range s.stack {
 		result = append(result, node.Name())
@@ -75,6 +91,9 @@ func (s *NodeStack) GetNames() []string {
 }
 
 func (s *NodeStack) GetAncestorNames() []string {
+	if s == nil {
+		panic("stack is nil, cannot get ancestors. stack it should created with the visitor.")
+	}
 	ancestors := make([]string, len(s.stack)-1)
 	// skip root
 	for i := 1; i < len(s.stack); i++ {
