@@ -63,13 +63,14 @@ func newSchemaVisitor() schemaVisitor {
 }
 
 type schemaVisitor struct {
-	Lines               []line
-	padding             int
-	pad                 int
-	inArray             bool
-	firstArrayItem      bool
-	oneOfProperties     map[string]oneOfProperty
-	oneOfDiscriminators []string
+	Lines                []line
+	padding              int
+	pad                  int
+	inArray              bool
+	firstArrayItem       bool
+	oneOfPropertiesNames []string
+	oneOfProperties      map[string]oneOfProperty
+	oneOfDiscriminators  []string
 }
 
 func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
@@ -123,11 +124,13 @@ func (v *schemaVisitor) OnObjectStart(_ *schema.VisitContext, property string, o
 
 func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	if !ctx.CurrentOneOf().Present {
-		for property, oneOf := range v.oneOfProperties {
+		for _, property := range v.oneOfPropertiesNames {
+			oneOf := v.oneOfProperties[property]
 			v.Lines = append(v.Lines, oneOf.toLine(property, v.pad, v.firstArrayItem))
 		}
 		v.oneOfDiscriminators = make([]string, 0)
 		v.oneOfProperties = make(map[string]oneOfProperty)
+		v.oneOfPropertiesNames = make([]string, 0)
 	}
 	if v.inArray {
 		v.pad -= 2
@@ -216,12 +219,14 @@ func encode(value any, isString bool) any {
 func (v *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
 	if v.oneOfProperties == nil {
 		v.oneOfProperties = make(map[string]oneOfProperty)
+		v.oneOfDiscriminators = make([]string, 0)
 	}
 	var update oneOfProperty
 	if oneOfProp, ok := v.oneOfProperties[property]; ok {
 		v.updateWhen(ctx, parent, &oneOfProp)
 		update = oneOfProp
 	} else {
+		v.oneOfPropertiesNames = append(v.oneOfPropertiesNames, property)
 		oneOfProp = oneOfProperty{
 			baseLine: baseLine{
 				When: make(map[string]Set),
