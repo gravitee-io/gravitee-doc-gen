@@ -5,10 +5,10 @@ import (
 )
 
 type Visitor interface {
-	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) (hook *StackHook)
+	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *Attribute
 	OnObjectStart(ctx *VisitContext, property string, object *jsonschema.Schema)
 	OnObjectEnd(ctx *VisitContext)
-	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (hook *StackHook)
+	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (values []Attribute)
 	OnArrayEnd(ctx *VisitContext, itemTypeIsObject bool)
 	OnOneOfStart(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
 	OnOneOfEnd(*VisitContext)

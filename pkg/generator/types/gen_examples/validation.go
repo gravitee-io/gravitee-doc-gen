@@ -16,7 +16,7 @@ func (e *exampleValidation) AddErr(err string) {
 	e.errors = append(e.errors, err)
 }
 
-func (e *exampleValidation) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
+func (e *exampleValidation) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 	if e.skip {
 		return nil
 	}
@@ -35,7 +35,7 @@ func (e *exampleValidation) OnObjectStart(*schema.VisitContext, string, *jsonsch
 func (e *exampleValidation) OnObjectEnd(*schema.VisitContext) {
 	// no op
 }
-func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) *schema.StackHook {
+func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) []schema.Attribute {
 	// no op
 	return nil
 }

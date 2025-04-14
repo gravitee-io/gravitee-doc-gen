@@ -75,36 +75,35 @@ type schemaVisitor struct {
 	indexPlaceholder    string
 }
 
-func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
+func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
+
+	if v.oneOfStarted && !v.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
+		v.addOneOfProperty(ctx, property, attribute, parent)
+		return nil
+	}
+	if v.oneOfStarted && slices.Contains(v.oneOfDiscriminators, property) {
+		return nil
+	}
+
+	if v.oneOfStarted {
+		v.oneOfDiscriminators = append(v.oneOfDiscriminators, property)
+	}
+
+	v.currentSection.AddVariable(variable{
+		Title:       attribute.Title,
+		Description: attribute.Description,
+		Env:         v.getEnv(ctx, property),
+		JVM:         v.getJvm(ctx, property),
+		Type:        schema.GetType(attribute),
+		Default:     schema.GetDefaultOrFirstExample(attribute, ctx),
+		Enums:       getEnums(attribute, property, ctx.CurrentOneOf()),
+	})
 
 	if v.firstArrayItem {
 		v.firstArrayItem = false
 	}
-	return &schema.StackHook{
-		AfterStack: func(ctx *schema.VisitContext, attribute *jsonschema.Schema) {
-			if v.oneOfStarted && !v.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
-				v.addOneOfProperty(ctx, property, attribute, parent)
-				return
-			}
-			if v.oneOfStarted && slices.Contains(v.oneOfDiscriminators, property) {
-				return
-			}
 
-			if v.oneOfStarted {
-				v.oneOfDiscriminators = append(v.oneOfDiscriminators, property)
-			}
-
-			v.currentSection.AddVariable(variable{
-				Title:       attribute.Title,
-				Description: attribute.Description,
-				Env:         v.getEnv(ctx, property),
-				JVM:         v.getJvm(ctx, property),
-				Type:        schema.GetType(attribute),
-				Default:     schema.GetDefaultOrFirstExample(attribute, ctx),
-				Enums:       getEnums(attribute, property, ctx.CurrentOneOf()),
-			})
-		},
-	}
+	return nil
 }
 
 func (v *schemaVisitor) OnObjectStart(ctx *schema.VisitContext, _ string, object *jsonschema.Schema) {
@@ -135,7 +134,7 @@ func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
+func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
 	if len(ctx.NodeStack().GetAncestorProperty()) == 0 && itemTypeIsObject {
 		section := &section{
 			Title:       array.Title,
@@ -147,21 +146,18 @@ func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, 
 	v.inArray = true
 	v.firstArrayItem = true
 
-	return &schema.StackHook{
-		AfterStack: func(ctx *schema.VisitContext, array *jsonschema.Schema) {
-			if !itemTypeIsObject {
-				v.currentSection.AddVariable(variable{
-					Title:       array.Title,
-					Description: array.Description,
-					Env:         v.getEnv(ctx, property),
-					JVM:         v.getJvm(ctx, property),
-					Type:        schema.GetTypeItem(array),
-					Default:     schema.GetDefaultOrFirstExample(array, ctx),
-				})
-			}
-		},
+	if !itemTypeIsObject {
+		v.currentSection.AddVariable(variable{
+			Title:       array.Title,
+			Description: array.Description,
+			Env:         v.getEnv(ctx, property),
+			JVM:         v.getJvm(ctx, property),
+			Type:        schema.GetTypeItem(array),
+			Default:     schema.GetDefaultOrFirstExample(array, ctx),
+		})
 	}
 
+	return nil
 }
 
 func (v *schemaVisitor) OnArrayEnd(*schema.VisitContext, bool) {

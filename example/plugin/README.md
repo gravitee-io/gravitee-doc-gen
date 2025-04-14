@@ -115,8 +115,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
 | Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
+| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -600,18 +600,18 @@ ssl:
   keyStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Path to key store
-    # When type = 'PKCS12' or 'JKS'
-    path: 
     # Certificate
     # When type = 'PEM'
     certContent: 
     # Alias for the key
-    # When type = 'JKS' or 'PKCS12'
+    # When type = 'PKCS12' or 'JKS'
     alias: 
     # Password
     # When type = 'JKS' or 'PKCS12'
     password: 
+    # Content
+    # When type = 'JKS' or 'PKCS12'
+    content: 
     # Path to cert file
     # When type = 'PEM'
     certPath: 
@@ -624,9 +624,9 @@ ssl:
     # Key Password
     # When type = 'JKS' or 'PKCS12'
     keyPassword: 
-    # Content
-    # When type = 'JKS' or 'PKCS12'
-    content: 
+    # Path to key store
+    # When type = 'PKCS12' or 'JKS'
+    path: 
   # Trust all (boolean)
   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
   trustAll: 
@@ -635,13 +635,13 @@ ssl:
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
     # Password
-    # When type = 'PEM' or 'JKS' or 'PKCS12'
+    # When type = 'PKCS12' or 'PEM' or 'JKS'
     password: "[redacted]"
     # Path to truststore
-    # When type = 'PKCS12' or 'PEM' or 'JKS'
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
     path: 
     # Content
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    # When type = 'PEM' or 'JKS' or 'PKCS12'
     content: |-
         --- BEGIN CERTIFICATE ---
     
@@ -881,10 +881,19 @@ JVM: `-Dgravitee.body`
 
 
 
+#### Constraint test bed
+ENV: **GRAVITEE_CONSTRAINTS** <br>
+JVM: `-Dgravitee.constraints`  
+
+<p>
+For the sake of testing
+</p>
+
+
+
 #### Error condition
 ENV: **GRAVITEE_ERRORCONDITION** <br>
-JVM: `-Dgravitee.errorcondition` 
-
+JVM: `-Dgravitee.errorcondition` <br>
 Default: `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`  
 
 <p>
@@ -905,10 +914,8 @@ The body response of the error if the condition is true (support EL)
 
 #### Error status code
 ENV: **GRAVITEE_ERRORSTATUSCODE** <br>
-JVM: `-Dgravitee.errorstatuscode` 
-
-Default: `500`  
-
+JVM: `-Dgravitee.errorstatuscode` <br>
+Default: `500`  <br>
 Values: `100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507` 
 
 <p>
@@ -937,12 +944,20 @@ Make the http call without expecting any response. When activating this mode, co
 
 
 
+#### Request Headers
+ENV: **GRAVITEE_HEADERS** <br>
+JVM: `-Dgravitee.headers`  
+
+<p>
+
+</p>
+
+
+
 #### HTTP Method
 ENV: **GRAVITEE_METHOD** <br>
-JVM: `-Dgravitee.method` 
-
-Default: `GET`  
-
+JVM: `-Dgravitee.method` <br>
+Default: `GET`  <br>
 Values: `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE` 
 
 <p>
@@ -951,12 +966,20 @@ HTTP method to invoke the endpoint.
 
 
 
+#### Proxy Options
+ENV: **GRAVITEE_PROXY** <br>
+JVM: `-Dgravitee.proxy`  
+
+<p>
+
+</p>
+
+
+
 #### Scope
 ENV: **GRAVITEE_SCOPE** <br>
-JVM: `-Dgravitee.scope` 
-
-Default: `REQUEST`  
-
+JVM: `-Dgravitee.scope` <br>
+Default: `REQUEST`  <br>
 Values: `REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT` 
 
 <p>
@@ -965,11 +988,41 @@ Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</stron
 
 
 
+#### SSL Options
+ENV: **GRAVITEE_SSL** <br>
+JVM: `-Dgravitee.ssl`  
+
+<p>
+
+</p>
+
+
+
+#### Tags
+ENV: **GRAVITEE_TAGS** <br>
+JVM: `-Dgravitee.tags` <br>
+Default: `[defaulted]`  
+
+<p>
+Some tags
+</p>
+
+
+
 #### URL
 ENV: **GRAVITEE_URL** <br>
-JVM: `-Dgravitee.url` 
-
+JVM: `-Dgravitee.url` <br>
 Default: `http://localhost:8080/api`  
+
+<p>
+
+</p>
+
+
+
+#### Context variables
+ENV: **GRAVITEE_VARIABLES** <br>
+JVM: `-Dgravitee.variables`  
 
 <p>
 
@@ -1084,8 +1137,7 @@ JVM: `-Dgravitee.headers.[{index}].headers.value`
 
 #### 
 ENV: **GRAVITEE_PROXY_ENABLED** <br>
-JVM: `-Dgravitee.proxy.enabled`  
-
+JVM: `-Dgravitee.proxy.enabled`  <br>
 Values: `false` `true` 
 
 <p>
@@ -1096,8 +1148,7 @@ Values: `false` `true`
 
 #### 
 ENV: **GRAVITEE_PROXY_USESYSTEMPROXY** <br>
-JVM: `-Dgravitee.proxy.usesystemproxy`  
-
+JVM: `-Dgravitee.proxy.usesystemproxy`  <br>
 Values: `false` `true` 
 
 <p>
@@ -1108,11 +1159,11 @@ Values: `false` `true`
 
 #### Proxy port
 ENV: **GRAVITEE_PROXY_PORT** <br>
-JVM: `-Dgravitee.proxy.port` 
-
-Default: `3524`  
-
-When: `enabled = true`  and `useSystemProxy = false` 
+JVM: `-Dgravitee.proxy.port` <br>
+Default: `3524`  <br>
+When: <br>
+`enabled = true`  and <br>
+`useSystemProxy = false` 
 
 <p>
 Proxy port to connect to
@@ -1122,13 +1173,12 @@ Proxy port to connect to
 
 #### Proxy Type
 ENV: **GRAVITEE_PROXY_TYPE** <br>
-JVM: `-Dgravitee.proxy.type` 
-
-Default: `SOCKS5`  
-
-Values: `SOCKS4` `SOCKS5` 
-
-When: `enabled = true`  and `useSystemProxy = false` 
+JVM: `-Dgravitee.proxy.type` <br>
+Default: `SOCKS5`  <br>
+Values: `SOCKS4` `SOCKS5` <br>
+When: <br>
+`enabled = true`  and <br>
+`useSystemProxy = false` 
 
 <p>
 The type of the proxy
@@ -1138,11 +1188,11 @@ The type of the proxy
 
 #### Proxy username
 ENV: **GRAVITEE_PROXY_USERNAME** <br>
-JVM: `-Dgravitee.proxy.username` 
-
-Default: `admin`  
-
-When: `enabled = true`  and `useSystemProxy = false` 
+JVM: `-Dgravitee.proxy.username` <br>
+Default: `admin`  <br>
+When: <br>
+`enabled = true`  and <br>
+`useSystemProxy = false` 
 
 <p>
 Optional proxy username
@@ -1152,11 +1202,11 @@ Optional proxy username
 
 #### Proxy host
 ENV: **GRAVITEE_PROXY_HOST** <br>
-JVM: `-Dgravitee.proxy.host` 
-
-Default: `proxy.acme.com`  
-
-When: `enabled = true`  and `useSystemProxy = false` 
+JVM: `-Dgravitee.proxy.host` <br>
+Default: `proxy.acme.com`  <br>
+When: <br>
+`enabled = true`  and <br>
+`useSystemProxy = false` 
 
 <p>
 Proxy host to connect to
@@ -1166,11 +1216,11 @@ Proxy host to connect to
 
 #### Proxy password
 ENV: **GRAVITEE_PROXY_PASSWORD** <br>
-JVM: `-Dgravitee.proxy.password` 
-
-Default: `[redacted]`  
-
-When: `enabled = true`  and `useSystemProxy = false` 
+JVM: `-Dgravitee.proxy.password` <br>
+Default: `[redacted]`  <br>
+When: <br>
+`enabled = true`  and <br>
+`useSystemProxy = false` 
 
 <p>
 Optional proxy password
@@ -1185,12 +1235,21 @@ Optional proxy password
 
 #### Verify Host
 ENV: **GRAVITEE_SSL_HOSTNAMEVERIFIER** <br>
-JVM: `-Dgravitee.ssl.hostnameverifier` 
-
+JVM: `-Dgravitee.ssl.hostnameverifier` <br>
 Default: `true`  
 
 <p>
 Use to enable host name verification
+</p>
+
+
+
+#### Key store
+ENV: **GRAVITEE_SSL_KEYSTORE** <br>
+JVM: `-Dgravitee.ssl.keystore`  
+
+<p>
+
 </p>
 
 
@@ -1205,10 +1264,19 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 
 
 
+#### Truststore
+ENV: **GRAVITEE_SSL_TRUSTSTORE** <br>
+JVM: `-Dgravitee.ssl.truststore`  
+
+<p>
+
+</p>
+
+
+
 #### 
 ENV: **GRAVITEE_SSL_KEYSTORE_TYPE** <br>
-JVM: `-Dgravitee.ssl.keystore.type`  
-
+JVM: `-Dgravitee.ssl.keystore.type`  <br>
 Values: `` `JKS` `PKCS12` `PEM` 
 
 <p>
@@ -1219,9 +1287,9 @@ Values: `` `JKS` `PKCS12` `PEM`
 
 #### Alias for the key
 ENV: **GRAVITEE_SSL_KEYSTORE_ALIAS** <br>
-JVM: `-Dgravitee.ssl.keystore.alias`  
-
-When: `type = JKS` or `PKCS12` 
+JVM: `-Dgravitee.ssl.keystore.alias`  <br>
+When: <br>
+`type = PKCS12` or `JKS` 
 
 <p>
 Alias of the key to use in case the key store contains more than one key
@@ -1231,9 +1299,9 @@ Alias of the key to use in case the key store contains more than one key
 
 #### Key Password
 ENV: **GRAVITEE_SSL_KEYSTORE_KEYPASSWORD** <br>
-JVM: `-Dgravitee.ssl.keystore.keypassword`  
-
-When: `type = JKS` or `PKCS12` 
+JVM: `-Dgravitee.ssl.keystore.keypassword`  <br>
+When: <br>
+`type = PKCS12` or `JKS` 
 
 <p>
 Password to use to access the key when protected by password
@@ -1241,35 +1309,11 @@ Password to use to access the key when protected by password
 
 
 
-#### Content
-ENV: **GRAVITEE_SSL_KEYSTORE_CONTENT** <br>
-JVM: `-Dgravitee.ssl.keystore.content`  
-
-When: `type = JKS` or `PKCS12` 
-
-<p>
-Binary content as Base64
-</p>
-
-
-
-#### Password
-ENV: **GRAVITEE_SSL_KEYSTORE_PASSWORD** <br>
-JVM: `-Dgravitee.ssl.keystore.password`  
-
-When: `type = JKS` or `PKCS12` 
-
-<p>
-Password to use to open the key store
-</p>
-
-
-
 #### Path to key store
 ENV: **GRAVITEE_SSL_KEYSTORE_PATH** <br>
-JVM: `-Dgravitee.ssl.keystore.path`  
-
-When: `type = PKCS12` or `JKS` 
+JVM: `-Dgravitee.ssl.keystore.path`  <br>
+When: <br>
+`type = PKCS12` or `JKS` 
 
 <p>
 Path to the key store file
@@ -1279,9 +1323,9 @@ Path to the key store file
 
 #### Path to cert file
 ENV: **GRAVITEE_SSL_KEYSTORE_CERTPATH** <br>
-JVM: `-Dgravitee.ssl.keystore.certpath`  
-
-When: `type = PEM` 
+JVM: `-Dgravitee.ssl.keystore.certpath`  <br>
+When: <br>
+`type = PEM` 
 
 <p>
 Path to cert file (.PEM)
@@ -1289,11 +1333,35 @@ Path to cert file (.PEM)
 
 
 
+#### Password
+ENV: **GRAVITEE_SSL_KEYSTORE_PASSWORD** <br>
+JVM: `-Dgravitee.ssl.keystore.password`  <br>
+When: <br>
+`type = JKS` or `PKCS12` 
+
+<p>
+Password to use to open the key store
+</p>
+
+
+
+#### Content
+ENV: **GRAVITEE_SSL_KEYSTORE_CONTENT** <br>
+JVM: `-Dgravitee.ssl.keystore.content`  <br>
+When: <br>
+`type = JKS` or `PKCS12` 
+
+<p>
+Binary content as Base64
+</p>
+
+
+
 #### Path to private key file
 ENV: **GRAVITEE_SSL_KEYSTORE_KEYPATH** <br>
-JVM: `-Dgravitee.ssl.keystore.keypath`  
-
-When: `type = PEM` 
+JVM: `-Dgravitee.ssl.keystore.keypath`  <br>
+When: <br>
+`type = PEM` 
 
 <p>
 Path to private key file (.PEM)
@@ -1303,9 +1371,9 @@ Path to private key file (.PEM)
 
 #### Certificate
 ENV: **GRAVITEE_SSL_KEYSTORE_CERTCONTENT** <br>
-JVM: `-Dgravitee.ssl.keystore.certcontent`  
-
-When: `type = PEM` 
+JVM: `-Dgravitee.ssl.keystore.certcontent`  <br>
+When: <br>
+`type = PEM` 
 
 <p>
 
@@ -1315,9 +1383,9 @@ When: `type = PEM`
 
 #### Private key
 ENV: **GRAVITEE_SSL_KEYSTORE_KEYCONTENT** <br>
-JVM: `-Dgravitee.ssl.keystore.keycontent`  
-
-When: `type = PEM` 
+JVM: `-Dgravitee.ssl.keystore.keycontent`  <br>
+When: <br>
+`type = PEM` 
 
 <p>
 
@@ -1327,8 +1395,7 @@ When: `type = PEM`
 
 #### 
 ENV: **GRAVITEE_SSL_TRUSTSTORE_TYPE** <br>
-JVM: `-Dgravitee.ssl.truststore.type`  
-
+JVM: `-Dgravitee.ssl.truststore.type`  <br>
 Values: `` `JKS` `PKCS12` `PEM` 
 
 <p>
@@ -1339,11 +1406,10 @@ Values: `` `JKS` `PKCS12` `PEM`
 
 #### Password
 ENV: **GRAVITEE_SSL_TRUSTSTORE_PASSWORD** <br>
-JVM: `-Dgravitee.ssl.truststore.password` 
-
-Default: `[redacted]`  
-
-When: `type = JKS` or `PKCS12` or `PEM` 
+JVM: `-Dgravitee.ssl.truststore.password` <br>
+Default: `[redacted]`  <br>
+When: <br>
+`type = JKS` or `PKCS12` or `PEM` 
 
 <p>
 Truststore password
@@ -1353,9 +1419,9 @@ Truststore password
 
 #### Path to truststore
 ENV: **GRAVITEE_SSL_TRUSTSTORE_PATH** <br>
-JVM: `-Dgravitee.ssl.truststore.path`  
-
-When: `type = JKS` or `PKCS12` or `PEM` 
+JVM: `-Dgravitee.ssl.truststore.path`  <br>
+When: <br>
+`type = PEM` or `JKS` or `PKCS12` 
 
 <p>
 Path to the truststore file
@@ -1365,13 +1431,12 @@ Path to the truststore file
 
 #### Content
 ENV: **GRAVITEE_SSL_TRUSTSTORE_CONTENT** <br>
-JVM: `-Dgravitee.ssl.truststore.content` 
-
+JVM: `-Dgravitee.ssl.truststore.content` <br>
 Default: `--- BEGIN CERTIFICATE ---
 
---- END CERTIFICATE ---`  
-
-When: `type = JKS` or `PKCS12` or `PEM` 
+--- END CERTIFICATE ---`  <br>
+When: <br>
+`type = JKS` or `PKCS12` or `PEM` 
 
 <p>
 Binary content as Base64
@@ -1380,9 +1445,8 @@ Binary content as Base64
 
 
 #### Tags
-ENV: **GRAVITEE_TAGS_{index}_TAGS** <br>
-JVM: `-Dgravitee.tags.[{index}].tags` 
-
+ENV: **GRAVITEE_TAGS** <br>
+JVM: `-Dgravitee.tags` <br>
 Default: `[defaulted]`  
 
 <p>
@@ -1398,8 +1462,7 @@ Some tags
 
 #### Name
 ENV: **GRAVITEE_VARIABLES_{index}_VARIABLES_NAME** <br>
-JVM: `-Dgravitee.variables.[{index}].variables.name` 
-
+JVM: `-Dgravitee.variables.[{index}].variables.name` <br>
 Default: `field`  
 
 <p>
@@ -1410,8 +1473,7 @@ Default: `field`
 
 #### Value
 ENV: **GRAVITEE_VARIABLES_{index}_VARIABLES_VALUE** <br>
-JVM: `-Dgravitee.variables.[{index}].variables.value` 
-
+JVM: `-Dgravitee.variables.[{index}].variables.value` <br>
 Default: `{#jsonPath(#calloutResponse.content, '$.field')}`  
 
 <p>
