@@ -92,7 +92,7 @@ Warning: this some heavy doc
 | Proxy Options<br>`proxy`| object|  | |  |  | <br/>See "Proxy Options" section|
 | Scope<br>`scope`| enum (string)|  | `REQUEST`|  |  | Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.<br>Values:`REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT` |
 | SSL Options<br>`ssl`| object|  | |  |  | <br/>See "SSL Options" section|
-| Tags<br>`tags`| array<br>[1, 3], unique|  | `[defaulted]`|  |  | Some tags|
+| Tags<br>`tags`| array<br>[1, 3], unique|  | `[defaulted and again]`|  |  | Some tags|
 | URL<br>`url`| string<br>[1, 150]| ✅| | ✅| ✅| |
 | Context variables<br>`variables`| array|  | |  |  | <br/>See "Context variables" section|
 
@@ -306,13 +306,24 @@ Warning: this some heavy doc
                 "exitOnError": false,
                 "fireAndForget": false,
                 "method": "GET",
+                "proxy": {
+                  "enabled": false,
+                  "useSystemProxy": false
+                },
                 "scope": "REQUEST",
                 "ssl": {
                   "hostnameVerifier": true,
-                  "trustAll": false
+                  "keyStore": {
+                    "type": ""
+                  },
+                  "trustAll": false,
+                  "trustStore": {
+                    "type": ""
+                  }
                 },
                 "tags": [
-                  "defaulted"
+                  "defaulted",
+                  "and again"
                 ],
                 "url": "http://localhost:8080/api",
                 "variables": [
@@ -356,12 +367,20 @@ spec:
               exitOnError: false
               fireAndForget: false
               method: GET
+              proxy:
+                enabled: false
+                useSystemProxy: false
               scope: REQUEST
               ssl:
                 hostnameVerifier: true
+                keyStore:
+                  type: ""
                 trustAll: false
+                trustStore:
+                  type: ""
               tags:
                 - defaulted
+                - and again
               url: http://localhost:8080/api
               variables:
                 - name: field
@@ -528,31 +547,9 @@ spec:
 
 ## As Yaml with comments
 ```yaml
-# Request body (string)
-body: 
-# Constraint test bed
-# For the sake of testing
-constraints: 
-  # Description (string)
-  description: 
-  # Lower bounds (number)
-  lowerBounds: 
-  # Middle bounds (number)
-  middleBounds: 
-  # Open lower bound (number)
-  openLowerBounds: 
-  # Open upper bound (number)
-  openUpperBounds: 
-  # Ratio (number)
-  ratio: 
-  # Upper bounds (number)
-  upperBounds: 
 # Error condition (string)
 # The condition which will be verified to end the request (support EL).
 errorCondition: "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}"
-# Error response body (string)
-# The body response of the error if the condition is true (support EL)
-errorContent: 
 # Error status code (enum (string))
 # HTTP Status Code send to the consumer if the condition is true
 errorStatusCode: 500 # Possible values: "100" "101" "102" "200" "201" "202" "203" "204" "205" "206" "207" "300" "301" "302" "303" "304" "305" "307" "400" "401" "402" "403" "404" "405" "406" "407" "408" "409" "410" "411" "412" "413" "414" "415" "416" "417" "422" "423" "424" "429" "500" "501" "502" "503" "504" "505" "507" 
@@ -562,107 +559,84 @@ exitOnError:
 # Fire & forget (boolean)
 # Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.
 fireAndForget: 
-# Request Headers
-headers: 
-  # Name (string)
-  - name: 
-    # Value (string)
-    value: 
 # HTTP Method (enum (string))
 # HTTP method to invoke the endpoint.
 method: GET # Possible values: "GET" "POST" "PUT" "DELETE" "PATCH" "HEAD" "CONNECT" "OPTIONS" "TRACE" 
-# Proxy Options
+# 
 proxy: 
-  # 
-  enabled:  # Possible values: false true 
-  # 
-  useSystemProxy:  # Possible values: false true 
-  # Proxy host
-  # When enabled = true and useSystemProxy = false
-  host: proxy.acme.com
-  # Proxy password
-  # When enabled = true and useSystemProxy = false
-  password: "[redacted]"
-  # Proxy port
-  # When enabled = true and useSystemProxy = false
-  port: 3524
-  # Proxy Type
-  # When enabled = true and useSystemProxy = false
-  type: SOCKS5 # Possible values: "SOCKS4" "SOCKS5" 
-  # Proxy username
-  # When enabled = true and useSystemProxy = false
-  username: admin
+   # 
+   # When enabled = false and useSystemProxy = false
+   enabled:  # Possible values: false true 
+   # 
+   # When enabled = false and useSystemProxy = false
+   useSystemProxy:  # Possible values: false true 
+   # Proxy host (string)
+   # Proxy host to connect to
+   # When enabled = true and useSystemProxy = false
+   host: proxy.acme.com
+   # Proxy password (string)
+   # Optional proxy password
+   # When enabled = true and useSystemProxy = false
+   password: "[redacted]"
+   # Proxy port (integer)
+   # Proxy port to connect to
+   # When enabled = true and useSystemProxy = false
+   port: 3524
+   # Proxy Type (enum (string))
+   # The type of the proxy
+   # When enabled = true and useSystemProxy = false
+   type: SOCKS5
+   # Proxy username (string)
+   # Optional proxy username
+   # When enabled = true and useSystemProxy = false
+   username: admin
 # Scope (enum (string))
 # Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
 scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
-# SSL Options
+# 
 ssl: 
-  # Verify Host (boolean)
-  # Use to enable host name verification
-  hostnameVerifier: true
-  # Key store
-  keyStore: 
-    # 
-    type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Alias for the key
-    # When type = 'JKS' or 'PKCS12'
-    alias: 
-    # Key Password
-    # When type = 'JKS' or 'PKCS12'
-    keyPassword: 
-    # Password
-    # When type = 'JKS' or 'PKCS12'
-    password: 
-    # Path to key store
-    # When type = 'JKS' or 'PKCS12'
-    path: 
-    # Content
-    # When type = 'JKS' or 'PKCS12'
-    content: 
-    # Path to cert file
-    # When type = 'PEM'
-    certPath: 
-    # Path to private key file
-    # When type = 'PEM'
-    keyPath: 
-    # Certificate
-    # When type = 'PEM'
-    certContent: 
-    # Private key
-    # When type = 'PEM'
-    keyContent: 
-  # Trust all (boolean)
-  # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
-  trustAll: 
-  # Truststore
-  trustStore: 
-    # 
-    type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Password
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
-    password: "[redacted]"
-    # Path to truststore
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
-    path: 
-    # Content
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
-    content: |-
-        --- BEGIN CERTIFICATE ---
-    
-        --- END CERTIFICATE ---
+   # Verify Host (boolean)
+   # Use to enable host name verification
+   hostnameVerifier: true
+   # 
+   keyStore: 
+      # 
+      # When type = ''
+      type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+   # Trust all (boolean)
+   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
+   trustAll: 
+   # 
+   trustStore: 
+      # 
+      # When type = ''
+      type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
+      # Password (string)
+      # Truststore password
+      # When type = 'JKS'
+      password: "[redacted]"
+      # Content (string)
+      # Binary content as Base64
+      # When type = 'JKS'
+      content: |-
+          --- BEGIN CERTIFICATE ---
+      
+          --- END CERTIFICATE ---
 # Tags
 # Some tags
 tags: 
   # 
   - defaulted
+  # 
+  - and again
 # URL (string)
 url: http://localhost:8080/api
 # Context variables
 variables: 
-  # Name (string)
-  - name: field
-    # Value (string)
-    value: "{#jsonPath(#calloutResponse.content, '$.field')}"
+   # Name (string)
+   - name: field
+     # Value (string)
+     value: "{#jsonPath(#calloutResponse.content, '$.field')}"
 
 ```
 
@@ -875,24 +849,6 @@ variables:
 
 
 
-####  Request body
-| | |
-|---:|---|
-|ENV| **GRAVITEE_BODY**|
-|JVM|`-Dgravitee.body`|
-
-<hr>
-
-
-####  Constraint test bed
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS**|
-|JVM|`-Dgravitee.constraints`|
-For the sake of testing
-<hr>
-
-
 ####  Error condition
 | | |
 |---:|---|
@@ -900,15 +856,6 @@ For the sake of testing
 |JVM|`-Dgravitee.errorcondition`|
 |Default| `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`|
 The condition which will be verified to end the request (support EL).
-<hr>
-
-
-####  Error response body
-| | |
-|---:|---|
-|ENV| **GRAVITEE_ERRORCONTENT**|
-|JVM|`-Dgravitee.errorcontent`|
-The body response of the error if the condition is true (support EL)
 <hr>
 
 
@@ -941,15 +888,6 @@ Make the http call without expecting any response. When activating this mode, co
 <hr>
 
 
-####  Request Headers
-| | |
-|---:|---|
-|ENV| **GRAVITEE_HEADERS**|
-|JVM|`-Dgravitee.headers`|
-
-<hr>
-
-
 ####  HTTP Method
 | | |
 |---:|---|
@@ -958,15 +896,6 @@ Make the http call without expecting any response. When activating this mode, co
 |Default| `GET`|
 |Values| `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE` |
 HTTP method to invoke the endpoint.
-<hr>
-
-
-####  Proxy Options
-| | |
-|---:|---|
-|ENV| **GRAVITEE_PROXY**|
-|JVM|`-Dgravitee.proxy`|
-
 <hr>
 
 
@@ -981,25 +910,6 @@ Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</stron
 <hr>
 
 
-####  SSL Options
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL**|
-|JVM|`-Dgravitee.ssl`|
-
-<hr>
-
-
-####  Tags
-| | |
-|---:|---|
-|ENV| **GRAVITEE_TAGS**|
-|JVM|`-Dgravitee.tags`|
-|Default| `[defaulted]`|
-Some tags
-<hr>
-
-
 ####  URL
 | | |
 |---:|---|
@@ -1010,114 +920,13 @@ Some tags
 <hr>
 
 
-####  Context variables
-| | |
-|---:|---|
-|ENV| **GRAVITEE_VARIABLES**|
-|JVM|`-Dgravitee.variables`|
-
-<hr>
-
-
-### Constraint test bed
-For the sake of testing
-
-
-####  Description
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_DESCRIPTION**|
-|JVM|`-Dgravitee.constraints.description`|
-
-<hr>
-
-
-####  Lower bounds
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_LOWERBOUNDS**|
-|JVM|`-Dgravitee.constraints.lowerbounds`|
-
-<hr>
-
-
-####  Middle bounds
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_MIDDLEBOUNDS**|
-|JVM|`-Dgravitee.constraints.middlebounds`|
-
-<hr>
-
-
-####  Open lower bound
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_OPENLOWERBOUNDS**|
-|JVM|`-Dgravitee.constraints.openlowerbounds`|
-
-<hr>
-
-
-####  Open upper bound
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_OPENUPPERBOUNDS**|
-|JVM|`-Dgravitee.constraints.openupperbounds`|
-
-<hr>
-
-
-####  Ratio
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_RATIO**|
-|JVM|`-Dgravitee.constraints.ratio`|
-
-<hr>
-
-
-####  Upper bounds
-| | |
-|---:|---|
-|ENV| **GRAVITEE_CONSTRAINTS_UPPERBOUNDS**|
-|JVM|`-Dgravitee.constraints.upperbounds`|
-
-<hr>
-
-
-### Request Headers
-
-
-
-####  Name
-| | |
-|---:|---|
-|ENV| **GRAVITEE_HEADERS_{index}_HEADERS_NAME**|
-|JVM|`-Dgravitee.headers.[{index}].headers.name`|
-
-<hr>
-
-
-####  Value
-| | |
-|---:|---|
-|ENV| **GRAVITEE_HEADERS_{index}_HEADERS_VALUE**|
-|JVM|`-Dgravitee.headers.[{index}].headers.value`|
-
-<hr>
-
-
-### Proxy Options
-
-
-
 ####  
 | | |
 |---:|---|
 |ENV| **GRAVITEE_PROXY_ENABLED**|
 |JVM|`-Dgravitee.proxy.enabled`|
 |Values| `false` `true` |
+|When| `enabled = false`  and `useSystemProxy = false` |
 
 <hr>
 
@@ -1128,6 +937,7 @@ For the sake of testing
 |ENV| **GRAVITEE_PROXY_USESYSTEMPROXY**|
 |JVM|`-Dgravitee.proxy.usesystemproxy`|
 |Values| `false` `true` |
+|When| `enabled = false`  and `useSystemProxy = false` |
 
 <hr>
 
@@ -1171,7 +981,6 @@ Proxy port to connect to
 |ENV| **GRAVITEE_PROXY_TYPE**|
 |JVM|`-Dgravitee.proxy.type`|
 |Default| `SOCKS5`|
-|Values| `SOCKS4` `SOCKS5` |
 |When| `enabled = true`  and `useSystemProxy = false` |
 The type of the proxy
 <hr>
@@ -1188,10 +997,6 @@ Optional proxy username
 <hr>
 
 
-### SSL Options
-
-
-
 ####  Verify Host
 | | |
 |---:|---|
@@ -1199,15 +1004,6 @@ Optional proxy username
 |JVM|`-Dgravitee.ssl.hostnameverifier`|
 |Default| `true`|
 Use to enable host name verification
-<hr>
-
-
-####  Key store
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE**|
-|JVM|`-Dgravitee.ssl.keystore`|
-
 <hr>
 
 
@@ -1220,111 +1016,13 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 <hr>
 
 
-####  Truststore
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE**|
-|JVM|`-Dgravitee.ssl.truststore`|
-
-<hr>
-
-
 ####  
 | | |
 |---:|---|
 |ENV| **GRAVITEE_SSL_KEYSTORE_TYPE**|
 |JVM|`-Dgravitee.ssl.keystore.type`|
 |Values| `` `JKS` `PKCS12` `PEM` |
-
-<hr>
-
-
-####  Alias for the key
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_ALIAS**|
-|JVM|`-Dgravitee.ssl.keystore.alias`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Alias of the key to use in case the key store contains more than one key
-<hr>
-
-
-####  Key Password
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPASSWORD**|
-|JVM|`-Dgravitee.ssl.keystore.keypassword`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Password to use to access the key when protected by password
-<hr>
-
-
-####  Password
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_PASSWORD**|
-|JVM|`-Dgravitee.ssl.keystore.password`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Password to use to open the key store
-<hr>
-
-
-####  Path to key store
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_PATH**|
-|JVM|`-Dgravitee.ssl.keystore.path`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Path to the key store file
-<hr>
-
-
-####  Content
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.content`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Binary content as Base64
-<hr>
-
-
-####  Path to cert file
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CERTPATH**|
-|JVM|`-Dgravitee.ssl.keystore.certpath`|
-|When| `type = 'PEM'` |
-Path to cert file (.PEM)
-<hr>
-
-
-####  Path to private key file
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPATH**|
-|JVM|`-Dgravitee.ssl.keystore.keypath`|
-|When| `type = 'PEM'` |
-Path to private key file (.PEM)
-<hr>
-
-
-####  Certificate
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CERTCONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.certcontent`|
-|When| `type = 'PEM'` |
-
-<hr>
-
-
-####  Private key
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYCONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.keycontent`|
-|When| `type = 'PEM'` |
+|When| `type = ''` |
 
 <hr>
 
@@ -1335,6 +1033,7 @@ Path to private key file (.PEM)
 |ENV| **GRAVITEE_SSL_TRUSTSTORE_TYPE**|
 |JVM|`-Dgravitee.ssl.truststore.type`|
 |Values| `` `JKS` `PKCS12` `PEM` |
+|When| `type = ''` |
 
 <hr>
 
@@ -1345,18 +1044,8 @@ Path to private key file (.PEM)
 |ENV| **GRAVITEE_SSL_TRUSTSTORE_PASSWORD**|
 |JVM|`-Dgravitee.ssl.truststore.password`|
 |Default| `[redacted]`|
-|When| `type = 'PEM'` or `'JKS'` or `'PKCS12'` |
+|When| `type = 'JKS'` |
 Truststore password
-<hr>
-
-
-####  Path to truststore
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_PATH**|
-|JVM|`-Dgravitee.ssl.truststore.path`|
-|When| `type = 'JKS'` or `'PKCS12'` or `'PEM'` |
-Path to the truststore file
 <hr>
 
 
@@ -1368,7 +1057,7 @@ Path to the truststore file
 |Default| `--- BEGIN CERTIFICATE ---
 
 --- END CERTIFICATE ---`|
-|When| `type = 'PKCS12'` or `'PEM'` or `'JKS'` |
+|When| `type = 'JKS'` |
 Binary content as Base64
 <hr>
 
@@ -1376,22 +1065,26 @@ Binary content as Base64
 ####  Tags
 | | |
 |---:|---|
-|ENV| **GRAVITEE_TAGS**|
-|JVM|`-Dgravitee.tags`|
-|Default| `[defaulted]`|
+|ENV| **GRAVITEE_TAGS_{index}**|
+|JVM|`-Dgravitee.tags[{index}]`|
 Some tags
 <hr>
 
 
-### Context variables
-
+####  Tags
+| | |
+|---:|---|
+|ENV| **GRAVITEE_TAGS_{index}**|
+|JVM|`-Dgravitee.tags[{index}]`|
+Some tags
+<hr>
 
 
 ####  Name
 | | |
 |---:|---|
-|ENV| **GRAVITEE_VARIABLES_{index}_VARIABLES_NAME**|
-|JVM|`-Dgravitee.variables.[{index}].variables.name`|
+|ENV| **GRAVITEE_TAGS_{index}_VARIABLES_{index}_NAME**|
+|JVM|`-Dgravitee.tags[{index}].variables[{index}].name`|
 |Default| `field`|
 
 <hr>
@@ -1400,8 +1093,8 @@ Some tags
 ####  Value
 | | |
 |---:|---|
-|ENV| **GRAVITEE_VARIABLES_{index}_VARIABLES_VALUE**|
-|JVM|`-Dgravitee.variables.[{index}].variables.value`|
+|ENV| **GRAVITEE_TAGS_{index}_VARIABLES_{index}_VALUE**|
+|JVM|`-Dgravitee.tags[{index}].variables[{index}].value`|
 |Default| `{#jsonPath(#calloutResponse.content, '$.field')}`|
 
 <hr>

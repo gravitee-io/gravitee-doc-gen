@@ -29,7 +29,8 @@
       "maxItems": 3,
       "uniqueItems": true,
       "default": [
-        "defaulted"
+        "defaulted",
+        "and again"
       ]
     },
     "url": {

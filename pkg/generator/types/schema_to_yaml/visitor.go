@@ -2,205 +2,93 @@ package schema_to_yaml
 
 import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
-	"github.com/santhosh-tekuri/jsonschema/v5"
 	"gopkg.in/yaml.v3"
-	"slices"
 )
 
-type Set map[any]bool
-
-func fromSlice(slice []any) Set {
-	set := Set{}
-	for _, v := range slice {
-		set[v] = true
-	}
-	return set
-}
-
-func (s Set) toSlice() []any {
-	slice := make([]any, 0, len(s))
-	for v := range s {
-		slice = append(slice, v)
-	}
-	return slice
-}
-
-type baseLine struct {
-	Title       string
-	Description string
-	Type        string
-	Value       any
-	When        map[string]Set
-	Enums       []any
-}
-
-type line struct {
-	baseLine
+type yamlLine struct {
+	schema.Attribute
 	Pad        int
 	ArrayStart bool
 	Property   string
 }
 
-type oneOfProperty struct {
-	baseLine
+type toYamlVisitor struct {
+	Lines          []yamlLine
+	padding        int
+	inArray        bool
+	arrayFirstItem bool
 }
 
-func (o oneOfProperty) toLine(property string, pad int, arrayStart bool) line {
-	return line{
-		baseLine:   o.baseLine,
-		Pad:        pad,
-		ArrayStart: arrayStart,
-		Property:   property,
-	}
-}
-
-func newSchemaVisitor() schemaVisitor {
-	return schemaVisitor{
-		Lines:               make([]line, 0),
-		oneOfProperties:     make(map[string]oneOfProperty),
-		oneOfDiscriminators: make([]string, 0),
-	}
-}
-
-type schemaVisitor struct {
-	Lines                []line
-	padding              int
-	pad                  int
-	inArray              bool
-	firstArrayItem       bool
-	oneOfPropertiesNames []string
-	oneOfProperties      map[string]oneOfProperty
-	oneOfDiscriminators  []string
-}
-
-func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
-
-	if ctx.CurrentOneOf().Present && !ctx.CurrentOneOf().IsDiscriminator(property) {
-		v.addOneOfProperty(ctx, property, attribute, parent)
-		return nil
-	}
-
-	if ctx.CurrentOneOf().Present && slices.Contains(v.oneOfDiscriminators, property) {
-		return nil
-	}
-
-	if ctx.CurrentOneOf().Present {
-		v.oneOfDiscriminators = append(v.oneOfDiscriminators, property)
-	}
-
-	v.Lines = append(v.Lines, line{
-		baseLine: baseLine{
-			Title:       attribute.Title,
-			Description: attribute.Description,
-			Type:        schema.GetType(attribute),
-			Value:       encode(schema.GetDefaultOrFirstExample(attribute, ctx), schema.GetType(attribute) == "string"),
-			Enums:       getEnums(attribute, property, ctx.CurrentOneOf()),
-		},
-		Pad:        v.pad,
-		Property:   property,
-		ArrayStart: v.firstArrayItem,
-	})
-	if v.firstArrayItem {
-		v.pad += 2
-		v.firstArrayItem = false
-	}
-	return nil
-}
-
-func (v *schemaVisitor) OnObjectStart(_ *schema.VisitContext, property string, object *jsonschema.Schema) {
-	if v.inArray {
+func (v *toYamlVisitor) OnObjectStart(object schema.Object, level int) {
+	if level == 0 || v.inArray {
 		return
 	}
-	v.Lines = append(v.Lines, line{
-		Pad:      v.pad,
-		Property: property,
-		baseLine: baseLine{
-			Title:       object.Title,
-			Description: object.Description,
-		},
+	attribute := schema.NewAttribute(object.Name(), nil)
+	attribute.Title = object.Title
+	attribute.Description = object.Description
+	v.Lines = append(v.Lines, yamlLine{
+		Pad:       v.pad(level),
+		Property:  object.Name(),
+		Attribute: *attribute,
 	})
-	v.pad += v.padding
 }
 
-func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
-	if !ctx.CurrentOneOf().Present {
-		for _, property := range v.oneOfPropertiesNames {
-			oneOf := v.oneOfProperties[property]
-			v.Lines = append(v.Lines, oneOf.toLine(property, v.pad, v.firstArrayItem))
-		}
-		v.oneOfDiscriminators = make([]string, 0)
-		v.oneOfProperties = make(map[string]oneOfProperty)
-		v.oneOfPropertiesNames = make([]string, 0)
-	}
-	if v.inArray {
-		v.pad -= 2
-		v.firstArrayItem = true
-	} else {
-		v.pad -= v.padding
-	}
+func (v *toYamlVisitor) pad(level int) int {
+	// level 0 is just the root level, all the rest is level>0 so to compute padding we need to lower the level by 1
+	return v.padding * (level - 1)
 }
 
-func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
-	v.Lines = append(v.Lines, line{
-		baseLine: baseLine{
-			Title:       array.Title,
-			Description: array.Description,
-		},
-		Pad:      v.pad,
-		Property: property,
+func (v *toYamlVisitor) OnObjectEnd(schema.Object, int) {
+	// no op
+}
+
+func (v *toYamlVisitor) OnArrayStart(array schema.Array, level int) {
+	attribute := schema.NewAttribute(array.Name(), nil)
+	attribute.Title = array.Title
+	attribute.Description = array.Description
+	v.Lines = append(v.Lines, yamlLine{
+		Pad:       v.pad(level),
+		Property:  array.Name(),
+		Attribute: *attribute,
 	})
 	v.inArray = true
-	v.firstArrayItem = true
-	v.pad += 2
-	if !itemTypeIsObject {
-		def := array.Default
-		array := def.([]interface{})
-		for _, i := range array {
-			v.Lines = append(v.Lines, line{
-				Pad:        v.pad,
-				ArrayStart: true,
-				baseLine: baseLine{
-					Value: i,
-				},
-			})
-		}
-	}
-	return nil
+	v.arrayFirstItem = true
 }
 
-func (v *schemaVisitor) OnArrayEnd(_ *schema.VisitContext, itemTypeIsObject bool) {
-	v.firstArrayItem = false
+func (v *toYamlVisitor) OnArrayItem(parent schema.Array, value schema.Value, level int) {
+	attribute := schema.NewAttribute("", nil)
+	attribute.Value = encode(value.Value, attribute.Type == "string")
+	v.Lines = append(v.Lines, yamlLine{
+		Pad:        v.pad(level) + 2, // to have array padded in regard to their container name (not compulsory)
+		ArrayStart: v.arrayFirstItem,
+		Attribute:  *attribute,
+	})
+}
+
+func (v *toYamlVisitor) OnArrayEnd(schema.Array, int) {
 	v.inArray = false
-	if itemTypeIsObject {
-		v.pad -= 4
-	} else {
-		v.pad -= 2
-	}
+	v.arrayFirstItem = false
 }
 
-func (v *schemaVisitor) OnOneOfStart(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
-	// no op
-}
-
-func (v *schemaVisitor) OnOneOfEnd(*schema.VisitContext) {
-	// no op
-}
-
-func getEnums(attribute *jsonschema.Schema, property string, oneOf schema.OneOf) []any {
-	if oneOf.IsZero() {
-		return attribute.Enum
+func (v *toYamlVisitor) OnAttribute(attribute schema.Attribute, level int) {
+	pad := v.pad(level)
+	// OnAttribute() means we are in an object, we remove the object level padding if already in an array
+	// Avoid extra padding (not compulsory but looks better)
+	if v.inArray {
+		pad -= v.padding
 	}
-	enums := make([]any, 0)
-	for _, spec := range oneOf.Specs {
-		if spec.Property == property {
-			for _, v := range spec.Values {
-				if !slices.Contains(enums, v) {
-					enums = append(enums, v)
-				}
-			}
-		}
+	// mandatory padding for object second and following attributes attribute in an array
+	if v.inArray && !v.arrayFirstItem {
+		pad += 2
 	}
-	return enums
+	attribute.Value = encode(attribute.Value, attribute.Type == "string")
+	v.Lines = append(v.Lines, yamlLine{
+		Pad:        pad,
+		Property:   attribute.Name(),
+		ArrayStart: v.arrayFirstItem,
+		Attribute:  attribute,
+	})
+	v.arrayFirstItem = false
 }
 
 func encode(value any, isString bool) any {
@@ -214,44 +102,4 @@ func encode(value any, isString bool) any {
 		return string(s)
 	}
 	return value
-}
-
-func (v *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
-	if v.oneOfProperties == nil {
-		v.oneOfProperties = make(map[string]oneOfProperty)
-		v.oneOfDiscriminators = make([]string, 0)
-	}
-	var update oneOfProperty
-	if oneOfProp, ok := v.oneOfProperties[property]; ok {
-		v.updateWhen(ctx, parent, &oneOfProp)
-		update = oneOfProp
-	} else {
-		v.oneOfPropertiesNames = append(v.oneOfPropertiesNames, property)
-		oneOfProp = oneOfProperty{
-			baseLine: baseLine{
-				When: make(map[string]Set),
-			},
-		}
-		oneOfProp.Value = encode(schema.GetDefaultOrFirstExample(attribute, ctx), schema.GetType(attribute) == "string")
-		oneOfProp.Title = attribute.Title
-		oneOfProp.Enums = fromSlice(attribute.Enum).toSlice()
-		v.updateWhen(ctx, parent, &oneOfProp)
-		update = oneOfProp
-	}
-	v.oneOfProperties[property] = update
-
-}
-
-func (v *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.Schema, oneOfProperty *oneOfProperty) {
-	for _, spec := range ctx.CurrentOneOf().Specs {
-		value := schema.GetDefaultOrFirstExample(parent.Properties[spec.Property], ctx)
-		if s, ok := oneOfProperty.When[spec.Property]; ok {
-			s[value] = true
-			oneOfProperty.When[spec.Property] = s
-		} else {
-			s = Set{}
-			s[value] = true
-			oneOfProperty.When[spec.Property] = s
-		}
-	}
 }

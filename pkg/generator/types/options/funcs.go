@@ -48,7 +48,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	ctx := schema.NewVisitContext(true, true)
+	ctx := schema.NewVisitContext(true, true).WithStack(schema.NewObject(""))
 	schema.Visit(ctx, &options, root)
 
 	return chunks.Processed{Data: options}, err
@@ -73,7 +73,7 @@ func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, a
 	return nil
 }
 
-func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string, object *jsonschema.Schema) {
+func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string, object *jsonschema.Schema) *schema.Object {
 
 	objectType := "object"
 	if ctx.CurrentOneOf().Present {
@@ -98,19 +98,20 @@ func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string,
 		}
 
 	}
+	return nil
 }
 
-func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*schema.Array, []schema.Value) {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,
 			Type:  "array",
 		})
 	}
-	return nil
+	return nil, nil
 }
 
-func (options *Options) OnOneOfStart(ctx *schema.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
+func (options *Options) OnOneOf(ctx *schema.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
 	specs := ctx.CurrentOneOf().Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {

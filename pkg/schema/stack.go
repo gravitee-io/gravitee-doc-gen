@@ -1,12 +1,24 @@
 package schema
 
+import "fmt"
+
 type NodeStack struct {
 	stack []Node
 }
 
-func NewNodeStack(root Node) *NodeStack {
+func NewNodeStack(root *Object) *NodeStack {
+	root.root = true
 	return &NodeStack{
 		stack: []Node{root},
+	}
+}
+
+func (s *NodeStack) Reset() {
+	for {
+		if object, ok := s.Peek().(*Object); ok && object.root {
+			break
+		}
+		s.pop()
 	}
 }
 
@@ -40,20 +52,26 @@ func (s *NodeStack) GetAncestorProperty() []string {
 	return ancestors
 }
 
-func (s *NodeStack) add(ctx *VisitContext, toAdd Node) {
+func (s *NodeStack) add(ctx *VisitContext, added Node) {
 	if s == nil {
 		panic("stack is nil, cannot add node to stack. stack it should created with the visitor")
 	}
-	node := ctx.NodeStack().peek()
+	node := ctx.NodeStack().Peek()
 	if node.Kind() == ArrayNode {
 		array := node.(*Array)
-		array.Items = append(array.Items, toAdd)
+		array.Items = append(array.Items, added)
 	} else if node.Kind() == ObjectNode {
-		node.(*Object).Fields[toAdd.Name()] = toAdd
+		node.(*Object).AddChild(added)
+	}
+	if added.Kind() == AttributeNode {
+		attribute := added.(*Attribute)
+		if attribute.IsOneOfProperty {
+			attribute.updateWhen(ctx)
+		}
 	}
 
-	if toAdd.Kind() == ObjectNode || toAdd.Kind() == ArrayNode {
-		ctx.NodeStack().push(toAdd)
+	if added.Kind() == ObjectNode || added.Kind() == ArrayNode {
+		ctx.NodeStack().push(added)
 	}
 }
 
@@ -64,7 +82,7 @@ func (s *NodeStack) push(value Node) {
 	s.stack = append(s.stack, value)
 }
 
-func (s *NodeStack) peek() Node {
+func (s *NodeStack) Peek() Node {
 	if s == nil {
 		panic("stack is nil, cannot add node to stack. stack it should created with the visitor.")
 	}
@@ -81,7 +99,8 @@ func (s *NodeStack) pop() {
 	// check if current needs to be removed
 	var property string
 	var remove bool
-	node := s.peek()
+	node := s.Peek()
+	fmt.Println("pop", node.Name(), node.Kind().String())
 	if node != nil && node.IsEmpty() {
 		property = node.Name()
 		remove = true
@@ -89,8 +108,8 @@ func (s *NodeStack) pop() {
 
 	s.stack = removeLast[Node](s.stack)
 
-	if remove {
-		if last := s.peek(); last.Kind() == ArrayNode {
+	if remove && !isRoot(node) {
+		if last := s.Peek(); last.Kind() == ArrayNode {
 			array := last.(*Array)
 			array.Items = removeLast(array.Items)
 		} else if last.Kind() == ObjectNode {
@@ -106,4 +125,11 @@ func removeLast[T any](slice []T) []T {
 		return slice
 	}
 	return slice[:len(slice)-1]
+}
+
+func isRoot(n Node) bool {
+	if n.Kind() == ObjectNode {
+		return n.(*Object).root
+	}
+	return false
 }

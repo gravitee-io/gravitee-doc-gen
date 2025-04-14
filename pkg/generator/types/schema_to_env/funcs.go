@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
+	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/common"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
 )
@@ -31,11 +32,22 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		return chunks.Processed{}, err
 	}
 
+	ctx := schema.NewVisitContext(true, true).WithStack(schema.NewObject(""))
+	schema.Visit(ctx, &types.SchemaVisitor{KeepAllOneOfAttributes: true}, compiled)
+
 	indexPlaceholder := common.GetDataOrDefault[string](chunk, "indexPlaceholder", "X")
 	prefix := common.GetDataOrDefault[string](chunk, "prefix", "")
-	schemaVisitor := newSchemaVisitor(indexPlaceholder, prefix)
-	schema.Visit(schema.NewVisitContextWithStack(schema.NewObject(""), true, true), &schemaVisitor, compiled)
 
-	processed := chunks.Processed{Data: schemaVisitor}
+	envVisitor := toEnvVisitor{
+		Sections:         make([]*envSection, 0),
+		jvmPaths:         make([]string, 0),
+		envPaths:         make([]string, 0),
+		indexPlaceholder: indexPlaceholder,
+		prefix:           prefix,
+	}
+
+	types.Visit(ctx, &envVisitor)
+
+	processed := chunks.Processed{Data: envVisitor}
 	return processed, nil
 }

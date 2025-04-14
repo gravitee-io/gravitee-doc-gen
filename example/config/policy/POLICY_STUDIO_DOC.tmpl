@@ -10,3 +10,16 @@
 ## Errors
 {{ .Errors.Content }}
 {{end }}
+
+
+## As Yaml with comments
+```yaml
+{{ .Yaml.Content }}
+```
+
+## Environment variables
+
+{{ .Env.Content }}
+
+## Examples
+{{ .GenExamples.Content }}

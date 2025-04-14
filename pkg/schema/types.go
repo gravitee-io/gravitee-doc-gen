@@ -6,11 +6,11 @@ import (
 
 type Visitor interface {
 	OnAttribute(ctx *VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *Attribute
-	OnObjectStart(ctx *VisitContext, property string, object *jsonschema.Schema)
+	OnObjectStart(ctx *VisitContext, property string, object *jsonschema.Schema) *Object
 	OnObjectEnd(ctx *VisitContext)
-	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (values []Value)
+	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*Array, []Value)
 	OnArrayEnd(ctx *VisitContext, itemTypeIsObject bool)
-	OnOneOfStart(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
+	OnOneOf(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
 	OnOneOfEnd(*VisitContext)
 }
 
@@ -37,4 +37,14 @@ type DiscriminatorSpec struct {
 	Values   []any
 	Property string
 	Type     string
+}
+
+type OneOfFilter struct {
+	Path           []string       `json:"path"`
+	Discriminators map[string]any `json:"discriminators"`
+	Index          int            `json:"index"`
+}
+
+func (f OneOfFilter) IsZero() bool {
+	return len(f.Path) == 0 && len(f.Discriminators) == 0 && f.Index == 0
 }
