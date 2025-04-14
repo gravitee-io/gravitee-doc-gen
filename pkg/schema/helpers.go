@@ -9,16 +9,6 @@ func IsRequired(name string, parent *jsonschema.Schema) bool {
 	required := parent.Required
 	return required != nil && slices.Contains(required, name)
 }
-func GetConstantOrDefault(att *jsonschema.Schema, ctx *VisitContext) any {
-	if att.Constant != nil {
-		return att.Constant[0]
-	}
-	def := att.Default
-	if def == nil && GetType(att) == "boolean" && ctx.IsAutoDefaultBooleans() {
-		return false
-	}
-	return def
-}
 
 func GetTypeItem(attribute *jsonschema.Schema) string {
 	if GetType(attribute) == "array" {
@@ -33,4 +23,15 @@ func GetDefaultOrFirstExample(att *jsonschema.Schema, ctx *VisitContext) any {
 		value = att.Examples[0]
 	}
 	return value
+}
+
+func GetConstantOrDefault(att *jsonschema.Schema, ctx *VisitContext) any {
+	if att.Constant != nil {
+		return att.Constant[0]
+	}
+	def := att.Default
+	if def == nil && GetType(att) == "boolean" && ctx.IsAutoDefaultBooleans() {
+		return false
+	}
+	return def
 }

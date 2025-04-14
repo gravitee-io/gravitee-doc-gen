@@ -115,8 +115,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 | Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
+| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -573,6 +573,9 @@ proxy:
   enabled:  # Possible values: false true 
   # 
   useSystemProxy:  # Possible values: false true 
+  # Proxy username
+  # When enabled = true and useSystemProxy = false
+  username: admin
   # Proxy host
   # When enabled = true and useSystemProxy = false
   host: proxy.acme.com
@@ -584,10 +587,7 @@ proxy:
   port: 3524
   # Proxy Type
   # When enabled = true and useSystemProxy = false
-  type: SOCKS5 # Possible values: "SOCKS4" "SOCKS5" 
-  # Proxy username
-  # When enabled = true and useSystemProxy = false
-  username: admin
+  type: SOCKS5 # Possible values: "SOCKS5" "SOCKS4" 
 # Scope (enum (string))
 # Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
 scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
@@ -600,33 +600,33 @@ ssl:
   keyStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Alias for the key
-    # When type = 'PKCS12' or 'JKS'
-    alias: 
-    # Key Password
-    # When type = 'JKS' or 'PKCS12'
-    keyPassword: 
     # Path to key store
-    # When type = 'JKS' or 'PKCS12'
-    path: 
-    # Path to cert file
-    # When type = 'PEM'
-    certPath: 
-    # Password
-    # When type = 'JKS' or 'PKCS12'
-    password: 
-    # Content
     # When type = 'PKCS12' or 'JKS'
-    content: 
-    # Path to private key file
-    # When type = 'PEM'
-    keyPath: 
+    path: 
     # Certificate
     # When type = 'PEM'
     certContent: 
+    # Alias for the key
+    # When type = 'JKS' or 'PKCS12'
+    alias: 
+    # Password
+    # When type = 'JKS' or 'PKCS12'
+    password: 
+    # Path to cert file
+    # When type = 'PEM'
+    certPath: 
+    # Path to private key file
+    # When type = 'PEM'
+    keyPath: 
     # Private key
     # When type = 'PEM'
     keyContent: 
+    # Key Password
+    # When type = 'JKS' or 'PKCS12'
+    keyPassword: 
+    # Content
+    # When type = 'JKS' or 'PKCS12'
+    content: 
   # Trust all (boolean)
   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
   trustAll: 
@@ -635,10 +635,10 @@ ssl:
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
     # Password
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    # When type = 'PEM' or 'JKS' or 'PKCS12'
     password: "[redacted]"
     # Path to truststore
-    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    # When type = 'PKCS12' or 'PEM' or 'JKS'
     path: 
     # Content
     # When type = 'JKS' or 'PKCS12' or 'PEM'
@@ -862,4 +862,561 @@ variables:
  Bug Fixes
 
 * resolve form configuration ([985be4f](https://github.com/gravitee-io/gravitee-resource-cache-redis/commit/985be4f7ce6e6bd026cf375905cd8e10da346c28)), closes [gravitee-io/issues#7172](https://github.com/gravitee-io/issues/issues/7172)
+
+
+## Environment variable
+
+
+### 
+
+
+
+#### Request body
+ENV: **GRAVITEE_BODY** <br>
+JVM: `-Dgravitee.body`  
+
+<p>
+
+</p>
+
+
+
+#### Error condition
+ENV: **GRAVITEE_ERRORCONDITION** <br>
+JVM: `-Dgravitee.errorcondition` 
+
+Default: `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`  
+
+<p>
+The condition which will be verified to end the request (support EL).
+</p>
+
+
+
+#### Error response body
+ENV: **GRAVITEE_ERRORCONTENT** <br>
+JVM: `-Dgravitee.errorcontent`  
+
+<p>
+The body response of the error if the condition is true (support EL)
+</p>
+
+
+
+#### Error status code
+ENV: **GRAVITEE_ERRORSTATUSCODE** <br>
+JVM: `-Dgravitee.errorstatuscode` 
+
+Default: `500`  
+
+Values: `100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507` 
+
+<p>
+HTTP Status Code send to the consumer if the condition is true
+</p>
+
+
+
+#### Exit on error
+ENV: **GRAVITEE_EXITONERROR** <br>
+JVM: `-Dgravitee.exitonerror`  
+
+<p>
+Terminate the request if the error condition is true
+</p>
+
+
+
+#### Fire & forget
+ENV: **GRAVITEE_FIREANDFORGET** <br>
+JVM: `-Dgravitee.fireandforget`  
+
+<p>
+Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.
+</p>
+
+
+
+#### HTTP Method
+ENV: **GRAVITEE_METHOD** <br>
+JVM: `-Dgravitee.method` 
+
+Default: `GET`  
+
+Values: `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE` 
+
+<p>
+HTTP method to invoke the endpoint.
+</p>
+
+
+
+#### Scope
+ENV: **GRAVITEE_SCOPE** <br>
+JVM: `-Dgravitee.scope` 
+
+Default: `REQUEST`  
+
+Values: `REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT` 
+
+<p>
+Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
+</p>
+
+
+
+#### URL
+ENV: **GRAVITEE_URL** <br>
+JVM: `-Dgravitee.url` 
+
+Default: `http://localhost:8080/api`  
+
+<p>
+
+</p>
+
+
+
+
+### Constraint test bed
+For the sake of testing
+
+
+#### Description
+ENV: **GRAVITEE_CONSTRAINTS_DESCRIPTION** <br>
+JVM: `-Dgravitee.constraints.description`  
+
+<p>
+
+</p>
+
+
+
+#### Lower bounds
+ENV: **GRAVITEE_CONSTRAINTS_LOWERBOUNDS** <br>
+JVM: `-Dgravitee.constraints.lowerbounds`  
+
+<p>
+
+</p>
+
+
+
+#### Middle bounds
+ENV: **GRAVITEE_CONSTRAINTS_MIDDLEBOUNDS** <br>
+JVM: `-Dgravitee.constraints.middlebounds`  
+
+<p>
+
+</p>
+
+
+
+#### Open lower bound
+ENV: **GRAVITEE_CONSTRAINTS_OPENLOWERBOUNDS** <br>
+JVM: `-Dgravitee.constraints.openlowerbounds`  
+
+<p>
+
+</p>
+
+
+
+#### Open upper bound
+ENV: **GRAVITEE_CONSTRAINTS_OPENUPPERBOUNDS** <br>
+JVM: `-Dgravitee.constraints.openupperbounds`  
+
+<p>
+
+</p>
+
+
+
+#### Ratio
+ENV: **GRAVITEE_CONSTRAINTS_RATIO** <br>
+JVM: `-Dgravitee.constraints.ratio`  
+
+<p>
+
+</p>
+
+
+
+#### Upper bounds
+ENV: **GRAVITEE_CONSTRAINTS_UPPERBOUNDS** <br>
+JVM: `-Dgravitee.constraints.upperbounds`  
+
+<p>
+
+</p>
+
+
+
+
+### Request Headers
+
+
+
+#### Name
+ENV: **GRAVITEE_HEADERS_{index}_HEADERS_NAME** <br>
+JVM: `-Dgravitee.headers.[{index}].headers.name`  
+
+<p>
+
+</p>
+
+
+
+#### Value
+ENV: **GRAVITEE_HEADERS_{index}_HEADERS_VALUE** <br>
+JVM: `-Dgravitee.headers.[{index}].headers.value`  
+
+<p>
+
+</p>
+
+
+
+
+### Proxy Options
+
+
+
+#### 
+ENV: **GRAVITEE_PROXY_ENABLED** <br>
+JVM: `-Dgravitee.proxy.enabled`  
+
+Values: `false` `true` 
+
+<p>
+
+</p>
+
+
+
+#### 
+ENV: **GRAVITEE_PROXY_USESYSTEMPROXY** <br>
+JVM: `-Dgravitee.proxy.usesystemproxy`  
+
+Values: `false` `true` 
+
+<p>
+
+</p>
+
+
+
+#### Proxy port
+ENV: **GRAVITEE_PROXY_PORT** <br>
+JVM: `-Dgravitee.proxy.port` 
+
+Default: `3524`  
+
+When: `enabled = true`  and `useSystemProxy = false` 
+
+<p>
+Proxy port to connect to
+</p>
+
+
+
+#### Proxy Type
+ENV: **GRAVITEE_PROXY_TYPE** <br>
+JVM: `-Dgravitee.proxy.type` 
+
+Default: `SOCKS5`  
+
+Values: `SOCKS4` `SOCKS5` 
+
+When: `enabled = true`  and `useSystemProxy = false` 
+
+<p>
+The type of the proxy
+</p>
+
+
+
+#### Proxy username
+ENV: **GRAVITEE_PROXY_USERNAME** <br>
+JVM: `-Dgravitee.proxy.username` 
+
+Default: `admin`  
+
+When: `enabled = true`  and `useSystemProxy = false` 
+
+<p>
+Optional proxy username
+</p>
+
+
+
+#### Proxy host
+ENV: **GRAVITEE_PROXY_HOST** <br>
+JVM: `-Dgravitee.proxy.host` 
+
+Default: `proxy.acme.com`  
+
+When: `enabled = true`  and `useSystemProxy = false` 
+
+<p>
+Proxy host to connect to
+</p>
+
+
+
+#### Proxy password
+ENV: **GRAVITEE_PROXY_PASSWORD** <br>
+JVM: `-Dgravitee.proxy.password` 
+
+Default: `[redacted]`  
+
+When: `enabled = true`  and `useSystemProxy = false` 
+
+<p>
+Optional proxy password
+</p>
+
+
+
+
+### SSL Options
+
+
+
+#### Verify Host
+ENV: **GRAVITEE_SSL_HOSTNAMEVERIFIER** <br>
+JVM: `-Dgravitee.ssl.hostnameverifier` 
+
+Default: `true`  
+
+<p>
+Use to enable host name verification
+</p>
+
+
+
+#### Trust all
+ENV: **GRAVITEE_SSL_TRUSTALL** <br>
+JVM: `-Dgravitee.ssl.trustall`  
+
+<p>
+Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
+</p>
+
+
+
+#### 
+ENV: **GRAVITEE_SSL_KEYSTORE_TYPE** <br>
+JVM: `-Dgravitee.ssl.keystore.type`  
+
+Values: `` `JKS` `PKCS12` `PEM` 
+
+<p>
+
+</p>
+
+
+
+#### Alias for the key
+ENV: **GRAVITEE_SSL_KEYSTORE_ALIAS** <br>
+JVM: `-Dgravitee.ssl.keystore.alias`  
+
+When: `type = JKS` or `PKCS12` 
+
+<p>
+Alias of the key to use in case the key store contains more than one key
+</p>
+
+
+
+#### Key Password
+ENV: **GRAVITEE_SSL_KEYSTORE_KEYPASSWORD** <br>
+JVM: `-Dgravitee.ssl.keystore.keypassword`  
+
+When: `type = JKS` or `PKCS12` 
+
+<p>
+Password to use to access the key when protected by password
+</p>
+
+
+
+#### Content
+ENV: **GRAVITEE_SSL_KEYSTORE_CONTENT** <br>
+JVM: `-Dgravitee.ssl.keystore.content`  
+
+When: `type = JKS` or `PKCS12` 
+
+<p>
+Binary content as Base64
+</p>
+
+
+
+#### Password
+ENV: **GRAVITEE_SSL_KEYSTORE_PASSWORD** <br>
+JVM: `-Dgravitee.ssl.keystore.password`  
+
+When: `type = JKS` or `PKCS12` 
+
+<p>
+Password to use to open the key store
+</p>
+
+
+
+#### Path to key store
+ENV: **GRAVITEE_SSL_KEYSTORE_PATH** <br>
+JVM: `-Dgravitee.ssl.keystore.path`  
+
+When: `type = PKCS12` or `JKS` 
+
+<p>
+Path to the key store file
+</p>
+
+
+
+#### Path to cert file
+ENV: **GRAVITEE_SSL_KEYSTORE_CERTPATH** <br>
+JVM: `-Dgravitee.ssl.keystore.certpath`  
+
+When: `type = PEM` 
+
+<p>
+Path to cert file (.PEM)
+</p>
+
+
+
+#### Path to private key file
+ENV: **GRAVITEE_SSL_KEYSTORE_KEYPATH** <br>
+JVM: `-Dgravitee.ssl.keystore.keypath`  
+
+When: `type = PEM` 
+
+<p>
+Path to private key file (.PEM)
+</p>
+
+
+
+#### Certificate
+ENV: **GRAVITEE_SSL_KEYSTORE_CERTCONTENT** <br>
+JVM: `-Dgravitee.ssl.keystore.certcontent`  
+
+When: `type = PEM` 
+
+<p>
+
+</p>
+
+
+
+#### Private key
+ENV: **GRAVITEE_SSL_KEYSTORE_KEYCONTENT** <br>
+JVM: `-Dgravitee.ssl.keystore.keycontent`  
+
+When: `type = PEM` 
+
+<p>
+
+</p>
+
+
+
+#### 
+ENV: **GRAVITEE_SSL_TRUSTSTORE_TYPE** <br>
+JVM: `-Dgravitee.ssl.truststore.type`  
+
+Values: `` `JKS` `PKCS12` `PEM` 
+
+<p>
+
+</p>
+
+
+
+#### Password
+ENV: **GRAVITEE_SSL_TRUSTSTORE_PASSWORD** <br>
+JVM: `-Dgravitee.ssl.truststore.password` 
+
+Default: `[redacted]`  
+
+When: `type = JKS` or `PKCS12` or `PEM` 
+
+<p>
+Truststore password
+</p>
+
+
+
+#### Path to truststore
+ENV: **GRAVITEE_SSL_TRUSTSTORE_PATH** <br>
+JVM: `-Dgravitee.ssl.truststore.path`  
+
+When: `type = JKS` or `PKCS12` or `PEM` 
+
+<p>
+Path to the truststore file
+</p>
+
+
+
+#### Content
+ENV: **GRAVITEE_SSL_TRUSTSTORE_CONTENT** <br>
+JVM: `-Dgravitee.ssl.truststore.content` 
+
+Default: `--- BEGIN CERTIFICATE ---
+
+--- END CERTIFICATE ---`  
+
+When: `type = JKS` or `PKCS12` or `PEM` 
+
+<p>
+Binary content as Base64
+</p>
+
+
+
+#### Tags
+ENV: **GRAVITEE_TAGS_{index}_TAGS** <br>
+JVM: `-Dgravitee.tags.[{index}].tags` 
+
+Default: `[defaulted]`  
+
+<p>
+Some tags
+</p>
+
+
+
+
+### Context variables
+
+
+
+#### Name
+ENV: **GRAVITEE_VARIABLES_{index}_VARIABLES_NAME** <br>
+JVM: `-Dgravitee.variables.[{index}].variables.name` 
+
+Default: `field`  
+
+<p>
+
+</p>
+
+
+
+#### Value
+ENV: **GRAVITEE_VARIABLES_{index}_VARIABLES_VALUE** <br>
+JVM: `-Dgravitee.variables.[{index}].variables.value` 
+
+Default: `{#jsonPath(#calloutResponse.content, '$.field')}`  
+
+<p>
+
+</p>
+
+
 

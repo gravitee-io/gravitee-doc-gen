@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
+	"github.com/gravitee-io-labs/readme-gen/pkg/util"
 	"os"
 )
 
@@ -26,9 +27,16 @@ func FileExists(filename string) bool {
 }
 
 func GetDataTypeFile(chunk config.Chunk) string {
-	return GetFile(chunk, string(chunk.Type))
+	return GetString(chunk, string(chunk.Type))
 }
 
-func GetFile(chunk config.Chunk, key string) string {
-	return chunk.Data[key].(string)
+func GetString(chunk config.Chunk, key string) string {
+	return util.AnyToString(chunk.Data[key])
+}
+
+func GetDataOrDefault[T any](chunk config.Chunk, key string, defaultValue T) T {
+	if val := chunk.Data[key]; val != nil {
+		return val.(T)
+	}
+	return defaultValue
 }

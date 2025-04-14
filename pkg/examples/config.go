@@ -18,7 +18,7 @@ type ExampleSpecProvider interface {
 }
 
 func LoadConfig(chunk config.Chunk, provider ExampleSpecProvider) error {
-	examplesFile := common.GetFile(chunk, "examples")
+	examplesFile := common.GetString(chunk, "examples")
 	bytes, err := os.ReadFile(examplesFile)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func ValidateSpecs(specs []ExampleSpec, chunk config.Chunk) (bool, error) {
 }
 
 func CompileSchema(spec ExampleSpec, chunk config.Chunk) (*jsonschema.Schema, string, error) {
-	schemaFile := common.GetFile(chunk, "schema")
+	schemaFile := common.GetString(chunk, "schema")
 	if spec.GetOverrideSchema() != "" {
 		schemaFile = spec.GetOverrideSchema()
 	}

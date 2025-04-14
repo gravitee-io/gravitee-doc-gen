@@ -73,9 +73,9 @@ type schemaVisitor struct {
 	oneOfDiscriminators []string
 }
 
-func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) func() any {
+func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
 
-	if s.oneOfStarted && !s.isOneOfProperty(property, ctx.CurrentOneOf()) {
+	if s.oneOfStarted && !s.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
 		s.addOneOfProperty(ctx, property, attribute, parent)
 		return nil
 	}
@@ -139,7 +139,7 @@ func (s *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) func() any {
+func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
 	s.Lines = append(s.Lines, line{
 		baseLine: baseLine{
 			Title:       array.Title,
@@ -253,7 +253,7 @@ func (s *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.
 	}
 }
 
-func (s *schemaVisitor) isOneOfProperty(property string, oneOf schema.OneOf) bool {
+func (s *schemaVisitor) isOneOfDiscriminator(property string, oneOf schema.OneOf) bool {
 	for _, spec := range oneOf.Specs {
 		if spec.Property == property {
 			return true
