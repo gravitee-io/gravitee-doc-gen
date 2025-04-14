@@ -32,7 +32,8 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	}
 
 	indexPlaceholder := common.GetDataOrDefault[string](chunk, "indexPlaceholder", "X")
-	schemaVisitor := newSchemaVisitor(indexPlaceholder)
+	prefix := common.GetDataOrDefault[string](chunk, "prefix", "")
+	schemaVisitor := newSchemaVisitor(indexPlaceholder, prefix)
 	schema.Visit(schema.NewVisitContextWithStack(schema.NewObject(""), true, true), &schemaVisitor, compiled)
 
 	processed := chunks.Processed{Data: schemaVisitor}

@@ -100,7 +100,7 @@ func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string,
 	}
 }
 
-func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,

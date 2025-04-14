@@ -51,19 +51,6 @@ type oneOfProperty struct {
 	variable
 }
 
-func newSchemaVisitor(indexPlaceholder string) schemaVisitor {
-	first := &section{
-		Variables: make([]variable, 0),
-	}
-	return schemaVisitor{
-		Sections:            []*section{first},
-		indexPlaceholder:    indexPlaceholder,
-		currentSection:      first,
-		oneOfProperties:     make(map[string]oneOfProperty),
-		oneOfDiscriminators: make([]string, 0),
-	}
-}
-
 type schemaVisitor struct {
 	inArray             bool
 	firstArrayItem      bool
@@ -73,11 +60,26 @@ type schemaVisitor struct {
 	currentSection      *section
 	Sections            []*section
 	indexPlaceholder    string
+	prefix              string
+}
+
+func newSchemaVisitor(indexPlaceholder string, prefix string) schemaVisitor {
+	first := &section{
+		Variables: make([]variable, 0),
+	}
+	return schemaVisitor{
+		Sections:            []*section{first},
+		indexPlaceholder:    indexPlaceholder,
+		prefix:              prefix,
+		currentSection:      first,
+		oneOfProperties:     make(map[string]oneOfProperty),
+		oneOfDiscriminators: make([]string, 0),
+	}
 }
 
 func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 
-	if v.oneOfStarted && !v.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
+	if v.oneOfStarted && !ctx.CurrentOneOf().IsDiscriminator(property) {
 		v.addOneOfProperty(ctx, property, attribute, parent)
 		return nil
 	}
@@ -134,7 +136,7 @@ func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
+func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
 	if len(ctx.NodeStack().GetAncestorProperty()) == 0 && itemTypeIsObject {
 		section := &section{
 			Title:       array.Title,
@@ -174,18 +176,18 @@ func (v *schemaVisitor) OnOneOfEnd(*schema.VisitContext) {
 }
 
 func (v *schemaVisitor) getJvm(ctx *schema.VisitContext, property string) string {
-	return v.joinStackNodes(ctx, property, fmt.Sprintf("[%s]", v.indexPlaceholder), ".", strings.ToLower)
+	return v.joinStackNodes(ctx, property, v.prefix, fmt.Sprintf("[%s]", v.indexPlaceholder), ".", strings.ToLower)
 }
 func (v *schemaVisitor) getEnv(ctx *schema.VisitContext, property string) string {
-	return v.joinStackNodes(ctx, property, v.indexPlaceholder, "_", strings.ToUpper)
+	return v.joinStackNodes(ctx, property, v.prefix, v.indexPlaceholder, "_", strings.ToUpper)
 }
 
-func (v *schemaVisitor) joinStackNodes(ctx *schema.VisitContext, property string, arraySyntax string, sep string, format func(string) string) string {
+func (v *schemaVisitor) joinStackNodes(ctx *schema.VisitContext, property string, prefix string, arraySyntax string, sep string, format func(string) string) string {
 	nodes := ctx.NodeStack().Nodes()
 	elements := make([]string, 0)
-	elements = append(elements, format("gravitee"))
+	elements = append(elements, format(prefix))
 	for i := 1; i < len(nodes); i++ {
-		switch nodes[i].Type() {
+		switch nodes[i].Kind() {
 		case schema.ArrayNode:
 			elements = append(elements, format(nodes[i].Name()))
 			elements = append(elements, arraySyntax)
@@ -254,13 +256,4 @@ func (v *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.
 			oneOfProperty.When[spec.Property] = s
 		}
 	}
-}
-
-func (v *schemaVisitor) isOneOfDiscriminator(property string, oneOf schema.OneOf) bool {
-	for _, spec := range oneOf.Specs {
-		if spec.Property == property {
-			return true
-		}
-	}
-	return false
 }

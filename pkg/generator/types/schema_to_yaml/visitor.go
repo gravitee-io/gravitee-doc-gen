@@ -7,17 +7,17 @@ import (
 	"slices"
 )
 
-type set map[any]bool
+type Set map[any]bool
 
-func fromSlice(slice []any) set {
-	set := set{}
+func fromSlice(slice []any) Set {
+	set := Set{}
 	for _, v := range slice {
 		set[v] = true
 	}
 	return set
 }
 
-func (s set) toSlice() []any {
+func (s Set) toSlice() []any {
 	slice := make([]any, 0, len(s))
 	for v := range s {
 		slice = append(slice, v)
@@ -30,7 +30,7 @@ type baseLine struct {
 	Description string
 	Type        string
 	Value       any
-	When        map[string]set
+	When        map[string]Set
 	Enums       []any
 }
 
@@ -75,7 +75,7 @@ type schemaVisitor struct {
 
 func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 
-	if s.oneOfStarted && !s.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
+	if s.oneOfStarted && !ctx.CurrentOneOf().IsDiscriminator(property) {
 		s.addOneOfProperty(ctx, property, attribute, parent)
 		return nil
 	}
@@ -139,7 +139,7 @@ func (s *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
+func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
 	s.Lines = append(s.Lines, line{
 		baseLine: baseLine{
 			Title:       array.Title,
@@ -226,7 +226,7 @@ func (s *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property stri
 	} else {
 		oneOfProp = oneOfProperty{
 			baseLine: baseLine{
-				When: make(map[string]set),
+				When: make(map[string]Set),
 			},
 		}
 		oneOfProp.Value = encode(schema.GetDefaultOrFirstExample(attribute, ctx), schema.GetType(attribute) == "string")
@@ -246,18 +246,9 @@ func (s *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.
 			s[value] = true
 			oneOfProperty.When[spec.Property] = s
 		} else {
-			s = set{}
+			s = Set{}
 			s[value] = true
 			oneOfProperty.When[spec.Property] = s
 		}
 	}
-}
-
-func (s *schemaVisitor) isOneOfDiscriminator(property string, oneOf schema.OneOf) bool {
-	for _, spec := range oneOf.Specs {
-		if spec.Property == property {
-			return true
-		}
-	}
-	return false
 }

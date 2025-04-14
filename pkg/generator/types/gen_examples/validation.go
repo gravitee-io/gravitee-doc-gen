@@ -35,7 +35,7 @@ func (e *exampleValidation) OnObjectStart(*schema.VisitContext, string, *jsonsch
 func (e *exampleValidation) OnObjectEnd(*schema.VisitContext) {
 	// no op
 }
-func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) []schema.Attribute {
+func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) []schema.Value {
 	// no op
 	return nil
 }

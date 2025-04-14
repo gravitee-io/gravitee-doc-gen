@@ -133,13 +133,13 @@ func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
 	ctx.NodeStack().pop()
 }
 
-func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, values []Attribute) {
+func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, values []Value) {
 	ctx.NodeStack().add(ctx, NewArray(prop.name))
 	if itemTypeIsObject {
 		ctx.NodeStack().add(ctx, NewObject(prop.name))
 	} else if values != nil {
 		for _, v := range values {
-			ctx.NodeStack().add(ctx, NewValue(v))
+			ctx.NodeStack().add(ctx, v)
 		}
 	}
 }
