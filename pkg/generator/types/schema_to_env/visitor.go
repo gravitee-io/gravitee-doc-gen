@@ -55,7 +55,6 @@ type schemaVisitor struct {
 	inArray             bool
 	firstArrayItem      bool
 	oneOfProperties     map[string]oneOfProperty
-	oneOfStarted        bool
 	oneOfDiscriminators []string
 	currentSection      *section
 	Sections            []*section
@@ -79,15 +78,15 @@ func newSchemaVisitor(indexPlaceholder string, prefix string) schemaVisitor {
 
 func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 
-	if v.oneOfStarted && !ctx.CurrentOneOf().IsDiscriminator(property) {
+	if ctx.CurrentOneOf().Present && !ctx.CurrentOneOf().IsDiscriminator(property) {
 		v.addOneOfProperty(ctx, property, attribute, parent)
 		return nil
 	}
-	if v.oneOfStarted && slices.Contains(v.oneOfDiscriminators, property) {
+	if ctx.CurrentOneOf().Present && slices.Contains(v.oneOfDiscriminators, property) {
 		return nil
 	}
 
-	if v.oneOfStarted {
+	if ctx.CurrentOneOf().Present {
 		v.oneOfDiscriminators = append(v.oneOfDiscriminators, property)
 	}
 
@@ -123,11 +122,10 @@ func (v *schemaVisitor) OnObjectStart(ctx *schema.VisitContext, _ string, object
 }
 
 func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
-	if v.oneOfStarted && ctx.CurrentOneOf().IsZero() {
+	if !ctx.CurrentOneOf().Present {
 		for _, oneOf := range v.oneOfProperties {
 			v.currentSection.AddVariable(oneOf.variable)
 		}
-		v.oneOfStarted = false
 		v.oneOfDiscriminators = make([]string, 0)
 		v.oneOfProperties = make(map[string]oneOfProperty)
 	}
@@ -168,7 +166,7 @@ func (v *schemaVisitor) OnArrayEnd(*schema.VisitContext, bool) {
 }
 
 func (v *schemaVisitor) OnOneOfStart(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
-	v.oneOfStarted = true
+	// no op
 }
 
 func (v *schemaVisitor) OnOneOfEnd(*schema.VisitContext) {

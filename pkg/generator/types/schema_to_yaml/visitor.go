@@ -69,26 +69,25 @@ type schemaVisitor struct {
 	inArray             bool
 	firstArrayItem      bool
 	oneOfProperties     map[string]oneOfProperty
-	oneOfStarted        bool
 	oneOfDiscriminators []string
 }
 
-func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
+func (v *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 
-	if s.oneOfStarted && !ctx.CurrentOneOf().IsDiscriminator(property) {
-		s.addOneOfProperty(ctx, property, attribute, parent)
+	if ctx.CurrentOneOf().Present && !ctx.CurrentOneOf().IsDiscriminator(property) {
+		v.addOneOfProperty(ctx, property, attribute, parent)
 		return nil
 	}
 
-	if s.oneOfStarted && slices.Contains(s.oneOfDiscriminators, property) {
+	if ctx.CurrentOneOf().Present && slices.Contains(v.oneOfDiscriminators, property) {
 		return nil
 	}
 
-	if s.oneOfStarted {
-		s.oneOfDiscriminators = append(s.oneOfDiscriminators, property)
+	if ctx.CurrentOneOf().Present {
+		v.oneOfDiscriminators = append(v.oneOfDiscriminators, property)
 	}
 
-	s.Lines = append(s.Lines, line{
+	v.Lines = append(v.Lines, line{
 		baseLine: baseLine{
 			Title:       attribute.Title,
 			Description: attribute.Description,
@@ -96,70 +95,69 @@ func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, a
 			Value:       encode(schema.GetDefaultOrFirstExample(attribute, ctx), schema.GetType(attribute) == "string"),
 			Enums:       getEnums(attribute, property, ctx.CurrentOneOf()),
 		},
-		Pad:        s.pad,
+		Pad:        v.pad,
 		Property:   property,
-		ArrayStart: s.firstArrayItem,
+		ArrayStart: v.firstArrayItem,
 	})
-	if s.firstArrayItem {
-		s.pad += 2
-		s.firstArrayItem = false
+	if v.firstArrayItem {
+		v.pad += 2
+		v.firstArrayItem = false
 	}
 	return nil
 }
 
-func (s *schemaVisitor) OnObjectStart(_ *schema.VisitContext, property string, object *jsonschema.Schema) {
-	if s.inArray {
+func (v *schemaVisitor) OnObjectStart(_ *schema.VisitContext, property string, object *jsonschema.Schema) {
+	if v.inArray {
 		return
 	}
-	s.Lines = append(s.Lines, line{
-		Pad:      s.pad,
+	v.Lines = append(v.Lines, line{
+		Pad:      v.pad,
 		Property: property,
 		baseLine: baseLine{
 			Title:       object.Title,
 			Description: object.Description,
 		},
 	})
-	s.pad += s.padding
+	v.pad += v.padding
 }
 
-func (s *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
-	if s.oneOfStarted && ctx.CurrentOneOf().IsZero() {
-		for property, oneOf := range s.oneOfProperties {
-			s.Lines = append(s.Lines, oneOf.toLine(property, s.pad, s.firstArrayItem))
+func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
+	if !ctx.CurrentOneOf().Present {
+		for property, oneOf := range v.oneOfProperties {
+			v.Lines = append(v.Lines, oneOf.toLine(property, v.pad, v.firstArrayItem))
 		}
-		s.oneOfStarted = false
-		s.oneOfDiscriminators = make([]string, 0)
-		s.oneOfProperties = make(map[string]oneOfProperty)
+		v.oneOfDiscriminators = make([]string, 0)
+		v.oneOfProperties = make(map[string]oneOfProperty)
 	}
-	if s.inArray {
-		s.pad -= 2
-		s.firstArrayItem = true
+	if v.inArray {
+		v.pad -= 2
+		v.firstArrayItem = true
 	} else {
-		s.pad -= s.padding
+		v.pad -= v.padding
 	}
 }
 
-func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
-	s.Lines = append(s.Lines, line{
+func (v *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
+	v.Lines = append(v.Lines, line{
 		baseLine: baseLine{
 			Title:       array.Title,
 			Description: array.Description,
 		},
-		Pad:      s.pad,
+		Pad:      v.pad,
 		Property: property,
 	})
-	s.inArray = true
-	s.firstArrayItem = true
-	s.pad += 2
+	v.inArray = true
+	v.firstArrayItem = true
+	v.pad += 2
 	if !itemTypeIsObject {
 		def := array.Default
 		array := def.([]interface{})
-		for _, v := range array {
-			s.Lines = append(s.Lines, line{
-				Pad:        s.pad,
+		for _, i := range array {
+			v.Lines = append(v.Lines, line{
+				Pad:        v.pad,
 				ArrayStart: true,
 				baseLine: baseLine{
-					Value: v,
+					Value: i,
 				},
 			})
 		}
@@ -167,21 +165,21 @@ func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, 
 	return nil
 }
 
-func (s *schemaVisitor) OnArrayEnd(_ *schema.VisitContext, itemTypeIsObject bool) {
-	s.firstArrayItem = false
-	s.inArray = false
+func (v *schemaVisitor) OnArrayEnd(_ *schema.VisitContext, itemTypeIsObject bool) {
+	v.firstArrayItem = false
+	v.inArray = false
 	if itemTypeIsObject {
-		s.pad -= 4
+		v.pad -= 4
 	} else {
-		s.pad -= 2
+		v.pad -= 2
 	}
 }
 
-func (s *schemaVisitor) OnOneOfStart(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
-	s.oneOfStarted = true
+func (v *schemaVisitor) OnOneOfStart(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
+	// no op
 }
 
-func (s *schemaVisitor) OnOneOfEnd(*schema.VisitContext) {
+func (v *schemaVisitor) OnOneOfEnd(*schema.VisitContext) {
 	// no op
 }
 
@@ -215,13 +213,13 @@ func encode(value any, isString bool) any {
 	return value
 }
 
-func (s *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
-	if s.oneOfProperties == nil {
-		s.oneOfProperties = make(map[string]oneOfProperty)
+func (v *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
+	if v.oneOfProperties == nil {
+		v.oneOfProperties = make(map[string]oneOfProperty)
 	}
 	var update oneOfProperty
-	if oneOfProp, ok := s.oneOfProperties[property]; ok {
-		s.updateWhen(ctx, parent, &oneOfProp)
+	if oneOfProp, ok := v.oneOfProperties[property]; ok {
+		v.updateWhen(ctx, parent, &oneOfProp)
 		update = oneOfProp
 	} else {
 		oneOfProp = oneOfProperty{
@@ -232,14 +230,14 @@ func (s *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property stri
 		oneOfProp.Value = encode(schema.GetDefaultOrFirstExample(attribute, ctx), schema.GetType(attribute) == "string")
 		oneOfProp.Title = attribute.Title
 		oneOfProp.Enums = fromSlice(attribute.Enum).toSlice()
-		s.updateWhen(ctx, parent, &oneOfProp)
+		v.updateWhen(ctx, parent, &oneOfProp)
 		update = oneOfProp
 	}
-	s.oneOfProperties[property] = update
+	v.oneOfProperties[property] = update
 
 }
 
-func (s *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.Schema, oneOfProperty *oneOfProperty) {
+func (v *schemaVisitor) updateWhen(ctx *schema.VisitContext, parent *jsonschema.Schema, oneOfProperty *oneOfProperty) {
 	for _, spec := range ctx.CurrentOneOf().Specs {
 		value := schema.GetDefaultOrFirstExample(parent.Properties[spec.Property], ctx)
 		if s, ok := oneOfProperty.When[spec.Property]; ok {
