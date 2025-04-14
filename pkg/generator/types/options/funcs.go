@@ -20,7 +20,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 		return false, err
 	}
 
-	schemaFile := common.GetFile(chunk, "schema")
+	schemaFile := common.GetString(chunk, "schema")
 	schemaFileExists := common.FileExists(schemaFile)
 	if chunk.Required && !schemaFileExists {
 		return false, errors.New("schema file not found")
@@ -37,7 +37,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 
-	schemaFile := common.GetFile(chunk, "schema")
+	schemaFile := common.GetString(chunk, "schema")
 
 	root, err := schema.CompileWithExtensions(schemaFile)
 	if err != nil {
@@ -54,7 +54,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) func() any {
+func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -100,7 +100,7 @@ func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string,
 	}
 }
 
-func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) func() any {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,

@@ -66,4 +66,10 @@ chunks:
   - template: CHANGELOG.md
     exportedAs: ChangeLog
     required: true
+  - template: "{{ .RootDir }}/env.tmpl"
+    required: true
+    type: schema-to-env
+    data:
+      schema: src/main/resources/schemas/schema-form.json
+      indexPlaceholder: "{index}"
     

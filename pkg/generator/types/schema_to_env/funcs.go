@@ -1,4 +1,4 @@
-package schema_to_yaml
+package schema_to_env
 
 import (
 	"errors"
@@ -30,9 +30,10 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	if err != nil {
 		return chunks.Processed{}, err
 	}
-	schemaVisitor := newSchemaVisitor()
-	schemaVisitor.padding = 2
-	schema.Visit(schema.NewVisitContext(false, true), &schemaVisitor, compiled)
+
+	indexPlaceholder := common.GetDataOrDefault[string](chunk, "indexPlaceholder", "X")
+	schemaVisitor := newSchemaVisitor(indexPlaceholder)
+	schema.Visit(schema.NewVisitContextWithStack(schema.NewObject(""), true, true), &schemaVisitor, compiled)
 
 	processed := chunks.Processed{Data: schemaVisitor}
 	return processed, nil

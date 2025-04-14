@@ -27,12 +27,14 @@ func NewDocumentBuilder(example examples.GenExampleSpec) *DocumentBuilder {
 	}
 }
 
-func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, _ string, attribute *jsonschema.Schema, _ *jsonschema.Schema) func() any {
+func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
 	if !b.skipAttributes && schema.IsAttribute(attribute) && !attribute.Deprecated {
 		if value := schema.GetDefaultOrFirstExample(attribute, ctx); value != nil {
-			return func() any {
-				return value
-			}
+			return &schema.StackHook{
+				ValueSupplier: func() any {
+					return value
+				},
+				AfterStack: nil}
 		}
 	}
 	return nil
@@ -42,9 +44,12 @@ func (b *DocumentBuilder) OnObjectStart(*schema.VisitContext, string, *jsonschem
 	// no op
 }
 
-func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, _ string, array *jsonschema.Schema, _ bool) func() any {
-	return func() any {
-		return schema.GetDefaultOrFirstExample(array, ctx)
+func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
+	return &schema.StackHook{
+		ValueSupplier: func() any {
+			return schema.GetDefaultOrFirstExample(array, ctx)
+		},
+		AfterStack: nil,
 	}
 }
 
@@ -58,7 +63,7 @@ func (b *DocumentBuilder) OnArrayEnd(*schema.VisitContext, bool) {
 
 func (b *DocumentBuilder) OnOneOfStart(ctx *schema.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
 
-	if !slices.Equal(ctx.NodeStack().GetAncestorNames(), b.example.OneOfFilter.Path) {
+	if !slices.Equal(ctx.NodeStack().GetAncestorProperty(), b.example.OneOfFilter.Path) {
 		b.skipAttributes = true
 		return
 	}

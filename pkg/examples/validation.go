@@ -15,14 +15,14 @@ func TypeValidator(chunk config.Chunk, provider ExampleSpecProvider) (bool, erro
 		return tmplExists, err
 	}
 
-	examplesFile := common.GetFile(chunk, "examples")
+	examplesFile := common.GetString(chunk, "examples")
 	examplesFileExists := common.FileExists(examplesFile)
 
 	if chunk.Required && !examplesFileExists {
 		return examplesFileExists, errors.New(fmt.Sprintf("example file not found: %s", examplesFile))
 	}
 
-	schemaFile := common.GetFile(chunk, "schema")
+	schemaFile := common.GetString(chunk, "schema")
 	schemaFileExists := common.FileExists(schemaFile)
 	if chunk.Required && !schemaFileExists {
 		return schemaFileExists, errors.New(fmt.Sprintf("schema file not found: %s", schemaFile))

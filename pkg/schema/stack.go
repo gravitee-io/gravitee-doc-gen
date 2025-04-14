@@ -10,6 +10,36 @@ func NewNodeStack(root Node) *NodeStack {
 	}
 }
 
+func (s *NodeStack) Nodes() []Node {
+	clone := make([]Node, len(s.stack))
+	copy(clone, s.stack)
+	return clone
+}
+
+func (s *NodeStack) Properties() []string {
+	if s == nil {
+		panic("stack is nil, cannot get names. stack it should created with the visitor.")
+
+	}
+	result := make([]string, 0, len(s.stack))
+	for _, node := range s.stack {
+		result = append(result, node.Name())
+	}
+	return result
+}
+
+func (s *NodeStack) GetAncestorProperty() []string {
+	if s == nil {
+		panic("stack is nil, cannot get ancestors. stack it should created with the visitor.")
+	}
+	ancestors := make([]string, len(s.stack)-1)
+	// skip root
+	for i := 1; i < len(s.stack); i++ {
+		ancestors[i-1] = s.stack[i].Name()
+	}
+	return ancestors
+}
+
 func (s *NodeStack) add(ctx *VisitContext, toAdd Node) {
 	if s == nil {
 		panic("stack is nil, cannot add node to stack. stack it should created with the visitor")
@@ -76,28 +106,4 @@ func removeLast[T any](slice []T) []T {
 		return slice
 	}
 	return slice[:len(slice)-1]
-}
-
-func (s *NodeStack) GetNames() []string {
-	if s == nil {
-		panic("stack is nil, cannot get names. stack it should created with the visitor.")
-
-	}
-	result := make([]string, 0, len(s.stack))
-	for _, node := range s.stack {
-		result = append(result, node.Name())
-	}
-	return result
-}
-
-func (s *NodeStack) GetAncestorNames() []string {
-	if s == nil {
-		panic("stack is nil, cannot get ancestors. stack it should created with the visitor.")
-	}
-	ancestors := make([]string, len(s.stack)-1)
-	// skip root
-	for i := 1; i < len(s.stack); i++ {
-		ancestors[i-1] = s.stack[i].Name()
-	}
-	return ancestors
 }
