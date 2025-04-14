@@ -52,14 +52,15 @@ type oneOfProperty struct {
 }
 
 type schemaVisitor struct {
-	inArray             bool
-	firstArrayItem      bool
-	oneOfProperties     map[string]oneOfProperty
-	oneOfDiscriminators []string
-	currentSection      *section
-	Sections            []*section
-	indexPlaceholder    string
-	prefix              string
+	inArray              bool
+	firstArrayItem       bool
+	oneOfPropertiesNames []string
+	oneOfProperties      map[string]oneOfProperty
+	oneOfDiscriminators  []string
+	currentSection       *section
+	Sections             []*section
+	indexPlaceholder     string
+	prefix               string
 }
 
 func newSchemaVisitor(indexPlaceholder string, prefix string) schemaVisitor {
@@ -123,11 +124,13 @@ func (v *schemaVisitor) OnObjectStart(ctx *schema.VisitContext, _ string, object
 
 func (v *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	if !ctx.CurrentOneOf().Present {
-		for _, oneOf := range v.oneOfProperties {
+		for _, property := range v.oneOfPropertiesNames {
+			oneOf := v.oneOfProperties[property]
 			v.currentSection.AddVariable(oneOf.variable)
 		}
 		v.oneOfDiscriminators = make([]string, 0)
 		v.oneOfProperties = make(map[string]oneOfProperty)
+		v.oneOfPropertiesNames = make([]string, 0)
 	}
 	if v.inArray {
 		v.firstArrayItem = true
@@ -217,12 +220,14 @@ func getEnums(attribute *jsonschema.Schema, property string, oneOf schema.OneOf)
 func (v *schemaVisitor) addOneOfProperty(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) {
 	if v.oneOfProperties == nil {
 		v.oneOfProperties = make(map[string]oneOfProperty)
+		v.oneOfPropertiesNames = make([]string, 0)
 	}
 	var update oneOfProperty
 	if oneOfProp, ok := v.oneOfProperties[property]; ok {
 		v.updateWhen(ctx, parent, &oneOfProp)
 		update = oneOfProp
 	} else {
+		v.oneOfPropertiesNames = append(v.oneOfPropertiesNames, property)
 		oneOfProp = oneOfProperty{
 			variable: variable{
 				When: make(map[string]set),

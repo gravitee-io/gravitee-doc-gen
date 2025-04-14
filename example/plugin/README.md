@@ -115,8 +115,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 | Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
+| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -600,24 +600,6 @@ ssl:
   keyStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Content
-    # When type = 'PKCS12' or 'JKS'
-    content: 
-    # Path to cert file
-    # When type = 'PEM'
-    certPath: 
-    # Path to key store
-    # When type = 'JKS' or 'PKCS12'
-    path: 
-    # Path to private key file
-    # When type = 'PEM'
-    keyPath: 
-    # Certificate
-    # When type = 'PEM'
-    certContent: 
-    # Private key
-    # When type = 'PEM'
-    keyContent: 
     # Alias for the key
     # When type = 'JKS' or 'PKCS12'
     alias: 
@@ -627,6 +609,24 @@ ssl:
     # Password
     # When type = 'JKS' or 'PKCS12'
     password: 
+    # Path to key store
+    # When type = 'JKS' or 'PKCS12'
+    path: 
+    # Content
+    # When type = 'JKS' or 'PKCS12'
+    content: 
+    # Path to cert file
+    # When type = 'PEM'
+    certPath: 
+    # Path to private key file
+    # When type = 'PEM'
+    keyPath: 
+    # Certificate
+    # When type = 'PEM'
+    certContent: 
+    # Private key
+    # When type = 'PEM'
+    keyContent: 
   # Trust all (boolean)
   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
   trustAll: 
@@ -635,7 +635,7 @@ ssl:
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
     # Password
-    # When type = 'PEM' or 'JKS' or 'PKCS12'
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
     password: "[redacted]"
     # Path to truststore
     # When type = 'JKS' or 'PKCS12' or 'PEM'
@@ -1128,29 +1128,6 @@ For the sake of testing
 <hr>
 
 
-####  Proxy Type
-| | |
-|---:|---|
-|ENV| **GRAVITEE_PROXY_TYPE**|
-|JVM|`-Dgravitee.proxy.type`|
-|Default| `SOCKS5`|
-|Values| `SOCKS4` `SOCKS5` |
-|When| `enabled = true`  and `useSystemProxy = false` |
-The type of the proxy
-<hr>
-
-
-####  Proxy username
-| | |
-|---:|---|
-|ENV| **GRAVITEE_PROXY_USERNAME**|
-|JVM|`-Dgravitee.proxy.username`|
-|Default| `admin`|
-|When| `enabled = true`  and `useSystemProxy = false` |
-Optional proxy username
-<hr>
-
-
 ####  Proxy host
 | | |
 |---:|---|
@@ -1181,6 +1158,29 @@ Optional proxy password
 |Default| `3524`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 Proxy port to connect to
+<hr>
+
+
+####  Proxy Type
+| | |
+|---:|---|
+|ENV| **GRAVITEE_PROXY_TYPE**|
+|JVM|`-Dgravitee.proxy.type`|
+|Default| `SOCKS5`|
+|Values| `SOCKS4` `SOCKS5` |
+|When| `enabled = true`  and `useSystemProxy = false` |
+The type of the proxy
+<hr>
+
+
+####  Proxy username
+| | |
+|---:|---|
+|ENV| **GRAVITEE_PROXY_USERNAME**|
+|JVM|`-Dgravitee.proxy.username`|
+|Default| `admin`|
+|When| `enabled = true`  and `useSystemProxy = false` |
+Optional proxy username
 <hr>
 
 
@@ -1245,6 +1245,16 @@ Alias of the key to use in case the key store contains more than one key
 <hr>
 
 
+####  Key Password
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPASSWORD**|
+|JVM|`-Dgravitee.ssl.keystore.keypassword`|
+|When| `type = 'JKS'` or `'PKCS12'` |
+Password to use to access the key when protected by password
+<hr>
+
+
 ####  Password
 | | |
 |---:|---|
@@ -1265,6 +1275,16 @@ Path to the key store file
 <hr>
 
 
+####  Content
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_CONTENT**|
+|JVM|`-Dgravitee.ssl.keystore.content`|
+|When| `type = 'JKS'` or `'PKCS12'` |
+Binary content as Base64
+<hr>
+
+
 ####  Path to cert file
 | | |
 |---:|---|
@@ -1272,6 +1292,16 @@ Path to the key store file
 |JVM|`-Dgravitee.ssl.keystore.certpath`|
 |When| `type = 'PEM'` |
 Path to cert file (.PEM)
+<hr>
+
+
+####  Path to private key file
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPATH**|
+|JVM|`-Dgravitee.ssl.keystore.keypath`|
+|When| `type = 'PEM'` |
+Path to private key file (.PEM)
 <hr>
 
 
@@ -1295,36 +1325,6 @@ Path to cert file (.PEM)
 <hr>
 
 
-####  Key Password
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPASSWORD**|
-|JVM|`-Dgravitee.ssl.keystore.keypassword`|
-|When| `type = 'PKCS12'` or `'JKS'` |
-Password to use to access the key when protected by password
-<hr>
-
-
-####  Content
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.content`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Binary content as Base64
-<hr>
-
-
-####  Path to private key file
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYPATH**|
-|JVM|`-Dgravitee.ssl.keystore.keypath`|
-|When| `type = 'PEM'` |
-Path to private key file (.PEM)
-<hr>
-
-
 ####  
 | | |
 |---:|---|
@@ -1332,19 +1332,6 @@ Path to private key file (.PEM)
 |JVM|`-Dgravitee.ssl.truststore.type`|
 |Values| `` `JKS` `PKCS12` `PEM` |
 
-<hr>
-
-
-####  Content
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.truststore.content`|
-|Default| `--- BEGIN CERTIFICATE ---
-
---- END CERTIFICATE ---`|
-|When| `type = 'PKCS12'` or `'PEM'` or `'JKS'` |
-Binary content as Base64
 <hr>
 
 
@@ -1366,6 +1353,19 @@ Truststore password
 |JVM|`-Dgravitee.ssl.truststore.path`|
 |When| `type = 'JKS'` or `'PKCS12'` or `'PEM'` |
 Path to the truststore file
+<hr>
+
+
+####  Content
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_TRUSTSTORE_CONTENT**|
+|JVM|`-Dgravitee.ssl.truststore.content`|
+|Default| `--- BEGIN CERTIFICATE ---
+
+--- END CERTIFICATE ---`|
+|When| `type = 'PEM'` or `'JKS'` or `'PKCS12'` |
+Binary content as Base64
 <hr>
 
 
