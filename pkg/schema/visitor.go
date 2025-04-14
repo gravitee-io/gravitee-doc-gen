@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"slices"
 	"sort"
@@ -11,6 +12,7 @@ type VisitContext struct {
 	queueNodes          bool
 	autoDefaultBooleans bool
 	nodeStack           *NodeStack
+	oneOfFilter         OneOfFilter
 }
 
 func (v *VisitContext) CurrentOneOf() OneOf {
@@ -41,13 +43,18 @@ func NewVisitContext(queueNodes bool, autoDefaultBooleans bool) *VisitContext {
 	}
 }
 
-func NewVisitContextWithStack(root *Object, queueNodes bool, autoDefaultBooleans bool) *VisitContext {
-	return &VisitContext{
-		currentOneOf:        OneOf{},
-		queueNodes:          queueNodes,
-		autoDefaultBooleans: autoDefaultBooleans,
-		nodeStack:           NewNodeStack(root),
-	}
+func (v *VisitContext) WithStack(root *Object) *VisitContext {
+	v.nodeStack = NewNodeStack(root)
+	return v
+}
+
+func (v *VisitContext) WithOneOfFilter(filter OneOfFilter) *VisitContext {
+	v.oneOfFilter = filter
+	return v
+}
+
+func (v *VisitContext) OneOfFilter() OneOfFilter {
+	return v.oneOfFilter
 }
 
 type schemaProperty struct {
@@ -64,13 +71,18 @@ func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 	for _, property := range ordered {
 		name, attribute := property.name, property.schema
 		if IsAttribute(attribute) {
+			fmt.Println("attribute:", name, ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
 			attribute := visitor.OnAttribute(ctx, name, attribute, current)
 			if ctx.nodeStack != nil && attribute != nil {
+				if _, alreadyAdded := ctx.NodeStack().Peek().(*Object).Fields[name]; ctx.currentOneOf.Present && alreadyAdded {
+					continue
+				}
 				ctx.NodeStack().add(ctx, attribute)
 			}
 		}
 
-		if ctx.IsQueueNodes() && (isObject(attribute) || isArray(attribute)) {
+		if ctx.IsQueueNodes() && !IsAttribute(attribute) {
+			fmt.Println("attribute (queue):", name, ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
 			visitor.OnAttribute(ctx, name, attribute, current)
 			queue = append(queue, property)
 		} else {
@@ -82,12 +94,16 @@ func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 		visitNode(ctx, pair, visitor)
 	}
 
-	for _, schema := range current.OneOf {
-		schema = orRef(schema)
-		visitor.OnOneOfStart(ctx, schema, current)
-		Visit(ctx, visitor, schema)
+	if len(current.OneOf) > 0 {
+		for _, schema := range current.OneOf {
+			schema = orRef(schema)
+			fmt.Println("oneof:", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+			visitor.OnOneOf(ctx, schema, current)
+			Visit(ctx, visitor, schema)
+		}
+		fmt.Println("end oneof:", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+		visitor.OnOneOfEnd(ctx)
 	}
-	visitor.OnOneOfEnd(ctx)
 
 }
 
@@ -121,11 +137,13 @@ func visitArray(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 		// no support of multiple types
 		itemTypeIsObject = !IsAttribute(items)
 	}
-	values := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
+	fmt.Println("start array:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+	array, values := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
 	if ctx.NodeStack() != nil {
-		addArrayToStack(ctx, prop, itemTypeIsObject, values)
+		addArrayToStack(ctx, array, prop, itemTypeIsObject, values)
 	}
 	Visit(ctx, visitor, prop.schema.Items.(*jsonschema.Schema))
+	fmt.Println("end array:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
 	visitor.OnArrayEnd(ctx, itemTypeIsObject)
 	if itemTypeIsObject {
 		ctx.NodeStack().pop()
@@ -133,10 +151,15 @@ func visitArray(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	ctx.NodeStack().pop()
 }
 
-func addArrayToStack(ctx *VisitContext, prop schemaProperty, itemTypeIsObject bool, values []Value) {
-	ctx.NodeStack().add(ctx, NewArray(prop.name))
+func addArrayToStack(ctx *VisitContext, array *Array, prop schemaProperty, itemTypeIsObject bool, values []Value) {
+	fmt.Println("add array:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+	if array == nil {
+		array = NewArray(prop.name)
+	}
+	ctx.NodeStack().add(ctx, array)
 	if itemTypeIsObject {
-		ctx.NodeStack().add(ctx, NewObject(prop.name))
+		fmt.Println("add object:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+		ctx.NodeStack().add(ctx, NewObject(""))
 	} else if values != nil {
 		for _, v := range values {
 			ctx.NodeStack().add(ctx, v)
@@ -148,12 +171,18 @@ func visitObject(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	if ContainsOneOfs(prop.schema) {
 		ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
 	}
-	visitor.OnObjectStart(ctx, prop.name, prop.schema)
+	fmt.Println("start object:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+	object := visitor.OnObjectStart(ctx, prop.name, prop.schema)
 	if ctx.NodeStack() != nil {
-		ctx.NodeStack().add(ctx, NewObject(prop.name))
+		fmt.Println("add object:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
+		if object == nil {
+			object = NewObject(prop.name)
+		}
+		ctx.NodeStack().add(ctx, object)
 	}
 	Visit(ctx, visitor, prop.schema)
 	ctx.SetCurrentOneOf(OneOf{})
+	fmt.Println("end object:", prop.name, "@", ctx.nodeStack.Peek().Name(), ctx.nodeStack.Peek().Kind().String())
 	visitor.OnObjectEnd(ctx)
 	ctx.NodeStack().pop()
 }

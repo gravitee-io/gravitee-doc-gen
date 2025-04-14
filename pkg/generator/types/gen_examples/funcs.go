@@ -5,6 +5,7 @@ import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/examples"
+	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
 	"strings"
 )
@@ -33,7 +34,7 @@ func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider)
 		ev := &exampleValidation{
 			errors: make([]string, 0),
 		}
-		schema.Visit(schema.NewVisitContextWithStack(schema.NewObject(""), false, true), ev, s)
+		schema.Visit(schema.NewVisitContext(false, true).WithStack(schema.NewObject("")), ev, s)
 		if len(ev.errors) > 0 {
 			return false, errors.New(strings.Join(ev.errors, "\n"))
 		}
@@ -53,19 +54,25 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 
 	validationSchema, _, _ := examples.CompileSchema(genSpec, chunk)
 
-	object := NewDocumentBuilder(genSpec)
+	object := schema.NewObject("")
 
-	context := schema.NewVisitContextWithStack(object.root, false, false)
-	schema.Visit(context, object, validationSchema)
+	ctx := schema.NewVisitContext(true, true).
+		WithStack(object).
+		WithOneOfFilter(genSpec.OneOfFilter)
 
-	codeToEmbed, err := object.Marshall()
+	schema.Visit(ctx, &types.SchemaVisitor{}, validationSchema)
+
+	ref, _ := genSpec.TemplateFromRef()
+
+	codeToEmbed, err := ref.Language.Serialize(object.Fields)
 	if err != nil {
 		panic(err)
 	}
 
 	var jsonToValidate string
-	if t, _ := genSpec.TemplateFromRef(); t.Language != examples.JSON {
-		inJson, err := object.MarshallWithLanguage(examples.JSON)
+	json := examples.JSON
+	if t, _ := genSpec.TemplateFromRef(); t.Language != json {
+		inJson, err := json.Serialize(object.Fields)
 		if err != nil {
 			panic(err)
 		}

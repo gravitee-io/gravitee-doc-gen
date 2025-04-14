@@ -29,21 +29,22 @@ func (e *exampleValidation) OnAttribute(ctx *schema.VisitContext, property strin
 	}
 	return nil
 }
-func (e *exampleValidation) OnObjectStart(*schema.VisitContext, string, *jsonschema.Schema) {
+func (e *exampleValidation) OnObjectStart(*schema.VisitContext, string, *jsonschema.Schema) *schema.Object {
 	//no op
+	return nil
 }
 func (e *exampleValidation) OnObjectEnd(*schema.VisitContext) {
 	// no op
 }
-func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) []schema.Value {
+func (e *exampleValidation) OnArrayStart(*schema.VisitContext, string, *jsonschema.Schema, bool) (*schema.Array, []schema.Value) {
 	// no op
-	return nil
+	return nil, nil
 }
 
 func (e *exampleValidation) OnArrayEnd(*schema.VisitContext, bool) {
 	// no op
 }
-func (e *exampleValidation) OnOneOfStart(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
+func (e *exampleValidation) OnOneOf(*schema.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
 	e.skip = true
 }
 func (e *exampleValidation) OnOneOfEnd(*schema.VisitContext) {

@@ -2,17 +2,12 @@ package examples
 
 import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/core"
+	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
 )
 
 type GenExampleSpec struct {
 	BaseExampleSpec `yaml:",inline"`
-	OneOfFilter     OneOfFilter `yaml:"oneOfFilter"`
-}
-
-type OneOfFilter struct {
-	Path           []string       `json:"path"`
-	Discriminators map[string]any `json:"discriminators"`
-	Index          int            `json:"index"`
+	OneOfFilter     schema.OneOfFilter `yaml:"oneOfFilter"`
 }
 
 func (s GenExampleSpec) GetTemplateFile() string {

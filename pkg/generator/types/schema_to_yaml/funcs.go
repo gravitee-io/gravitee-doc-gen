@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
+	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types"
 	"github.com/gravitee-io-labs/readme-gen/pkg/generator/types/common"
 	"github.com/gravitee-io-labs/readme-gen/pkg/schema"
 )
@@ -30,10 +31,17 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	if err != nil {
 		return chunks.Processed{}, err
 	}
-	schemaVisitor := newSchemaVisitor()
-	schemaVisitor.padding = 2
-	schema.Visit(schema.NewVisitContext(false, true), &schemaVisitor, compiled)
+	object := schema.NewObject("")
+	ctx := schema.NewVisitContext(false, true).WithStack(object)
+	schemaVisitor := &types.SchemaVisitor{KeepAllOneOfAttributes: true}
+	schema.Visit(ctx, schemaVisitor, compiled)
 
-	processed := chunks.Processed{Data: schemaVisitor}
+	visitor := toYamlVisitor{
+		Lines:   make([]yamlLine, 0),
+		padding: 3,
+	}
+	types.Visit(ctx, &visitor)
+
+	processed := chunks.Processed{Data: visitor}
 	return processed, nil
 }
