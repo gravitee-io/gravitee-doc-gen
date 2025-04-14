@@ -72,4 +72,5 @@ chunks:
     data:
       schema: src/main/resources/schemas/schema-form.json
       indexPlaceholder: "{index}"
+      prefix: "gravitee"
     

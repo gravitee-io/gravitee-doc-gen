@@ -40,17 +40,17 @@ func (b *DocumentBuilder) OnObjectStart(*schema.VisitContext, string, *jsonschem
 	// no op
 }
 
-func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
+func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Value {
 	if !itemTypeIsObject {
 		example := schema.GetDefaultOrFirstExample(array, ctx)
 		if example != nil {
-			attributes := make([]schema.Attribute, 0)
+			attributes := make([]schema.Value, 0)
 			if items, isArray := example.([]any); isArray {
 				for _, item := range items {
-					attributes = append(attributes, *schema.NewValue(item))
+					attributes = append(attributes, schema.NewValue(item))
 				}
 			} else {
-				attributes = append(attributes, *schema.NewValue(example))
+				attributes = append(attributes, schema.NewValue(example))
 			}
 			return attributes
 		}

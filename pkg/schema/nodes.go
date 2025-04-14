@@ -7,16 +7,18 @@ import (
 	"strconv"
 )
 
-type NodeType int
+type NodeKind int
 
 const (
-	AttributeNode NodeType = iota
-	ObjectNode    NodeType = 1
-	ArrayNode     NodeType = 2
+	Unknown       NodeKind = iota
+	ObjectNode    NodeKind = iota
+	ArrayNode     NodeKind = iota
+	AttributeNode NodeKind = iota
+	ValueNode     NodeKind = iota
 )
 
 type Node interface {
-	Type() NodeType
+	Kind() NodeKind
 	Name() string
 	IsEmpty() bool
 }
@@ -34,9 +36,19 @@ type Array struct {
 	baseNode
 	Items []interface{} `json:",inline"`
 }
+type Set map[any]bool
 
 type Attribute struct {
 	baseNode
+	Value       any `json:",inline"`
+	Title       string
+	Description string
+	Type        string
+	When        map[string]Set
+	Enums       []any
+}
+
+type Value struct {
 	Value any `json:",inline"`
 }
 
@@ -60,18 +72,58 @@ func NewAttribute(name string, value any) *Attribute {
 		Value:    value,
 	}
 }
-func NewValue(value any) *Attribute {
-	return &Attribute{
-		baseNode: baseNode{},
-		Value:    value,
+
+func NewValue(value any) Value {
+	return Value{
+		Value: value,
 	}
+}
+
+func (o Object) Name() string {
+	return o.name
+}
+
+func (_ Object) Kind() NodeKind {
+	return ObjectNode
+}
+
+func (o Object) IsEmpty() bool {
+	return len(o.Fields) == 0
+}
+
+func (o Object) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.Fields)
+}
+
+func (o Object) String() string {
+	return o.name + " (object), len: " + strconv.Itoa(len(o.Fields))
+}
+
+func (_ Array) Kind() NodeKind {
+	return ArrayNode
+}
+
+func (a Array) Name() string {
+	return a.name
+}
+
+func (a Array) IsEmpty() bool {
+	return len(a.Items) == 0
+}
+
+func (a Array) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.Items)
+}
+
+func (a Array) String() string {
+	return a.name + " (array), len: " + strconv.Itoa(len(a.Items))
 }
 
 func (a Attribute) Name() string {
 	return a.name
 }
 
-func (_ Attribute) Type() NodeType {
+func (_ Attribute) Kind() NodeKind {
 	return AttributeNode
 }
 
@@ -93,43 +145,29 @@ func (a Attribute) MarshalJSON() ([]byte, error) {
 func (a Attribute) String() string {
 	return a.name + "=" + util.AnyToString(a.Value)
 }
-
-func (o Object) Name() string {
-	return o.name
+func (_ Value) Name() string {
+	return ""
 }
 
-func (_ Object) Type() NodeType {
-	return ObjectNode
+func (v Value) Kind() NodeKind {
+	return ValueNode
 }
 
-func (o Object) IsEmpty() bool {
-	return len(o.Fields) == 0
+func (v Value) IsEmpty() bool {
+	return v.Value == nil
 }
 
-func (o Object) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.Fields)
+func (v Value) MarshalJSON() ([]byte, error) {
+	buffer := bytes.Buffer{}
+	e := json.NewEncoder(&buffer)
+	e.SetEscapeHTML(false)
+	err := e.Encode(v.Value)
+	if err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
-func (o Object) String() string {
-	return o.name + " (object), len: " + strconv.Itoa(len(o.Fields))
-}
-
-func (_ Array) Type() NodeType {
-	return ArrayNode
-}
-
-func (a Array) Name() string {
-	return a.name
-}
-
-func (a Array) IsEmpty() bool {
-	return len(a.Items) == 0
-}
-
-func (a Array) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Items)
-}
-
-func (a Array) String() string {
-	return a.name + " (array), len: " + strconv.Itoa(len(a.Items))
+func (v Value) String() string {
+	return util.AnyToString(v.Value)
 }

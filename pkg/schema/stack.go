@@ -45,14 +45,14 @@ func (s *NodeStack) add(ctx *VisitContext, toAdd Node) {
 		panic("stack is nil, cannot add node to stack. stack it should created with the visitor")
 	}
 	node := ctx.NodeStack().peek()
-	if node.Type() == ArrayNode {
+	if node.Kind() == ArrayNode {
 		array := node.(*Array)
 		array.Items = append(array.Items, toAdd)
-	} else if node.Type() == ObjectNode {
+	} else if node.Kind() == ObjectNode {
 		node.(*Object).Fields[toAdd.Name()] = toAdd
 	}
 
-	if toAdd.Type() != AttributeNode {
+	if toAdd.Kind() == ObjectNode || toAdd.Kind() == ArrayNode {
 		ctx.NodeStack().push(toAdd)
 	}
 }
@@ -90,10 +90,10 @@ func (s *NodeStack) pop() {
 	s.stack = removeLast[Node](s.stack)
 
 	if remove {
-		if last := s.peek(); last.Type() == ArrayNode {
+		if last := s.peek(); last.Kind() == ArrayNode {
 			array := last.(*Array)
 			array.Items = removeLast(array.Items)
-		} else if last.Type() == ObjectNode {
+		} else if last.Kind() == ObjectNode {
 			object := last.(*Object)
 			delete(object.Fields, property)
 		}
