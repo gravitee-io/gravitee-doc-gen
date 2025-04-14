@@ -54,7 +54,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
+func (options *Options) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -100,7 +100,7 @@ func (options *Options) OnObjectStart(ctx *schema.VisitContext, property string,
 	}
 }
 
-func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
+func (options *Options) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
 	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,

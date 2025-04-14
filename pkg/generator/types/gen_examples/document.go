@@ -27,14 +27,10 @@ func NewDocumentBuilder(example examples.GenExampleSpec) *DocumentBuilder {
 	}
 }
 
-func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
+func (b *DocumentBuilder) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 	if !b.skipAttributes && schema.IsAttribute(attribute) && !attribute.Deprecated {
 		if value := schema.GetDefaultOrFirstExample(attribute, ctx); value != nil {
-			return &schema.StackHook{
-				ValueSupplier: func() any {
-					return value
-				},
-				AfterStack: nil}
+			return schema.NewAttribute(property, value)
 		}
 	}
 	return nil
@@ -44,13 +40,22 @@ func (b *DocumentBuilder) OnObjectStart(*schema.VisitContext, string, *jsonschem
 	// no op
 }
 
-func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
-	return &schema.StackHook{
-		ValueSupplier: func() any {
-			return schema.GetDefaultOrFirstExample(array, ctx)
-		},
-		AfterStack: nil,
+func (b *DocumentBuilder) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
+	if !itemTypeIsObject {
+		example := schema.GetDefaultOrFirstExample(array, ctx)
+		if example != nil {
+			attributes := make([]schema.Attribute, 0)
+			if items, isArray := example.([]any); isArray {
+				for _, item := range items {
+					attributes = append(attributes, *schema.NewValue(item))
+				}
+			} else {
+				attributes = append(attributes, *schema.NewValue(example))
+			}
+			return attributes
+		}
 	}
+	return nil
 }
 
 func (b *DocumentBuilder) OnObjectEnd(*schema.VisitContext) {

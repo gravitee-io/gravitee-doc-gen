@@ -33,24 +33,6 @@ func (v *VisitContext) SetCurrentOneOf(oneOf OneOf) {
 	v.currentOneOf = oneOf
 }
 
-type StackHook struct {
-	ValueSupplier func() any
-	AfterStack    func(ctx *VisitContext, schema *jsonschema.Schema)
-}
-
-func (h StackHook) InvokeSupplier() any {
-	if h.ValueSupplier != nil {
-		return h.ValueSupplier()
-	}
-	return nil
-}
-
-func (h StackHook) InvokeAfterStack(ctx *VisitContext, schema *jsonschema.Schema) {
-	if h.AfterStack != nil {
-		h.AfterStack(ctx, schema)
-	}
-}
-
 func NewVisitContext(queueNodes bool, autoDefaultBooleans bool) *VisitContext {
 	return &VisitContext{
 		currentOneOf:        OneOf{},
@@ -82,13 +64,9 @@ func Visit(ctx *VisitContext, visitor Visitor, parent *jsonschema.Schema) {
 	for _, property := range ordered {
 		name, schema := property.name, property.schema
 		if IsAttribute(schema) {
-			hook := visitor.OnAttribute(ctx, name, schema, parent)
-			if hook != nil {
-				value := hook.InvokeSupplier()
-				if ctx.nodeStack != nil {
-					ctx.NodeStack().add(ctx, NewAttribute(property.name, value))
-					hook.InvokeAfterStack(ctx, schema)
-				}
+			attribute := visitor.OnAttribute(ctx, name, schema, parent)
+			if ctx.nodeStack != nil && attribute != nil {
+				ctx.NodeStack().add(ctx, attribute)
 			}
 		}
 
@@ -143,9 +121,9 @@ func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
 		// no support of multiple types
 		itemTypeIsObject = !IsAttribute(items)
 	}
-	hook := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
+	values := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
 	if ctx.NodeStack() != nil {
-		addArrayToStack(ctx, prop, itemTypeIsObject, hook)
+		addArrayToStack(ctx, prop, itemTypeIsObject, values)
 	}
 	Visit(ctx, visitor, prop.schema.Items.(*jsonschema.Schema))
 	visitor.OnArrayEnd(ctx, itemTypeIsObject)
@@ -155,23 +133,14 @@ func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
 	ctx.NodeStack().pop()
 }
 
-func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, hook *StackHook) {
+func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, values []Attribute) {
 	ctx.NodeStack().add(ctx, NewArray(prop.name))
 	if itemTypeIsObject {
 		ctx.NodeStack().add(ctx, NewObject(prop.name))
-		return
-	}
-	if hook != nil {
-		if value := hook.InvokeSupplier(); value != nil {
-			if items, ok := value.([]interface{}); ok {
-				for _, v := range items {
-					ctx.NodeStack().add(ctx, NewValue(v))
-				}
-			} else {
-				ctx.NodeStack().add(ctx, NewValue(value))
-			}
+	} else if values != nil {
+		for _, v := range values {
+			ctx.NodeStack().add(ctx, NewValue(v))
 		}
-		hook.InvokeAfterStack(ctx, prop.schema)
 	}
 }
 

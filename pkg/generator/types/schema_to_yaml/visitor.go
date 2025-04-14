@@ -73,7 +73,7 @@ type schemaVisitor struct {
 	oneOfDiscriminators []string
 }
 
-func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.StackHook {
+func (s *schemaVisitor) OnAttribute(ctx *schema.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *schema.Attribute {
 
 	if s.oneOfStarted && !s.isOneOfDiscriminator(property, ctx.CurrentOneOf()) {
 		s.addOneOfProperty(ctx, property, attribute, parent)
@@ -139,7 +139,7 @@ func (s *schemaVisitor) OnObjectEnd(ctx *schema.VisitContext) {
 	}
 }
 
-func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) *schema.StackHook {
+func (s *schemaVisitor) OnArrayStart(ctx *schema.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) []schema.Attribute {
 	s.Lines = append(s.Lines, line{
 		baseLine: baseLine{
 			Title:       array.Title,
