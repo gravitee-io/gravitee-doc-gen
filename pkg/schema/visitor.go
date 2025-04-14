@@ -55,23 +55,23 @@ type property struct {
 	schema *jsonschema.Schema
 }
 
-func Visit(ctx *VisitContext, visitor Visitor, parent *jsonschema.Schema) {
+func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 
 	queue := make([]property, 0)
 
-	ordered := orderedAndResolved(parent)
+	ordered := orderedAndResolved(current)
 
 	for _, property := range ordered {
-		name, schema := property.name, property.schema
-		if IsAttribute(schema) {
-			attribute := visitor.OnAttribute(ctx, name, schema, parent)
+		name, attribute := property.name, property.schema
+		if IsAttribute(attribute) {
+			attribute := visitor.OnAttribute(ctx, name, attribute, current)
 			if ctx.nodeStack != nil && attribute != nil {
 				ctx.NodeStack().add(ctx, attribute)
 			}
 		}
 
-		if ctx.IsQueueNodes() && (isObject(schema) || isArray(schema)) {
-			visitor.OnAttribute(ctx, name, schema, parent)
+		if ctx.IsQueueNodes() && (isObject(attribute) || isArray(attribute)) {
+			visitor.OnAttribute(ctx, name, attribute, current)
 			queue = append(queue, property)
 		} else {
 			visitNode(ctx, property, visitor)
@@ -82,12 +82,12 @@ func Visit(ctx *VisitContext, visitor Visitor, parent *jsonschema.Schema) {
 		visitNode(ctx, pair, visitor)
 	}
 
-	for _, schema := range parent.OneOf {
+	for _, schema := range current.OneOf {
 		schema = orRef(schema)
-		visitor.OnOneOfStart(ctx, schema, parent)
+		visitor.OnOneOfStart(ctx, schema, current)
 		Visit(ctx, visitor, schema)
-		visitor.OnOneOfEnd(ctx)
 	}
+	visitor.OnOneOfEnd(ctx)
 
 }
 
@@ -151,7 +151,6 @@ func visitObject(ctx *VisitContext, prop property, visitor Visitor) {
 	visitor.OnObjectStart(ctx, prop.name, prop.schema)
 	if ctx.NodeStack() != nil {
 		ctx.NodeStack().add(ctx, NewObject(prop.name))
-
 	}
 	Visit(ctx, visitor, prop.schema)
 	ctx.SetCurrentOneOf(OneOf{})
@@ -212,7 +211,7 @@ func findDiscriminators(parent *jsonschema.Schema) OneOf {
 	}
 	oneOf := OneOf{}
 	if len(result) > 0 {
-		oneOf.Parent = parent.Title
+		oneOf.ParentTitle = parent.Title
 		oneOf.Present = true
 		oneOf.Specs = result
 

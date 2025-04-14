@@ -1,6 +1,6 @@
 {{-  range $_,$section := .Sections }}
 #### {{ if .OneOf.Present -}}
-{{ .OneOf.Parent }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
+{{ .OneOf.ParentTitle }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
 {{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
 {{ end }}
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
@@ -18,7 +18,7 @@
 | {{ .Description -}}{{ if or (eq .Type "object") (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section{{ end -}}
 {{ if .OneOf.Present -}}
 {{ if ne .Description "" -}}<br>{{ end -}}
-{{ .Name}} of {{ .OneOf.Parent -}}
+{{ .Name}} of {{ .OneOf.ParentTitle -}}
 {{ end -}}
 {{ if gt (len .Enums) 0 -}}
 {{ if or .Description .OneOf.Present -}}

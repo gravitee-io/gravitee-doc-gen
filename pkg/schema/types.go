@@ -15,13 +15,13 @@ type Visitor interface {
 }
 
 type OneOf struct {
-	Parent  string
-	Present bool
-	Specs   []DiscriminatorSpec
+	ParentTitle string
+	Present     bool
+	Specs       []DiscriminatorSpec
 }
 
 func (o OneOf) IsZero() bool {
-	return o.Parent == "" && o.Present == false && len(o.Specs) == 0
+	return o.ParentTitle == "" && o.Present == false && len(o.Specs) == 0
 }
 
 func (o OneOf) IsDiscriminator(property string) bool {
