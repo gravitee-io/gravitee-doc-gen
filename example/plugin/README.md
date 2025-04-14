@@ -115,8 +115,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 | Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
+| Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -573,21 +573,21 @@ proxy:
   enabled:  # Possible values: false true 
   # 
   useSystemProxy:  # Possible values: false true 
+  # Proxy port
+  # When enabled = true and useSystemProxy = false
+  port: 3524
+  # Proxy Type
+  # When enabled = true and useSystemProxy = false
+  type: SOCKS5 # Possible values: "SOCKS5" "SOCKS4" 
+  # Proxy username
+  # When enabled = true and useSystemProxy = false
+  username: admin
   # Proxy host
   # When enabled = true and useSystemProxy = false
   host: proxy.acme.com
   # Proxy password
   # When enabled = true and useSystemProxy = false
   password: "[redacted]"
-  # Proxy port
-  # When enabled = true and useSystemProxy = false
-  port: 3524
-  # Proxy Type
-  # When enabled = true and useSystemProxy = false
-  type: SOCKS5 # Possible values: "SOCKS4" "SOCKS5" 
-  # Proxy username
-  # When enabled = true and useSystemProxy = false
-  username: admin
 # Scope (enum (string))
 # Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.
 scope: REQUEST # Possible values: "REQUEST" "RESPONSE" "REQUEST_CONTENT" "RESPONSE_CONTENT" 
@@ -600,33 +600,33 @@ ssl:
   keyStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Path to cert file
-    # When type = 'PEM'
-    certPath: 
-    # Path to private key file
-    # When type = 'PEM'
-    keyPath: 
     # Certificate
     # When type = 'PEM'
     certContent: 
-    # Content
-    # When type = 'JKS' or 'PKCS12'
-    content: 
-    # Private key
-    # When type = 'PEM'
-    keyContent: 
     # Alias for the key
     # When type = 'JKS' or 'PKCS12'
     alias: 
     # Key Password
-    # When type = 'PKCS12' or 'JKS'
+    # When type = 'JKS' or 'PKCS12'
     keyPassword: 
     # Password
-    # When type = 'PKCS12' or 'JKS'
+    # When type = 'JKS' or 'PKCS12'
     password: 
+    # Path to private key file
+    # When type = 'PEM'
+    keyPath: 
+    # Private key
+    # When type = 'PEM'
+    keyContent: 
     # Path to key store
     # When type = 'JKS' or 'PKCS12'
     path: 
+    # Content
+    # When type = 'JKS' or 'PKCS12'
+    content: 
+    # Path to cert file
+    # When type = 'PEM'
+    certPath: 
   # Trust all (boolean)
   # Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
   trustAll: 
@@ -634,11 +634,8 @@ ssl:
   trustStore: 
     # 
     type:  # Possible values: "" "JKS" "PKCS12" "PEM" 
-    # Password
-    # When type = 'PEM' or 'JKS' or 'PKCS12'
-    password: "[redacted]"
     # Path to truststore
-    # When type = 'PEM' or 'JKS' or 'PKCS12'
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
     path: 
     # Content
     # When type = 'JKS' or 'PKCS12' or 'PEM'
@@ -646,6 +643,9 @@ ssl:
         --- BEGIN CERTIFICATE ---
     
         --- END CERTIFICATE ---
+    # Password
+    # When type = 'JKS' or 'PKCS12' or 'PEM'
+    password: "[redacted]"
 # Tags
 # Some tags
 tags: 
@@ -1145,7 +1145,7 @@ Proxy port to connect to
 |ENV| **GRAVITEE_PROXY_TYPE**|
 |JVM|`-Dgravitee.proxy.type`|
 |Default| `SOCKS5`|
-|Values| `SOCKS5` `SOCKS4` |
+|Values| `SOCKS4` `SOCKS5` |
 |When| `enabled = true`  and `useSystemProxy = false` |
 The type of the proxy
 <hr>
@@ -1235,6 +1235,56 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 <hr>
 
 
+####  Private key
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_KEYCONTENT**|
+|JVM|`-Dgravitee.ssl.keystore.keycontent`|
+|When| `type = 'PEM'` |
+
+<hr>
+
+
+####  Password
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_PASSWORD**|
+|JVM|`-Dgravitee.ssl.keystore.password`|
+|When| `type = 'JKS'` or `'PKCS12'` |
+Password to use to open the key store
+<hr>
+
+
+####  Path to key store
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_PATH**|
+|JVM|`-Dgravitee.ssl.keystore.path`|
+|When| `type = 'JKS'` or `'PKCS12'` |
+Path to the key store file
+<hr>
+
+
+####  Content
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_CONTENT**|
+|JVM|`-Dgravitee.ssl.keystore.content`|
+|When| `type = 'JKS'` or `'PKCS12'` |
+Binary content as Base64
+<hr>
+
+
+####  Path to cert file
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_KEYSTORE_CERTPATH**|
+|JVM|`-Dgravitee.ssl.keystore.certpath`|
+|When| `type = 'PEM'` |
+Path to cert file (.PEM)
+<hr>
+
+
 ####  Alias for the key
 | | |
 |---:|---|
@@ -1255,16 +1305,6 @@ Password to use to access the key when protected by password
 <hr>
 
 
-####  Content
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.content`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Binary content as Base64
-<hr>
-
-
 ####  Path to private key file
 | | |
 |---:|---|
@@ -1272,46 +1312,6 @@ Binary content as Base64
 |JVM|`-Dgravitee.ssl.keystore.keypath`|
 |When| `type = 'PEM'` |
 Path to private key file (.PEM)
-<hr>
-
-
-####  Private key
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_KEYCONTENT**|
-|JVM|`-Dgravitee.ssl.keystore.keycontent`|
-|When| `type = 'PEM'` |
-
-<hr>
-
-
-####  Password
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_PASSWORD**|
-|JVM|`-Dgravitee.ssl.keystore.password`|
-|When| `type = 'PKCS12'` or `'JKS'` |
-Password to use to open the key store
-<hr>
-
-
-####  Path to key store
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_PATH**|
-|JVM|`-Dgravitee.ssl.keystore.path`|
-|When| `type = 'JKS'` or `'PKCS12'` |
-Path to the key store file
-<hr>
-
-
-####  Path to cert file
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_CERTPATH**|
-|JVM|`-Dgravitee.ssl.keystore.certpath`|
-|When| `type = 'PEM'` |
-Path to cert file (.PEM)
 <hr>
 
 
@@ -1335,19 +1335,6 @@ Path to cert file (.PEM)
 <hr>
 
 
-####  Content
-| | |
-|---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.truststore.content`|
-|Default| `--- BEGIN CERTIFICATE ---
-
---- END CERTIFICATE ---`|
-|When| `type = 'JKS'` or `'PKCS12'` or `'PEM'` |
-Binary content as Base64
-<hr>
-
-
 ####  Password
 | | |
 |---:|---|
@@ -1366,6 +1353,19 @@ Truststore password
 |JVM|`-Dgravitee.ssl.truststore.path`|
 |When| `type = 'JKS'` or `'PKCS12'` or `'PEM'` |
 Path to the truststore file
+<hr>
+
+
+####  Content
+| | |
+|---:|---|
+|ENV| **GRAVITEE_SSL_TRUSTSTORE_CONTENT**|
+|JVM|`-Dgravitee.ssl.truststore.content`|
+|Default| `--- BEGIN CERTIFICATE ---
+
+--- END CERTIFICATE ---`|
+|When| `type = 'PEM'` or `'JKS'` or `'PKCS12'` |
+Binary content as Base64
 <hr>
 
 
