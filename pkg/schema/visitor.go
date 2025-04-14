@@ -50,14 +50,14 @@ func NewVisitContextWithStack(root *Object, queueNodes bool, autoDefaultBooleans
 	}
 }
 
-type property struct {
+type schemaProperty struct {
 	name   string
 	schema *jsonschema.Schema
 }
 
 func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 
-	queue := make([]property, 0)
+	queue := make([]schemaProperty, 0)
 
 	ordered := orderedAndResolved(current)
 
@@ -91,10 +91,10 @@ func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 
 }
 
-func orderedAndResolved(parent *jsonschema.Schema) []property {
-	ordered := make([]property, 0, len(parent.Properties))
+func orderedAndResolved(parent *jsonschema.Schema) []schemaProperty {
+	ordered := make([]schemaProperty, 0, len(parent.Properties))
 	for name, schema := range parent.Properties {
-		ordered = append(ordered, property{name: name, schema: orRef(schema)})
+		ordered = append(ordered, schemaProperty{name: name, schema: orRef(schema)})
 	}
 
 	sort.Slice(ordered, func(i, j int) bool {
@@ -104,7 +104,7 @@ func orderedAndResolved(parent *jsonschema.Schema) []property {
 
 }
 
-func visitNode(ctx *VisitContext, prop property, visitor Visitor) {
+func visitNode(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	if isObject(prop.schema) {
 		visitObject(ctx, prop, visitor)
 	}
@@ -113,7 +113,7 @@ func visitNode(ctx *VisitContext, prop property, visitor Visitor) {
 	}
 }
 
-func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
+func visitArray(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	var items *jsonschema.Schema
 	var itemTypeIsObject bool
 	if prop.schema.Items != nil {
@@ -133,7 +133,7 @@ func visitArray(ctx *VisitContext, prop property, visitor Visitor) {
 	ctx.NodeStack().pop()
 }
 
-func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, values []Value) {
+func addArrayToStack(ctx *VisitContext, prop schemaProperty, itemTypeIsObject bool, values []Value) {
 	ctx.NodeStack().add(ctx, NewArray(prop.name))
 	if itemTypeIsObject {
 		ctx.NodeStack().add(ctx, NewObject(prop.name))
@@ -144,7 +144,7 @@ func addArrayToStack(ctx *VisitContext, prop property, itemTypeIsObject bool, va
 	}
 }
 
-func visitObject(ctx *VisitContext, prop property, visitor Visitor) {
+func visitObject(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	if ContainsOneOfs(prop.schema) {
 		ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
 	}
