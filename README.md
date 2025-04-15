@@ -85,15 +85,12 @@ Outputs are define with :
 
 ## Other extension
 
-They are easy to implement, two functions: 1 to validate the `data` part of the chuck and and one to handle the generation, they then need to be register in `main.go`
+They are easy to implement, two functions: 1 to validate the `data` part of the chuck and one to handle the generation, they then need to be register in `main.go`
 
 ### To be done
 
 - `api-type`
     - Let the user define if what API works with
-    - Structure to be defined with archi team
-- `schema-to-env`
-    - turns a json schema into documented env variable that can be rendered in a template 
 
 ### Go template
 
