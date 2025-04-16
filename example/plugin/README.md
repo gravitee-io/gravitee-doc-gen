@@ -31,13 +31,17 @@ The error keys sent by this policy are as follows:
 ## Phases
 The phases checked below are supported by the `test` policy:
 
-| v2 Phases| Compatible?| v4 Phases| Compatible? |
-| --- | --- | --- | ---  |
-| onRequest|  | onRequest| ✅ |
-| onResponse|  | onResponse| ✅ |
-| onRequestContent| ✅| onMessageRequest|   |
-| onResponseContent| ✅| onMessageResponse|   |
+### Compatible with API type:
 
+* `PROXY`
+* `MESSAGE`
+
+### Can be used in flow phases:
+
+* Request
+* Response
+* Publish
+* Subscribe
 
 ## Compatibility matrix
 Strikethrough line are deprecated versions
@@ -1341,7 +1345,7 @@ Path to private key file (.PEM)
 |ENV| **GRAVITEE_SSL_TRUSTSTORE_PASSWORD**|
 |JVM|`-Dgravitee.ssl.truststore.password`|
 |Default| `[redacted]`|
-|When| `type = 'JKS'` or `'PKCS12'` or `'PEM'` |
+|When| `type = 'PEM'` or `'JKS'` or `'PKCS12'` |
 Truststore password
 <hr>
 
@@ -1364,7 +1368,7 @@ Path to the truststore file
 |Default| `--- BEGIN CERTIFICATE ---
 
 --- END CERTIFICATE ---`|
-|When| `type = 'PEM'` or `'JKS'` or `'PKCS12'` |
+|When| `type = 'PKCS12'` or `'PEM'` or `'JKS'` |
 Binary content as Base64
 <hr>
 

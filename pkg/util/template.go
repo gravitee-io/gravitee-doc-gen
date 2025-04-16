@@ -34,7 +34,9 @@ func TemplateWithFunctions(file string) (*template.Template, error) {
 		"icz":        increase,
 		"joinset":    joinset,
 		"mvmdheader": moveMarkdownHeader,
-		"title":      Title},
+		"title":      Title,
+		"upper":      upper,
+	},
 	).Parse(string(content))
 }
 
@@ -133,4 +135,8 @@ func moveMarkdownHeader(level int, header string) string {
 		buffer.WriteString(line + "\n")
 	}
 	return buffer.String()
+}
+
+func upper(str any) string {
+	return strings.ToUpper(AnyToString(str))
 }

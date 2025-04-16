@@ -36,7 +36,20 @@ type Array struct {
 	baseNode
 	Items []interface{} `json:",inline"`
 }
+
 type Set map[any]bool
+
+func (s Set) Add(v any) {
+	s[v] = true
+}
+
+func ToSlice[T any](s Set) []T {
+	slice := make([]T, 0, len(s))
+	for v := range s {
+		slice = append(slice, v.(T))
+	}
+	return slice
+}
 
 type Attribute struct {
 	baseNode

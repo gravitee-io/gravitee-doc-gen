@@ -5,9 +5,10 @@ import (
 	"unicode"
 )
 
-func Title(value string) string {
+func Title(value any) string {
+	str := AnyToString(value)
 	if value != "" {
-		return strings.ToTitle(value[:1]) + value[1:]
+		return strings.ToTitle(str[:1]) + str[1:]
 	}
 	return ""
 }
