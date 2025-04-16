@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	"github.com/gravitee-io-labs/readme-gen/pkg/bootstrap"
 	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
 	"github.com/gravitee-io-labs/readme-gen/pkg/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/util"
@@ -9,7 +10,9 @@ import (
 )
 
 func NoopTypeHandler(_ config.Chunk) (chunks.Processed, error) {
-	return chunks.Processed{}, nil
+	return chunks.Processed{
+		Data: bootstrap.GetExported(),
+	}, nil
 }
 
 func TemplateExistsTypeValidator(chunk config.Chunk) (bool, error) {
