@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gravitee-io-labs/readme-gen/pkg"
-	"github.com/gravitee-io-labs/readme-gen/pkg/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/generator"
-	"github.com/gravitee-io-labs/readme-gen/pkg/output"
+	"github.com/gravitee-io-labs/readme-gen/pkg/core"
+	"github.com/gravitee-io-labs/readme-gen/pkg/core/output"
+	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/bootstrap/plugin"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -45,23 +44,19 @@ func run(_ *cobra.Command, _ []string) {
 		}
 	}
 
-	readyChunks, cfg, loadErr := pkg.Load(rootDir)
-	var genError error
-	var generated []chunks.Generated
-	if loadErr == nil {
-		generated, genError = generator.Generate(readyChunks)
-	}
+	generated, cfg, genError := core.Load(rootDir, func(_ string) (string, error) {
+		return plugin.PluginRelatedFile("default.yaml")
+	})
 
 	if optionsData.Validate {
-		if loadErr != nil || genError != nil {
+		if genError != nil {
 			fmt.Println("Validation failed")
-			failIf(loadErr)
+			failIf(genError)
 			failIf(genError)
 		} else {
 			fmt.Println("Validation OK")
 		}
 	} else {
-		failIf(loadErr)
 		failIf(genError)
 		fmt.Println("Chunks generated... writing outputs")
 		for _, out := range cfg.Outputs {
