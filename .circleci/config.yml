@@ -84,7 +84,7 @@ commands:
           secret-url: keeper://ekjb4UzzzML0k3Qv_W8yqg/custom_field/AZURE_APPLICATION_SECRET
           var-name: AZURE_APPLICATION_SECRET
 jobs:
-  job-install-go-tools:
+  job-install-tools:
     docker:
       - image: cimg/go:<< pipeline.parameters.go-version >>-node
     steps:
@@ -92,7 +92,7 @@ jobs:
       - go/load-cache
       - run:
           name: Install GO tools
-          command: make install-go-tools
+          command: make install-tools
       - go/save-cache
       - save_cache:
           key: gotools-{{ checksum "go.sum" }}
@@ -199,7 +199,7 @@ workflows:
         - none
         - << pipeline.parameters.trigger >>
     jobs:
-      - job-install-go-tools:
+      - job-install-tools:
           name: Install GO tools
       - job-lint-sources:
           name: Lint sources
