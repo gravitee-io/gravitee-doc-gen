@@ -1,7 +1,25 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package options
 
 import (
 	"errors"
+	"math/big"
+	"strconv"
+	"strings"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
@@ -9,9 +27,6 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema/extensions"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 	"github.com/santhosh-tekuri/jsonschema/v5"
-	"math/big"
-	"strconv"
-	"strings"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -36,7 +51,6 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-
 	schemaFile := chunks.GetString(chunk, "schema")
 
 	root, err := schema.CompileWithExtensions(schemaFile)
@@ -54,7 +68,11 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(ctx *visitor.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *visitor.Attribute {
+func (options *Options) OnAttribute(
+	ctx *visitor.VisitContext,
+	property string,
+	attribute *jsonschema.Schema,
+	parent *jsonschema.Schema) *visitor.Attribute {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -73,8 +91,7 @@ func (options *Options) OnAttribute(ctx *visitor.VisitContext, property string, 
 	return nil
 }
 
-func (options *Options) OnObjectStart(ctx *visitor.VisitContext, property string, object *jsonschema.Schema) *visitor.Object {
-
+func (options *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jsonschema.Schema) *visitor.Object {
 	objectType := "object"
 	if ctx.CurrentOneOf().Present {
 		objectType = "oneOf"
@@ -96,13 +113,13 @@ func (options *Options) OnObjectStart(ctx *visitor.VisitContext, property string
 				OneOf:    ctx.CurrentOneOf(),
 			})
 		}
-
 	}
 	return nil
 }
 
-func (options *Options) OnArrayStart(ctx *visitor.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
-	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
+func (options *Options) OnArrayStart(_ *visitor.VisitContext, _ string,
+	array *jsonschema.Schema, _ bool) (*visitor.Array, []visitor.Value) {
+	if !schema.IsAttribute(schema.Items(array)) {
 		options.Add(Section{
 			Title: array.Title,
 			Type:  "array",
@@ -111,7 +128,7 @@ func (options *Options) OnArrayStart(ctx *visitor.VisitContext, property string,
 	return nil, nil
 }
 
-func (options *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
+func (options *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
 	specs := ctx.CurrentOneOf().Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {
@@ -123,7 +140,7 @@ func (options *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Sch
 }
 
 func (options *Options) OnObjectEnd(*visitor.VisitContext) {
-	//no op
+	// no op
 }
 
 func (options *Options) OnArrayEnd(*visitor.VisitContext, bool) {
@@ -172,21 +189,23 @@ func getConstraint(att *jsonschema.Schema) string {
 }
 
 func startBound(inclusive *big.Rat, exclusive *big.Rat) string {
-	if inclusive == nil && exclusive == nil {
+	switch {
+	case inclusive == nil && exclusive == nil:
 		return "[-Inf"
-	} else if exclusive != nil {
+	case exclusive != nil:
 		return "(" + ratToString(exclusive)
-	} else {
+	default:
 		return "[" + ratToString(inclusive)
 	}
 }
 
 func endBound(inclusive *big.Rat, exclusive *big.Rat) string {
-	if inclusive == nil && exclusive == nil {
+	switch {
+	case inclusive == nil && exclusive == nil:
 		return "+Inf]"
-	} else if exclusive != nil {
+	case exclusive != nil:
 		return ratToString(exclusive) + ")"
-	} else {
+	default:
 		return ratToString(inclusive) + "]"
 	}
 }
@@ -226,8 +245,10 @@ func isSecret(att *jsonschema.Schema) bool {
 }
 
 func getGioConfig(att *jsonschema.Schema) *extensions.GioConfigSchema {
-	if gioConfig, ok := att.Extensions[extensions.GioConfigExtension]; ok {
-		return gioConfig.(*extensions.GioConfigSchema)
+	if gioConfig, exists := att.Extensions[extensions.GioConfigExtension]; exists {
+		if ext, ok := gioConfig.(*extensions.GioConfigSchema); ok {
+			return ext
+		}
 	}
 	return &extensions.GioConfigSchema{}
 }

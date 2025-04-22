@@ -1,7 +1,7 @@
 apiVersion: "gravitee.io/v1alpha1"
 kind: "ApiV4Definition"
 metadata:
-    name: "{{ .Id }}-example-v4-gko-api"
+    name: "{{ .ID }}-example-v4-gko-api"
 spec:
     name: "{{ .Title }} Example V4 GKO API"
     type: "PROXY"
@@ -15,6 +15,6 @@ spec:
         {{ .Properties.phase }}:
           - name: "{{ .Title }}"
             enabled: true
-            policy: "{{ .Id }}"
+            policy: "{{ .ID }}"
             configuration:
               {{ indent 14 .Node }}

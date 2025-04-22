@@ -1,3 +1,17 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package common
 
 import (
@@ -23,7 +37,6 @@ func Visit(stack *visitor.NodeStack, visitor NodeTreeVisitor) {
 }
 
 func visit(node visitor.Node, nodeTreeVisitor NodeTreeVisitor, level int) {
-
 	if object, ok := node.(*visitor.Object); ok {
 		nodeTreeVisitor.OnObjectStart(*object, level)
 		for _, node := range object.Children() {
@@ -32,11 +45,13 @@ func visit(node visitor.Node, nodeTreeVisitor NodeTreeVisitor, level int) {
 		nodeTreeVisitor.OnObjectEnd(*object, level)
 	}
 
-	if array, ok := node.(*visitor.Array); ok {
+	if array, isArray := node.(*visitor.Array); isArray {
 		nodeTreeVisitor.OnArrayStart(*array, level)
 		for _, node := range array.Items {
 			if node.Kind() == visitor.ValueNode {
-				nodeTreeVisitor.OnArrayItem(*array, node.(visitor.Value), level)
+				if value, isValue := node.(visitor.Value); isValue {
+					nodeTreeVisitor.OnArrayItem(*array, value, level)
+				}
 			} else {
 				visit(node, nodeTreeVisitor, level+1)
 			}
@@ -47,5 +62,4 @@ func visit(node visitor.Node, nodeTreeVisitor NodeTreeVisitor, level int) {
 	if attribute, ok := node.(*visitor.Attribute); ok {
 		nodeTreeVisitor.OnAttribute(*attribute, level)
 	}
-
 }

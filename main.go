@@ -1,7 +1,23 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/gravitee-io/gravitee-doc-gen/cmd"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
@@ -11,13 +27,12 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/code"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/gen_examples"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/genexamples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/options"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/raw_examples"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/schema_to_env"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/schema_to_yaml"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/rawexamples"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/schematoenv"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/schematoyaml"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/table"
-	"os"
 )
 
 const TableDataType = config.DataType("table")
@@ -33,16 +48,16 @@ func main() {
 	generator.Registry.Register(TableDataType, table.TypeHandler, table.TypeValidator)
 	generator.Registry.Register(CodeDataType, code.TypeHandler, code.TypeValidator)
 	generator.Registry.Register(Options, options.TypeHandler, options.TypeValidator)
-	generator.Registry.Register(GenExamples, gen_examples.TypeHandler, gen_examples.TypeValidator)
-	generator.Registry.Register(RawExamples, raw_examples.TypeHandler, raw_examples.TypeValidator)
-	generator.Registry.Register(SchemaToYaml, schema_to_yaml.TypeHandler, schema_to_yaml.TypeValidator)
-	generator.Registry.Register(SchemaToEnv, schema_to_env.TypeHandler, schema_to_env.TypeValidator)
+	generator.Registry.Register(GenExamples, genexamples.TypeHandler, genexamples.TypeValidator)
+	generator.Registry.Register(RawExamples, rawexamples.TypeHandler, rawexamples.TypeValidator)
+	generator.Registry.Register(SchemaToYaml, schematoyaml.TypeHandler, schematoyaml.TypeValidator)
+	generator.Registry.Register(SchemaToEnv, schematoenv.TypeHandler, schematoenv.TypeValidator)
 
 	bootstrap.Register(filehandlers.PropertiesFileHandler, filehandlers.PropertiesExt)
 	bootstrap.Register(filehandlers.YamlFileHandler, filehandlers.YamlExt, filehandlers.YmlExt)
-	bootstrap.Register(filehandlers.JsonFileHandler, filehandlers.JsonExt)
+	bootstrap.Register(filehandlers.JSONFileHandler, filehandlers.JSONExt)
 
-	bootstrap.RegisterPostProcessor("plugin", plugin.PluginPostProcessor)
+	bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
 	bootstrap.RegisterPostProcessor("gen-examples", examples.GenExamplePostProcessor)
 
 	err := cmd.MainCommand().Execute()
@@ -50,5 +65,4 @@ func main() {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-
 }

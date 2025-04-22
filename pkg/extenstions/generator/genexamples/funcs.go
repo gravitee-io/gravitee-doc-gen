@@ -1,14 +1,30 @@
-package gen_examples
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package genexamples
 
 import (
 	"errors"
+	"strings"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	bexamples "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/examples"
 	visitor2 "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
-	"strings"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -24,7 +40,6 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 }
 
 func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider) (bool, error) {
-
 	err := examples.LoadConfig(chunk, provider)
 	if err != nil {
 		return true, err
@@ -42,7 +57,6 @@ func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider)
 	}
 
 	return true, nil
-
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
@@ -50,8 +64,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 }
 
 func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) (string, error) {
-
-	genSpec := spec.(examples.GenExampleSpec)
+	genSpec := util.As[examples.GenExampleSpec](spec)
 
 	validationSchema, _, _ := examples.CompileSchema(genSpec, chunk)
 
@@ -73,11 +86,11 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 	var jsonToValidate string
 	json := bexamples.JSON
 	if t, _ := genSpec.TemplateFromRef(); t.Language != json {
-		inJson, err := json.Serialize(object.Fields)
+		inJSON, err := json.Serialize(object.Fields)
 		if err != nil {
 			panic(err)
 		}
-		jsonToValidate = inJson
+		jsonToValidate = inJSON
 	} else {
 		jsonToValidate = codeToEmbed
 	}
@@ -87,5 +100,4 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 	}
 
 	return codeToEmbed, nil
-
 }

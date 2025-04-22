@@ -1,8 +1,23 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package schema
 
 import (
-	"github.com/santhosh-tekuri/jsonschema/v5"
 	"slices"
+
+	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 func IsRequired(name string, parent *jsonschema.Schema) bool {
@@ -12,7 +27,7 @@ func IsRequired(name string, parent *jsonschema.Schema) bool {
 
 func GetTypeItem(attribute *jsonschema.Schema) string {
 	if GetType(attribute) == "array" {
-		return GetType(attribute.Items.(*jsonschema.Schema))
+		return GetType(Items(attribute))
 	}
 	return ""
 }
@@ -22,20 +37,30 @@ func GetType(prop *jsonschema.Schema) string {
 		return ""
 	}
 	t := prop.Types[0]
-	if prop.Enum != nil && len(prop.Enum) > 0 {
+	if len(prop.Enum) > 0 {
 		return "enum (" + t + ")"
 	}
 	return t
 }
 
 func IsArray(schema *jsonschema.Schema) bool {
-	return slices.Contains(schema.Types, "array")
+	return GetType(schema) == "array"
 }
 
 func IsObject(schema *jsonschema.Schema) bool {
-	return slices.Contains(schema.Types, "object")
+	return GetType(schema) == "object"
 }
 
 func IsAttribute(schema *jsonschema.Schema) bool {
 	return !(IsObject(schema) || IsArray(schema))
+}
+
+func Items(array *jsonschema.Schema) *jsonschema.Schema {
+	if array.Items == nil {
+		panic("array.Items is nil")
+	}
+	if i, ok := array.Items.(*jsonschema.Schema); ok {
+		return i
+	}
+	panic("array.Items is likely to be an array of types, this is not supported")
 }

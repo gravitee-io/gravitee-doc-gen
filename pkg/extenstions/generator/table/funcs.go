@@ -1,16 +1,31 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package table
 
 import (
 	"errors"
+	"os"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 type Columns struct {
-	Id    string `yaml:"id"`
+	ID    string `yaml:"id"`
 	Label string `yaml:"label"`
 }
 
@@ -57,7 +72,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 }
 
 func getColumns(chunk config.Chunk) []Columns {
-	if cols, ok := chunk.Data["columns"]; ok && cols != nil {
+	if cols, exists := chunk.Data["columns"]; exists && cols != nil {
 		if colsMaps, ok := cols.([]interface{}); ok && colsMaps != nil {
 			return getColumnsFromMap(chunk, colsMaps)
 		}
@@ -71,7 +86,7 @@ func getColumnsFromMap(chunk config.Chunk, colsMaps []interface{}) []Columns {
 	for _, colsMap := range colsMaps {
 		if colMap, ok := colsMap.(map[string]interface{}); ok && len(colMap) == 1 {
 			for id, label := range colMap {
-				columns = append(columns, Columns{Id: id, Label: label.(string)})
+				columns = append(columns, Columns{ID: id, Label: util.AnyToString(label)})
 			}
 		} else {
 			panic("one columns spec should a single key/value: " + chunk.String())

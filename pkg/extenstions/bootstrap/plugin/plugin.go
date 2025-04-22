@@ -1,14 +1,29 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package plugin
 
 import (
 	"errors"
 	"fmt"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
-	"github.com/rickar/props"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
+	"github.com/rickar/props"
 )
 
 const flowPhaseProxyKey = "http_proxy"
@@ -95,7 +110,7 @@ unknown:
 }
 
 type Plugin struct {
-	Id         string
+	ID         string
 	Type       string
 	Title      string
 	FlowPhases []FlowPhase
@@ -103,13 +118,13 @@ type Plugin struct {
 }
 
 func (p Plugin) String() string {
-	return fmt.Sprintf("Plugin{Id: %s, Type: %s, Title: %s}", p.Id, p.Type, p.Title)
+	return fmt.Sprintf("Plugin{ID: %s, Type: %s, Title: %s}", p.ID, p.Type, p.Title)
 }
 
-func PluginPostProcessor(data any) (any, error) {
-	properties := data.(*props.Properties)
+func PostProcessor(data any) (any, error) {
+	properties := util.As[*props.Properties](data)
 	plugin := Plugin{
-		Id:         properties.GetDefault("id", ""),
+		ID:         properties.GetDefault("id", ""),
 		Type:       properties.GetDefault("type", ""),
 		Title:      properties.GetDefault("description", ""),
 		FlowPhases: extractPhases(properties),
@@ -125,7 +140,7 @@ func (p Plugin) Validate() error {
 	if p.Title == "" {
 		return errors.New("plugin description is required")
 	}
-	if p.Id == "" {
+	if p.ID == "" {
 		return errors.New("plugin id is required")
 	}
 	return nil
@@ -133,7 +148,12 @@ func (p Plugin) Validate() error {
 
 func extractPhases(properties *props.Properties) []FlowPhase {
 	set := util.Set{}
-	for _, key := range []string{flowPhaseProxyKey, flowPhaseMessageKey, flowPhaseNativeKafkaKey, legacyMessagePhaseTypeKey, legacyProxyPhaseTypeKey} {
+	for _, key := range []string{
+		flowPhaseProxyKey,
+		flowPhaseMessageKey,
+		flowPhaseNativeKafkaKey,
+		legacyMessagePhaseTypeKey,
+		legacyProxyPhaseTypeKey} {
 		if proxy, ok := properties.Get(key); ok {
 			for _, token := range strings.Split(proxy, ",") {
 				set.Add(NewFlowPhase(strings.TrimSpace(token)))
@@ -164,9 +184,9 @@ func extractApiTypes(properties *props.Properties) []ApiType {
 }
 
 func PluginRelatedFile(filename string) (string, error) {
-	plugin := bootstrap.GetData("plugin").(Plugin)
-	rootDir := bootstrap.GetData(bootstrap.RootDirDataKey).(string)
-	specificConfig := path.Join(rootDir, plugin.Type, plugin.Id, filename)
+	plugin, _ := bootstrap.GetData("plugin").(Plugin)
+	rootDir, _ := bootstrap.GetData(bootstrap.RootDirDataKey).(string)
+	specificConfig := path.Join(rootDir, plugin.Type, plugin.ID, filename)
 	defaultConfig := path.Join(rootDir, plugin.Type, filename)
 	if _, err := os.Stat(specificConfig); err == nil {
 		return specificConfig, nil
@@ -174,5 +194,5 @@ func PluginRelatedFile(filename string) (string, error) {
 	if _, err := os.Stat(defaultConfig); err == nil {
 		return defaultConfig, nil
 	}
-	return "", errors.New(fmt.Sprintf("plugin related file not found. filename: %s, plugin: %s", filename, plugin))
+	return "", fmt.Errorf("plugin related file not found. filename: %s, plugin: %s", filename, plugin)
 }
