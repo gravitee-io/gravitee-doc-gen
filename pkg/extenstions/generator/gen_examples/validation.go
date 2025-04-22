@@ -26,7 +26,7 @@ func (e *exampleValidation) OnAttribute(ctx *visitor2.VisitContext, property str
 		e.AddErr(fmt.Sprintf(
 			"property %s of type %s is required but do not have any examples, it must be set",
 			strings.Join(ctx.NodeStack().Properties(), "."),
-			visitor2.GetType(attribute)))
+			schema.GetType(attribute)))
 	}
 	return nil
 }

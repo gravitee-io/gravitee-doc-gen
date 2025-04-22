@@ -6,8 +6,8 @@ import (
 	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
 	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
 	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema"
-	ext "github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema/extensions"
-	visitor2 "github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema/extensions"
+	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/visitor"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"math/big"
 	"strconv"
@@ -48,21 +48,21 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		Attributes: make([]Attribute, 0),
 	}}}
 
-	ctx := visitor2.NewVisitContext(true, true).WithStack(visitor2.NewObject(""))
-	visitor2.Visit(ctx, &options, root)
+	ctx := visitor.NewVisitContext(true, true).WithStack(visitor.NewObject(""))
+	visitor.Visit(ctx, &options, root)
 
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(ctx *visitor2.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *visitor2.Attribute {
+func (options *Options) OnAttribute(ctx *visitor.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *visitor.Attribute {
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
-		Type:        visitor2.GetType(attribute),
+		Type:        schema.GetType(attribute),
 		TypeItem:    schema.GetTypeItem(attribute),
 		Constraint:  getConstraint(attribute),
 		Required:    schema.IsRequired(property, parent),
-		Default:     visitor2.GetConstantOrDefault(attribute, ctx),
+		Default:     visitor.GetConstantOrDefault(attribute, ctx),
 		IsConstant:  isConstant(attribute),
 		EL:          isEL(attribute),
 		Secret:      isSecret(attribute),
@@ -73,7 +73,7 @@ func (options *Options) OnAttribute(ctx *visitor2.VisitContext, property string,
 	return nil
 }
 
-func (options *Options) OnObjectStart(ctx *visitor2.VisitContext, property string, object *jsonschema.Schema) *visitor2.Object {
+func (options *Options) OnObjectStart(ctx *visitor.VisitContext, property string, object *jsonschema.Schema) *visitor.Object {
 
 	objectType := "object"
 	if ctx.CurrentOneOf().Present {
@@ -101,8 +101,8 @@ func (options *Options) OnObjectStart(ctx *visitor2.VisitContext, property strin
 	return nil
 }
 
-func (options *Options) OnArrayStart(ctx *visitor2.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*visitor2.Array, []visitor2.Value) {
-	if !visitor2.IsAttribute(array.Items.(*jsonschema.Schema)) {
+func (options *Options) OnArrayStart(ctx *visitor.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
+	if !schema.IsAttribute(array.Items.(*jsonschema.Schema)) {
 		options.Add(Section{
 			Title: array.Title,
 			Type:  "array",
@@ -111,26 +111,26 @@ func (options *Options) OnArrayStart(ctx *visitor2.VisitContext, property string
 	return nil, nil
 }
 
-func (options *Options) OnOneOf(ctx *visitor2.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
+func (options *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema) {
 	specs := ctx.CurrentOneOf().Specs
 	discriminatedBy := make(map[string]any)
 	for _, spec := range specs {
-		value := visitor2.GetConstantOrDefault(oneOf.Properties[spec.Property], ctx)
+		value := visitor.GetConstantOrDefault(oneOf.Properties[spec.Property], ctx)
 		discriminatedBy[spec.Property] = value
 	}
 
 	options.Add(Section{Title: oneOf.Title, OneOf: ctx.CurrentOneOf(), DiscriminatedBy: discriminatedBy})
 }
 
-func (options *Options) OnObjectEnd(*visitor2.VisitContext) {
+func (options *Options) OnObjectEnd(*visitor.VisitContext) {
 	//no op
 }
 
-func (options *Options) OnArrayEnd(*visitor2.VisitContext, bool) {
+func (options *Options) OnArrayEnd(*visitor.VisitContext, bool) {
 	// no op
 }
 
-func (options *Options) OnOneOfEnd(*visitor2.VisitContext) {
+func (options *Options) OnOneOfEnd(*visitor.VisitContext) {
 	// no op
 }
 
@@ -225,9 +225,9 @@ func isSecret(att *jsonschema.Schema) bool {
 	return getGioConfig(att).Secret
 }
 
-func getGioConfig(att *jsonschema.Schema) *ext.GioConfigSchema {
-	if gioConfig, ok := att.Extensions[ext.GioConfigExtension]; ok {
-		return gioConfig.(*ext.GioConfigSchema)
+func getGioConfig(att *jsonschema.Schema) *extensions.GioConfigSchema {
+	if gioConfig, ok := att.Extensions[extensions.GioConfigExtension]; ok {
+		return gioConfig.(*extensions.GioConfigSchema)
 	}
-	return &ext.GioConfigSchema{}
+	return &extensions.GioConfigSchema{}
 }

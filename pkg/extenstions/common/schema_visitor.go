@@ -28,7 +28,7 @@ func (v *SchemaToNodeTreeVisitor) OnAttribute(ctx *visitor.VisitContext, propert
 		nodeAttribute.Value = value
 		nodeAttribute.Title = attribute.Title
 		nodeAttribute.Description = attribute.Description
-		nodeAttribute.Type = visitor.GetType(attribute)
+		nodeAttribute.Type = schema.GetType(attribute)
 		nodeAttribute.IsOneOfProperty = ctx.CurrentOneOf().Present
 		nodeAttribute.IsOneOfDiscriminator = ctx.CurrentOneOf().IsDiscriminator(property)
 		nodeAttribute.Enums = getEnums(attribute, property, ctx.CurrentOneOf())
