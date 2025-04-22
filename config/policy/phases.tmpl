@@ -1,0 +1,12 @@
+
+{{ range $col := .Columns }}| {{ $col.Label }}{{- end }} |
+{{ range $_ := .Columns }}| --- {{ end }} |
+{{ range $row := .Rows }}
+{{- range $col := $.Columns -}}
+{{ if eq (printf "%T" (index $row.Data $col.Id)) "bool" -}}
+| {{ ternary (index $row.Data $col.Id) "✅" " " -}}
+{{ else -}}
+| {{ default (index $row.Data $col.Id) " " -}}
+{{ end -}}
+{{ end }} |
+{{ end -}}

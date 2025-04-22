@@ -1,0 +1,24 @@
+{
+  "gravitee" : "2.0.0",
+  "name": "{{ .Title }} Example v4 API",
+  "flows": [
+    {
+      "name": "Common Flow",
+      "enabled": true,
+      "path-operator" : {
+        "path" : "/",
+        "operator" : "STARTS_WITH"
+      },
+      "{{ .Properties.phase }}": [
+        {
+          "name": "{{ .Title }}",
+          "enabled": true,
+          "policy": "{{ .ID }}",
+          "configuration":
+            {{ indent 14 .Node }}
+        }
+      ]
+    }
+  ]
+}
+

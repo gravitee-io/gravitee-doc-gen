@@ -14,7 +14,6 @@ TEST_ARGS ?= ""
 ## Tool Binaries
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCILINT ?= $(LOCALBIN)/golangci-lint
-ADDLICENSE ?= $(LOCALBIN)/addlicense
 
 .PHONY: all
 all: build
@@ -28,7 +27,7 @@ test:
 	$(GINKGO) $(TEST_ARGS) tests/...
 
 .PHONY: lint
-lint: lint-commits lint-sources lint-licenses ## Run all linters and fail on error
+lint: lint-commits lint-sources## Run all linters and fail on error
 
 .PHONY: lint-sources
 lint-sources: ## Run golangci-lint and fail on error
@@ -36,30 +35,14 @@ lint-sources: ## Run golangci-lint and fail on error
 	@$(GOLANGCILINT) --concurrency 2 run ./...
 
 .PHONY: lint-fix
-lint-fix: ## Fix whatever golangci-lint can fix and add licenses headers
+lint-fix: ## Fix whatever golangci-lint can fix
 	@$(GOLANGCILINT) run ./... --fix
-	@$(MAKE) add-license
 
 .PHONY: lint-commits
 lint-commits:  ## Run commitlint and fail on error
 	@echo "Linting commits ..."
 	@npm i -g @commitlint/config-conventional @commitlint/cli
 	@commitlint -x @commitlint/config-conventional --edit
-
-.PHONY: lint-licenses
-lint-licenses: ## Run addlicense linter and fail on error
-	@echo "Checking license headers ..."
-	@$(ADDLICENSE) -check -f LICENSE_TEMPLATE.txt \
-		-ignore ".circleci/**" \
-		-ignore ".idea/**" .
-
-.PHONY: add-license
-add-license: ## Add license headers to files
-	@echo "Adding license headers ..."
-	@$(ADDLICENSE) -f LICENSE_TEMPLATE.txt \
-		-ignore ".circleci/**" \
-		-ignore "example/plugin/docs/examples/**" \
-		-ignore ".idea/**" .
 
 .PHONY: clean-tools
 clean-tools: $(LOCALBIN) ## Cleans (delete) all binary tools

@@ -1,0 +1,34 @@
+{{-  range $_,$section := .Sections }}
+#### {{ if .OneOf.Present -}}
+{{ .OneOf.ParentTitle }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
+{{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
+{{ end }}
+| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+{{ $rows := 0 -}}
+{{ $skipped := 0 -}}
+{{- range $i, $_ := .Attributes -}}
+{{ if not ($section.IsOneOfProperty .Property) -}}
+| {{ if .Name }}{{ .Name }}<br>{{ end }}`{{ .Property }}` {{- /* hack to elude trailing \n */ -}}
+| {{ default .Type "string" }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
+| {{ ternary .Required "✅" " " -}}
+| {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end -}}
+| {{ ternary .EL "✅" " " -}}
+| {{ ternary .Secret "✅" " " -}}
+| {{ .Description -}}{{ if or (eq .Type "object") (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section{{ end -}}
+{{ if .OneOf.Present -}}
+{{ if ne .Description "" -}}<br>{{ end -}}
+{{ .Name}} of {{ .OneOf.ParentTitle -}}
+{{ end -}}
+{{ if gt (len .Enums) 0 -}}
+{{ if or .Description .OneOf.Present -}}
+<br>{{ end -}}
+Values: {{- range .Enums }}`{{ default . "\"\"" }}` {{ end -}}
+{{ end -}}
+|
+{{ else -}}{{- $skipped = icz $skipped -}}
+{{ end -}}
+{{ $rows = icz $i -}}
+{{ end -}}
+{{ if eq $rows $skipped }}| No properties | | | | | | | {{ end }}
+{{ end }}

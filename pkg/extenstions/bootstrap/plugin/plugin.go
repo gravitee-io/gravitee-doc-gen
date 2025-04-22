@@ -126,7 +126,7 @@ func PostProcessor(data any) (any, error) {
 	plugin := Plugin{
 		ID:         properties.GetDefault("id", ""),
 		Type:       properties.GetDefault("type", ""),
-		Title:      properties.GetDefault("description", ""),
+		Title:      properties.GetDefault("name", ""),
 		FlowPhases: extractPhases(properties),
 		ApiTypes:   extractApiTypes(properties),
 	}
@@ -138,7 +138,7 @@ func (p Plugin) Validate() error {
 		return errors.New("plugin type is required")
 	}
 	if p.Title == "" {
-		return errors.New("plugin description is required")
+		return errors.New("plugin name is required")
 	}
 	if p.ID == "" {
 		return errors.New("plugin id is required")

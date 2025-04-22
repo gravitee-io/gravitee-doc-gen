@@ -1,0 +1,20 @@
+apiVersion: "gravitee.io/v1alpha1"
+kind: "ApiV4Definition"
+metadata:
+    name: "{{ .ID }}-example-v4-gko-api"
+spec:
+    name: "{{ .Title }} Example V4 GKO API"
+    type: "PROXY"
+    flows:
+      - name: "Common Flow"
+        enabled: true
+        selectors:
+          - type: "HTTP"
+            path: "/"
+            pathOperator: "STARTS_WITH"
+        {{ .Properties.phase }}:
+          - name: "{{ .Title }}"
+            enabled: true
+            policy: "{{ .ID }}"
+            configuration:
+              {{ indent 14 .Node }}

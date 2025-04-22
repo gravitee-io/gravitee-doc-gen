@@ -1,99 +1,24 @@
 version: 2.1
 
 orbs:
-  gravitee: gravitee-io/gravitee@4.13.0
-  go: circleci/go@1.12.0
-  keeper: gravitee-io/keeper@0.6.3
-  gh: circleci/github-cli@2.7.0
-  aquasec: gravitee-io/aquasec@1.0.4
-  azure-cli: circleci/azure-cli@1.3.2
+  go: circleci/go@3.0.2
 
 parameters:
   go-version:
     type: string
     default: "1.23.1"
-  trigger:
-    type: enum
-    default: none
-    enum:
-      - test
-      - release
-      - none
-  release-version:
-    type: string
-    default: ""
-    description: "The version under release then using the release trigger"
-  latest:
-    type: boolean
-    default: false
-    description: Is this version the latest version available (when using the release trigger) ?
-  dry-run:
-    type: boolean
-    default: true
-  notify:
-    type: boolean
-    default: false
 
-executors:
-  azure-cli:
-    docker:
-      - image: mcr.microsoft.com/azure-cli:2.68.0
-    resource_class: small
-
-commands:
-  cmd-setup-aqua-scan:
-    steps:
-      - keeper/env-export:
-          secret-url: keeper://QeHHkvALPob4pgs1hMd9Gw/custom_field/API Key
-          var-name: AQUA_KEY
-      - keeper/env-export:
-          secret-url: keeper://QeHHkvALPob4pgs1hMd9Gw/custom_field/Secret
-          var-name: AQUA_SECRET
-      - keeper/env-export:
-          secret-url: keeper://LYg-wdlM5UDzSqFFH6Kyig/field/login
-          var-name: AQUA_USERNAME
-      - keeper/env-export:
-          secret-url: keeper://LYg-wdlM5UDzSqFFH6Kyig/field/password
-          var-name: AQUA_PASSWORD
-      - keeper/env-export:
-          secret-url: keeper://QeHHkvALPob4pgs1hMd9Gw/custom_field/ScannerToken
-          var-name: SCANNER_TOKEN
-      - keeper/env-export:
-          secret-url: keeper://TIlcGPFq4rN5GvgnZb9hng/field/password
-          var-name: GITHUB_TOKEN
-  cmd-setup-azure-login:
-    steps:
-      - keeper/env-export:
-          secret-url: keeper://UryantA7MvZe8fkWwcUt8g/field/login
-          var-name: AZURE_SP
-      - keeper/env-export:
-          secret-url: keeper://UryantA7MvZe8fkWwcUt8g/custom_field/tenant
-          var-name: AZURE_TENANT
-      - keeper/env-export:
-          secret-url: keeper://UryantA7MvZe8fkWwcUt8g/field/password
-          var-name: AZURE_SP_PASSWORD
-  cmd-setup-azure-login-e2e:
-    steps:
-      - keeper/env-export:
-          secret-url: keeper://ekjb4UzzzML0k3Qv_W8yqg/custom_field/AZURE_APPLICATION_ID
-          var-name: AZURE_APPLICATION_ID
-      - keeper/env-export:
-          secret-url: keeper://ekjb4UzzzML0k3Qv_W8yqg/custom_field/AZURE_TENANT
-          var-name: AZURE_TENANT
-      - keeper/env-export:
-          secret-url: keeper://ekjb4UzzzML0k3Qv_W8yqg/custom_field/AZURE_APPLICATION_SECRET
-          var-name: AZURE_APPLICATION_SECRET
 jobs:
   job-install-go-tools:
     docker:
       - image: cimg/go:<< pipeline.parameters.go-version >>-node
     steps:
       - checkout
-      - go/load-cache
+      - go/load-mod-cache
       - run:
           name: Install GO tools
-          command: make install-go-tools
-      - go/save-cache
+          command: make install-tools
+      - go/save-mod-cache
       - save_cache:
           key: gotools-{{ checksum "go.sum" }}
           paths:
@@ -103,33 +28,14 @@ jobs:
       - image: cimg/go:<< pipeline.parameters.go-version >>-node
     steps:
       - checkout
-      - go/load-cache
+      - go/load-golangci-lint-cache
       - restore_cache:
           keys:
             - gotools-{{ checksum "go.sum" }}
-      - restore_cache:
-          keys:
-            - golangci-{{ checksum ".golangci.yml" }}
       - run:
           name: Lint sources
           command: make lint-sources
-      - save_cache:
-          key: golangci-{{ checksum ".golangci.yml" }}
-          paths:
-            - /home/circleci/.cache
-
-  job-lint-licenses:
-    docker:
-      - image: cimg/go:<< pipeline.parameters.go-version >>-node
-    steps:
-      - checkout
-      - go/load-cache
-      - restore_cache:
-          keys:
-            - gotools-{{ checksum "go.sum" }}
-      - run:
-          name: Lint licenses
-          command: make lint-licenses
+      - go/save-golangci-lint-cache
 
   job-lint-commits:
     docker:
@@ -151,7 +57,7 @@ jobs:
       - image: cimg/go:<< pipeline.parameters.go-version >>-node
     steps:
       - checkout
-      - go/load-cache
+      - go/load-mod-cache
       - restore_cache:
           keys:
             - gotools-{{ checksum "go.sum" }}
@@ -160,44 +66,10 @@ jobs:
           command: |
             TEST_ARGS="--cover --coverprofile=cover-unit.out --coverpkg=github.com/gravitee-io/gravitee-doc-gen/... --output-dir=/tmp/junit/reports" \
              make -s test
-      - store_test_results:
-          path: /tmp/junit/reports
-      - persist_to_workspace:
-          root: /tmp/junit/reports
-          paths:
-            - cover-unit.out
+      - go/save-mod-cache
 
-  job-sonarcloud-analysis:
-    description: A job that run Sonarcloud analysis
-    docker:
-      - image: sonarsource/sonar-scanner-cli:5.0.1
-    resource_class: small
-    steps:
-      - run:
-          name: Add SSH tool
-          command: apk add --no-cache openssh
-      - checkout
-      - attach_workspace:
-          at: /tmp/junit/reports
-      - keeper/env-export:
-          secret-url: keeper://9x9YgyU6DWzux4DPoHAzDQ/field/password
-          var-name: SONAR_TOKEN
-      - run:
-          name: Run Sonarcloud analysis
-          command: sonar-scanner -Dsonar.projectVersion=$(git describe --tags --abbrev=0)
-  job-fail:
-    description: This is a test job for slack notifications
-    docker:
-      - image: cimg/go:<< pipeline.parameters.go-version >>
-    steps:
-      - run:
-          command: exit 1
 workflows:
   pull-request:
-    when:
-      equal:
-        - none
-        - << pipeline.parameters.trigger >>
     jobs:
       - job-install-go-tools:
           name: Install GO tools
@@ -205,44 +77,12 @@ workflows:
           name: Lint sources
           requires:
             - Install GO tools
-      - job-lint-licenses:
-          name: Lint licenses
-          requires:
-            - Install GO tools
       - job-lint-commits:
           name: Lint commits
+          requires:
+            - Install GO tools
       - job-unit-test:
           name: Run unit tests
           requires:
             - Install GO tools
-      - job-sonarcloud-analysis:
-          name: Sonarcloud analysis
-          context: cicd-orchestrator
-          requires:
-            - Run IT with context
-            - Run IT without context
-      - aquasec/fs_scan:
-          context: cicd-orchestrator
-          pre-steps:
-            - cmd-setup-aqua-scan
-          requires:
-            - Install GO tools
-  post-merge:
-    when:
-      equal:
-        - none
-        - << pipeline.parameters.trigger >>
-    jobs:
-      - aquasec/fs_scan:
-          context: cicd-orchestrator
-          pre-steps:
-            - cmd-setup-aqua-scan
-          filters:
-            branches:
-              only:
-                - /^[0-9]+\.[0-9]+\.x$/
-                - master
-            tags:
-              ignore: /.*/
-
-
+  
