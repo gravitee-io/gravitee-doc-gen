@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"

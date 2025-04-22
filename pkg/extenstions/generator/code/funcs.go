@@ -2,9 +2,9 @@ package code
 
 import (
 	"errors"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"gopkg.in/yaml.v3"
 	"os"
 )

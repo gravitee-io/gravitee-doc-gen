@@ -1,11 +1,11 @@
 package examples
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/bootstrap"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/bootstrap/plugin"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 )
 
 type Yielder func(config.Chunk, ExampleSpec) (string, error)

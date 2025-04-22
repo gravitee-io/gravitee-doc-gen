@@ -1,8 +1,8 @@
 package generator
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 )
 
 func Generate(readyChunks []chunks.Ready) ([]chunks.Generated, error) {

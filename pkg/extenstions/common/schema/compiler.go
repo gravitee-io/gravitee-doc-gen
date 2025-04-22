@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema/extensions"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema/extensions"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 

@@ -2,12 +2,12 @@ package gen_examples
 
 import (
 	"errors"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
-	bexamples "github.com/gravitee-io-labs/readme-gen/pkg/extenstions/bootstrap/examples"
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common"
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/examples"
-	visitor2 "github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	bexamples "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/examples"
+	visitor2 "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 	"strings"
 )
 

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/output"
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/bootstrap/plugin"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/output"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	"github.com/spf13/cobra"
 	"os"
 )

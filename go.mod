@@ -1,4 +1,4 @@
-module github.com/gravitee-io-labs/readme-gen
+module github.com/gravitee-io/gravitee-doc-gen
 
 require (
 	github.com/rickar/props v1.1.0
