@@ -1,9 +1,5 @@
 package visitor
 
-import (
-	"fmt"
-)
-
 type NodeStack struct {
 	stack []Node
 }
@@ -102,7 +98,6 @@ func (s *NodeStack) pop() {
 	var property string
 	var remove bool
 	node := s.Peek()
-	fmt.Println("pop", node.Name(), node.Kind().String())
 	if node != nil && node.IsEmpty() {
 		property = node.Name()
 		remove = true

@@ -1,6 +1,7 @@
 package visitor
 
 import (
+	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
@@ -17,7 +18,7 @@ func GetConstantOrDefault(att *jsonschema.Schema, ctx *VisitContext) any {
 		return att.Constant[0]
 	}
 	def := att.Default
-	if def == nil && GetType(att) == "boolean" && ctx.IsAutoDefaultBooleans() {
+	if def == nil && schema.GetType(att) == "boolean" && ctx.IsAutoDefaultBooleans() {
 		return false
 	}
 	return def
