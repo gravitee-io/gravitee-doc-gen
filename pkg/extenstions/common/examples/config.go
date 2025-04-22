@@ -1,8 +1,8 @@
 package examples
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"gopkg.in/yaml.v3"
 	"os"
 )

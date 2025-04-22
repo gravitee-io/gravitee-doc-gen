@@ -1,7 +1,7 @@
 package schema_to_yaml
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 	"gopkg.in/yaml.v3"
 )
 

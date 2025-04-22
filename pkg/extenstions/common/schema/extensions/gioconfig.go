@@ -2,7 +2,7 @@ package extensions
 
 import (
 	"errors"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 

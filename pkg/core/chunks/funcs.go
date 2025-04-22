@@ -2,9 +2,9 @@ package chunks
 
 import (
 	"errors"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/bootstrap"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 )
 
 type TypeHandlerFunc func(configChunk config.Chunk) (Processed, error)

@@ -3,10 +3,10 @@ package core
 import (
 	"errors"
 	"fmt"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/bootstrap"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/chunks"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/config"
-	"github.com/gravitee-io-labs/readme-gen/pkg/core/generator"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/generator"
 )
 
 func Load(rootDir string, resolver config.FileResolver) ([]chunks.Generated, config.Config, error) {

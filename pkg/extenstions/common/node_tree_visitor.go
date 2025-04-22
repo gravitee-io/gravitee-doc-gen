@@ -1,7 +1,7 @@
 package common
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 )
 
 type NodeTreeVisitor interface {

@@ -1,7 +1,7 @@
 package visitor
 
 import (
-	"github.com/gravitee-io-labs/readme-gen/pkg/extenstions/common/schema"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
