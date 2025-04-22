@@ -1,10 +1,25 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package common
 
 import (
+	"slices"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 	"github.com/santhosh-tekuri/jsonschema/v5"
-	"slices"
 )
 
 type SchemaToNodeTreeVisitor struct {
@@ -15,8 +30,11 @@ type SchemaToNodeTreeVisitor struct {
 	oneOfIndex             int
 }
 
-func (v *SchemaToNodeTreeVisitor) OnAttribute(ctx *visitor.VisitContext, property string, attribute *jsonschema.Schema, parent *jsonschema.Schema) *visitor.Attribute {
-
+func (v *SchemaToNodeTreeVisitor) OnAttribute(
+	ctx *visitor.VisitContext,
+	property string,
+	attribute *jsonschema.Schema,
+	parent *jsonschema.Schema) *visitor.Attribute {
 	if v.skipAttributes {
 		return nil
 	}
@@ -39,7 +57,6 @@ func (v *SchemaToNodeTreeVisitor) OnAttribute(ctx *visitor.VisitContext, propert
 }
 
 func (v *SchemaToNodeTreeVisitor) OnObjectStart(*visitor.VisitContext, string, *jsonschema.Schema) *visitor.Object {
-
 	return nil
 }
 
@@ -47,16 +64,23 @@ func (v *SchemaToNodeTreeVisitor) OnObjectEnd(_ *visitor.VisitContext) {
 	// no op
 }
 
-func (v *SchemaToNodeTreeVisitor) OnArrayStart(_ *visitor.VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
+func (v *SchemaToNodeTreeVisitor) OnArrayStart(
+	_ *visitor.VisitContext,
+	property string,
+	array *jsonschema.Schema,
+	itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
 	newArray := visitor.NewArray(property)
 	newArray.Title = array.Title
 	newArray.Description = array.Description
 	newArray.ItemType = schema.GetTypeItem(array)
 	if !itemTypeIsObject {
 		values := make([]visitor.Value, 0)
-		for _, val := range array.Default.([]interface{}) {
-			values = append(values, visitor.NewValue(val))
+		if defaults, ok := array.Default.([]interface{}); ok {
+			for _, val := range defaults {
+				values = append(values, visitor.NewValue(val))
+			}
 		}
+
 		return newArray, values
 	}
 	return newArray, nil
@@ -67,7 +91,6 @@ func (v *SchemaToNodeTreeVisitor) OnArrayEnd(*visitor.VisitContext, bool) {
 }
 
 func (v *SchemaToNodeTreeVisitor) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
-
 	filter := ctx.OneOfFilter()
 
 	// no filter,just check if we can keep all properties or not
@@ -116,7 +139,10 @@ func (v *SchemaToNodeTreeVisitor) OnOneOf(ctx *visitor.VisitContext, oneOf *json
 	}
 }
 
-func (v *SchemaToNodeTreeVisitor) updateOneOfLatestDiscriminatorValue(ctx *visitor.VisitContext, discriminatorProperty *jsonschema.Schema, key string) any {
+func (v *SchemaToNodeTreeVisitor) updateOneOfLatestDiscriminatorValue(
+	ctx *visitor.VisitContext,
+	discriminatorProperty *jsonschema.Schema,
+	key string) any {
 	actualValue := visitor.GetConstantOrDefault(discriminatorProperty, ctx)
 	// reset if new value
 	if actualValue != v.lastDiscriminatorValue[key] {

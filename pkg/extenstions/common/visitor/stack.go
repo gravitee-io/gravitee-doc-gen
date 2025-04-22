@@ -1,4 +1,20 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package visitor
+
+import "github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 
 type NodeStack struct {
 	stack []Node
@@ -29,7 +45,6 @@ func (s *NodeStack) Nodes() []Node {
 func (s *NodeStack) Properties() []string {
 	if s == nil {
 		panic("stack is nil, cannot get names. stack it should created with the visitor.")
-
 	}
 	result := make([]string, 0, len(s.stack))
 	for _, node := range s.stack {
@@ -56,13 +71,13 @@ func (s *NodeStack) add(ctx *VisitContext, added Node) {
 	}
 	node := ctx.NodeStack().Peek()
 	if node.Kind() == ArrayNode {
-		array := node.(*Array)
+		array := util.As[*Array](node)
 		array.Items = append(array.Items, added)
 	} else if node.Kind() == ObjectNode {
-		node.(*Object).AddChild(added)
+		util.As[*Object](node).AddChild(added)
 	}
 	if added.Kind() == AttributeNode {
-		attribute := added.(*Attribute)
+		attribute := util.As[*Attribute](added)
 		if attribute.IsOneOfProperty {
 			attribute.updateWhen(ctx)
 		}
@@ -107,14 +122,13 @@ func (s *NodeStack) pop() {
 
 	if remove && !isRoot(node) {
 		if last := s.Peek(); last.Kind() == ArrayNode {
-			array := last.(*Array)
+			array := util.As[*Array](last)
 			array.Items = removeLast(array.Items)
 		} else if last.Kind() == ObjectNode {
-			object := last.(*Object)
+			object := util.As[*Object](last)
 			delete(object.Fields, property)
 		}
 	}
-
 }
 
 func removeLast[T any](slice []T) []T {
@@ -126,7 +140,7 @@ func removeLast[T any](slice []T) []T {
 
 func isRoot(n Node) bool {
 	if n.Kind() == ObjectNode {
-		return n.(*Object).root
+		return util.As[*Object](n).root
 	}
 	return false
 }

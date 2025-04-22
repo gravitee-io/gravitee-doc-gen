@@ -1,16 +1,30 @@
-package raw_examples
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package rawexamples
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"os"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	bexamples "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/examples"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -22,19 +36,18 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 }
 
 func readCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) (string, error) {
-
-	rawSpec := spec.(examples.RawExampleSpec)
+	rawSpec := util.As[examples.RawExampleSpec](spec)
 
 	bytes, err := os.ReadFile(rawSpec.File)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("failed to read code example file %s: %v", rawSpec.File, err))
+		return "", fmt.Errorf("failed to read code example file %s: %w", rawSpec.File, err)
 	}
 
 	codeToEmbed := string(bytes)
 	var jsonToValidate string
 	if rawSpec.Language == bexamples.YAML {
-		if converted, err := yamlToJson(codeToEmbed); err == nil {
-			jsonToValidate = converted
+		if converted, err := yamlToJSON(codeToEmbed); err == nil {
+			jsonToValidate = string(converted)
 		} else {
 			panic(fmt.Sprintf("cannot yaml to json with example %v: %v", rawSpec, err))
 		}
@@ -52,12 +65,11 @@ func readCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) (
 	return codeToEmbed, nil
 }
 
-func yamlToJson(jsonToValidate string) (string, error) {
+func yamlToJSON(jsonToValidate string) ([]byte, error) {
 	y := util.Unstructured{}
 	err := yaml.Unmarshal([]byte(jsonToValidate), &y)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
-	b, err := json.Marshal(y)
-	return string(b), nil
+	return json.Marshal(y)
 }

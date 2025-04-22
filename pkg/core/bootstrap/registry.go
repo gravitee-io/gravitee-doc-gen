@@ -1,10 +1,25 @@
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package bootstrap
 
 import (
 	"fmt"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"os"
 	"path/filepath"
+
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 )
 
 var registry = struct {
@@ -60,25 +75,26 @@ func load(file string, export string) (any, error) {
 		return nil, fmt.Errorf("%s is a directory, should be a file", file)
 	}
 
+	var val any
+	var key string
 	if handle, ok := registry.handlers[filepath.Ext(file)]; ok {
-		val, err := handle(file)
+		val, err = handle(file)
 		if err != nil {
 			return nil, err
 		}
-		key := filepath.Base(util.BaseFileNoExt(file))
-
+		key = filepath.Base(util.BaseFileNoExt(file))
 		registry.data[key] = val
-		if postProcessor, ok := registry.postProcessors[key]; ok {
-			updated, err := postProcessor(val)
-			if err != nil {
-				return nil, err
-			}
-			registry.data[key] = updated
-		}
-		registry.exports[key] = export
-		return val, nil
 	} else {
 		panic(fmt.Sprintf("no '%s' handler for bootstrap file: %s ", filepath.Ext(file), file))
 	}
 
+	if postProcessor, ok := registry.postProcessors[key]; ok {
+		updated, err := postProcessor(val)
+		if err != nil {
+			return nil, err
+		}
+		registry.data[key] = updated
+	}
+	registry.exports[key] = export
+	return val, nil
 }

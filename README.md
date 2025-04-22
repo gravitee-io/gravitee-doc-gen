@@ -82,15 +82,14 @@ Outputs are define with :
 - `schema-to-yaml` (alpha)
     - turns a json schema into documented Yaml configuration file with comments
         - requires default value or examples for all attributes (not implemented yet)
+- `schema-to-env` (alpha)
+  - turns a json schema into documented ENV vars configuration file with comments
+    - requires default value or examples for all attributes (not implemented yet)
 
 ## Other extension
 
 They are easy to implement, two functions: 1 to validate the `data` part of the chuck and one to handle the generation, they then need to be register in `main.go`
 
-### To be done
-
-- `api-type`
-    - Let the user define if what API works with
 
 ### Go template
 

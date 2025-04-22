@@ -1,9 +1,24 @@
-package schema_to_env
+// Copyright (C) 2015 The Gravitee team (http://gravitee.io)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//         http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package schematoenv
 
 import (
 	"fmt"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 	"strings"
+
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 )
 
 type envSection struct {
@@ -46,7 +61,7 @@ func (v *toEnvVisitor) OnObjectStart(object visitor.Object, level int) {
 	}
 }
 
-func (v *toEnvVisitor) OnObjectEnd(object visitor.Object, level int) {
+func (v *toEnvVisitor) OnObjectEnd(visitor.Object, int) {
 	v.removeLastPaths()
 }
 
@@ -62,7 +77,7 @@ func (v *toEnvVisitor) OnArrayStart(array visitor.Array, level int) {
 	}
 }
 
-func (v *toEnvVisitor) OnArrayItem(array visitor.Array, value visitor.Value, level int) {
+func (v *toEnvVisitor) OnArrayItem(array visitor.Array, _ visitor.Value, _ int) {
 	attribute := visitor.NewAttribute("", nil)
 	attribute.Type = array.ItemType
 	attribute.Title = array.Title
@@ -75,11 +90,11 @@ func (v *toEnvVisitor) OnArrayItem(array visitor.Array, value visitor.Value, lev
 	// v.removeLastPaths()
 }
 
-func (v *toEnvVisitor) OnArrayEnd(array visitor.Array, level int) {
+func (v *toEnvVisitor) OnArrayEnd(visitor.Array, int) {
 	v.inArray = false
 }
 
-func (v *toEnvVisitor) OnAttribute(attribute visitor.Attribute, level int) {
+func (v *toEnvVisitor) OnAttribute(attribute visitor.Attribute, _ int) {
 	v.addPaths(attribute.Name())
 	v.currentSection.AddVariable(envVariable{
 		Attribute: attribute,
