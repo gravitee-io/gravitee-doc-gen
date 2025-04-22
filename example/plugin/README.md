@@ -21,10 +21,10 @@ These templates are be defined at the API level, in "Entrypoint" section for V4 
 
 The error keys sent by this policy are as follows:
 
-| Key| Parameters |
-| --- | ---  |
-| API_KEY_MISSING| - |
-| API_KEY_INVALID_KEY| - |
+| Key |
+| ---  |
+| API_KEY_MISSING |
+| API_KEY_INVALID_KEY |
 
 
 
@@ -46,11 +46,11 @@ The phases checked below are supported by the `test` policy:
 ## Compatibility matrix
 Strikethrough line are deprecated versions
 
-| Plugin version| APIM| AM| Cockpit| Comment |
-| --- | --- | --- | --- | ---  |
-|~~1.0~~|~~3.x~~|~~2.1~~|~~-~~|~~-~~ |
-|2.x|4.x|4.1|-|Incompatible with cloud |
-|3.x|4.6 and above|4.6 and above|-|- |
+| Plugin version| APIM| AM| Comment |
+| --- | --- | --- | ---  |
+|~~1.0~~|~~3.x~~|~~2.1~~|~~-~~ |
+|2.x|4.x|4.1|Incompatible with cloud |
+|3.x|4.6 and above|4.6 and above|- |
 
 
 
@@ -119,8 +119,8 @@ Warning: this some heavy doc
 #### Proxy Options (OneOf)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
 | Enabled<br>`enabled`| object| ✅| |  |  | <br/>See "Enabled" sectionEnabled of Proxy Options<br>Values:`""` `true` `true` |
+| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | <br/>See "Use System Proxy" sectionUse System Proxy of Proxy Options<br>Values:`""` `true` `""` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 

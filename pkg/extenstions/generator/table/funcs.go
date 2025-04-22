@@ -17,6 +17,7 @@ package table
 import (
 	"errors"
 	"os"
+	"slices"
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
@@ -37,6 +38,23 @@ type Row struct {
 type Table struct {
 	Columns []Columns
 	Rows    []Row `yaml:"rows"`
+}
+
+func (t *Table) removeUnusedColumns() {
+	ids := util.Set{}
+	for _, r := range t.Rows {
+		for k := range r.Data {
+			ids.Add(k)
+		}
+	}
+	cols := make([]Columns, 0)
+	usedCols := util.ToSlice[string](ids)
+	for _, col := range t.Columns {
+		if slices.Contains(usedCols, col.ID) {
+			cols = append(cols, col)
+		}
+	}
+	t.Columns = cols
 }
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -67,7 +85,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		return chunks.Processed{}, err
 	}
 	table.Columns = getColumns(chunk)
-
+	table.removeUnusedColumns()
 	return processed, nil
 }
 
