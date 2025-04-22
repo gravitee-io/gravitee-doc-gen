@@ -1,0 +1,8 @@
+{{ .Before }}
+{{ range .Snippets }}
+{{ .Title }}
+```{{ .Language }}
+{{ .Content }}
+```
+{{- end }}
+{{ .After }}

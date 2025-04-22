@@ -1,0 +1,9 @@
+Strikethrough line are deprecated versions
+
+{{ range $col := .Columns }}| {{ $col.Label }}{{- end }} |
+{{ range $_ := .Columns }}| --- {{ end }} |
+{{ range $row := .Rows }}
+{{- range $col := $.Columns -}}
+|{{ if $row.Deprecated }}~~{{ end }}{{ default (index $row.Data $col.ID) "-" }}{{ if $row.Deprecated }}~~{{ end }}
+{{- end }} |
+{{ end -}}
