@@ -51,6 +51,7 @@ lint-licenses: ## Run addlicense linter and fail on error
 	@echo "Checking license headers ..."
 	@$(ADDLICENSE) -check -f LICENSE_TEMPLATE.txt \
 		-ignore ".circleci/**" \
+		-ignore "example/plugin/docs/examples/**" \
 		-ignore ".idea/**" .
 
 .PHONY: add-license
