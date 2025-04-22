@@ -17,10 +17,10 @@ These templates are be defined at the API level, in "Entrypoint" section for V4 
 
 The error keys sent by this policy are as follows:
 
-| Key| Parameters |
-| --- | ---  |
-| API_KEY_MISSING| - |
-| API_KEY_INVALID_KEY| - |
+| Key |
+| ---  |
+| API_KEY_MISSING |
+| API_KEY_INVALID_KEY |
 
 
 
