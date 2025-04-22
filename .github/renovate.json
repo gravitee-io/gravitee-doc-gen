@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:earlyMondays",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "prConcurrentLimit": 3,
+  "rebaseWhen": "conflicted",
+  "postUpdateOptions": ["gomodTidy"],
+  "gomod": {
+        "enabled": true
+  }
+}
