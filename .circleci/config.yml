@@ -219,14 +219,13 @@ workflows:
           name: Sonarcloud analysis
           context: cicd-orchestrator
           requires:
-            - Run IT with context
-            - Run IT without context
+            - Run unit tests
       - aquasec/fs_scan:
           context: cicd-orchestrator
           pre-steps:
             - cmd-setup-aqua-scan
           requires:
-            - Install GO tools
+            - Run unit tests
   post-merge:
     when:
       equal:
