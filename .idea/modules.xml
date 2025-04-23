@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/readme-gen.iml" filepath="$PROJECT_DIR$/.idea/readme-gen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gravitee-doc-gen.iml" filepath="$PROJECT_DIR$/.idea/gravitee-doc-gen.iml" />
     </modules>
   </component>
 </project>
