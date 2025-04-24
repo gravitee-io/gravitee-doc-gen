@@ -39,6 +39,12 @@ exitOnError:
 # Fire & forget (boolean)
 # Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.
 fireAndForget: 
+# Request Headers
+headers: 
+  # 
+  - map[name:Authorization value:Basic Jfdueh2868d=]
+  # 
+  - map[name:X-Custom value:Foo]
 # HTTP Method (enum (string))
 # HTTP method to invoke the endpoint.
 method: GET # Possible values: "GET" "POST" "PUT" "DELETE" "PATCH" "HEAD" "CONNECT" "OPTIONS" "TRACE" 
@@ -198,11 +204,29 @@ Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</stron
 <hr>
 
 
+####  Request Headers
+| | |
+|---:|---|
+|ENV| **GRAVITEE_HEADERS_{index}**|
+|JVM|`-Dgravitee.headers[{index}]`|
+
+<hr>
+
+
+####  Request Headers
+| | |
+|---:|---|
+|ENV| **GRAVITEE_HEADERS_{index}**|
+|JVM|`-Dgravitee.headers[{index}]`|
+
+<hr>
+
+
 ####  
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_ENABLED**|
-|JVM|`-Dgravitee.proxy.enabled`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_ENABLED**|
+|JVM|`-Dgravitee.headers[{index}].proxy.enabled`|
 |Values| `false` `true` |
 |When| `enabled = false`  and `useSystemProxy = false` |
 
@@ -212,8 +236,8 @@ Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</stron
 ####  
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_USESYSTEMPROXY**|
-|JVM|`-Dgravitee.proxy.usesystemproxy`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_USESYSTEMPROXY**|
+|JVM|`-Dgravitee.headers[{index}].proxy.usesystemproxy`|
 |Values| `false` `true` |
 |When| `enabled = false`  and `useSystemProxy = false` |
 
@@ -223,8 +247,8 @@ Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</stron
 ####  Proxy host
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_HOST**|
-|JVM|`-Dgravitee.proxy.host`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_HOST**|
+|JVM|`-Dgravitee.headers[{index}].proxy.host`|
 |Default| `proxy.acme.com`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 Proxy host to connect to
@@ -234,8 +258,8 @@ Proxy host to connect to
 ####  Proxy password
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_PASSWORD**|
-|JVM|`-Dgravitee.proxy.password`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_PASSWORD**|
+|JVM|`-Dgravitee.headers[{index}].proxy.password`|
 |Default| `[redacted]`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 Optional proxy password
@@ -245,8 +269,8 @@ Optional proxy password
 ####  Proxy port
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_PORT**|
-|JVM|`-Dgravitee.proxy.port`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_PORT**|
+|JVM|`-Dgravitee.headers[{index}].proxy.port`|
 |Default| `3524`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 Proxy port to connect to
@@ -256,8 +280,8 @@ Proxy port to connect to
 ####  Proxy Type
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_TYPE**|
-|JVM|`-Dgravitee.proxy.type`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_TYPE**|
+|JVM|`-Dgravitee.headers[{index}].proxy.type`|
 |Default| `SOCKS5`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 The type of the proxy
@@ -267,8 +291,8 @@ The type of the proxy
 ####  Proxy username
 | | |
 |---:|---|
-|ENV| **GRAVITEE_PROXY_USERNAME**|
-|JVM|`-Dgravitee.proxy.username`|
+|ENV| **GRAVITEE_HEADERS_{index}_PROXY_USERNAME**|
+|JVM|`-Dgravitee.headers[{index}].proxy.username`|
 |Default| `admin`|
 |When| `enabled = true`  and `useSystemProxy = false` |
 Optional proxy username
@@ -278,8 +302,8 @@ Optional proxy username
 ####  Verify Host
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_HOSTNAMEVERIFIER**|
-|JVM|`-Dgravitee.ssl.hostnameverifier`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_HOSTNAMEVERIFIER**|
+|JVM|`-Dgravitee.headers[{index}].ssl.hostnameverifier`|
 |Default| `true`|
 Use to enable host name verification
 <hr>
@@ -288,8 +312,8 @@ Use to enable host name verification
 ####  Trust all
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTALL**|
-|JVM|`-Dgravitee.ssl.trustall`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_TRUSTALL**|
+|JVM|`-Dgravitee.headers[{index}].ssl.trustall`|
 Use this with caution (if over Internet). The gateway must trust any origin certificates. The connection will still be encrypted but this mode is vulnerable to 'man in the middle' attacks.
 <hr>
 
@@ -297,8 +321,8 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 ####  
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_KEYSTORE_TYPE**|
-|JVM|`-Dgravitee.ssl.keystore.type`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_KEYSTORE_TYPE**|
+|JVM|`-Dgravitee.headers[{index}].ssl.keystore.type`|
 |Values| `` `JKS` `PKCS12` `PEM` |
 |When| `type = ''` |
 
@@ -308,8 +332,8 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 ####  
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_TYPE**|
-|JVM|`-Dgravitee.ssl.truststore.type`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_TRUSTSTORE_TYPE**|
+|JVM|`-Dgravitee.headers[{index}].ssl.truststore.type`|
 |Values| `` `JKS` `PKCS12` `PEM` |
 |When| `type = ''` |
 
@@ -319,8 +343,8 @@ Use this with caution (if over Internet). The gateway must trust any origin cert
 ####  Password
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_PASSWORD**|
-|JVM|`-Dgravitee.ssl.truststore.password`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_TRUSTSTORE_PASSWORD**|
+|JVM|`-Dgravitee.headers[{index}].ssl.truststore.password`|
 |Default| `[redacted]`|
 |When| `type = 'JKS'` |
 Truststore password
@@ -330,8 +354,8 @@ Truststore password
 ####  Content
 | | |
 |---:|---|
-|ENV| **GRAVITEE_SSL_TRUSTSTORE_CONTENT**|
-|JVM|`-Dgravitee.ssl.truststore.content`|
+|ENV| **GRAVITEE_HEADERS_{index}_SSL_TRUSTSTORE_CONTENT**|
+|JVM|`-Dgravitee.headers[{index}].ssl.truststore.content`|
 |Default| `--- BEGIN CERTIFICATE ---
 
 --- END CERTIFICATE ---`|
@@ -343,8 +367,8 @@ Binary content as Base64
 ####  Tags
 | | |
 |---:|---|
-|ENV| **GRAVITEE_TAGS_{index}**|
-|JVM|`-Dgravitee.tags[{index}]`|
+|ENV| **GRAVITEE_HEADERS_{index}_TAGS_{index}**|
+|JVM|`-Dgravitee.headers[{index}].tags[{index}]`|
 Some tags
 <hr>
 
@@ -352,8 +376,8 @@ Some tags
 ####  Tags
 | | |
 |---:|---|
-|ENV| **GRAVITEE_TAGS_{index}**|
-|JVM|`-Dgravitee.tags[{index}]`|
+|ENV| **GRAVITEE_HEADERS_{index}_TAGS_{index}**|
+|JVM|`-Dgravitee.headers[{index}].tags[{index}]`|
 Some tags
 <hr>
 
@@ -361,8 +385,8 @@ Some tags
 ####  Name
 | | |
 |---:|---|
-|ENV| **GRAVITEE_TAGS_{index}_VARIABLES_{index}_NAME**|
-|JVM|`-Dgravitee.tags[{index}].variables[{index}].name`|
+|ENV| **GRAVITEE_HEADERS_{index}_TAGS_{index}_VARIABLES_{index}_NAME**|
+|JVM|`-Dgravitee.headers[{index}].tags[{index}].variables[{index}].name`|
 |Default| `field`|
 
 <hr>
@@ -371,8 +395,8 @@ Some tags
 ####  Value
 | | |
 |---:|---|
-|ENV| **GRAVITEE_TAGS_{index}_VARIABLES_{index}_VALUE**|
-|JVM|`-Dgravitee.tags[{index}].variables[{index}].value`|
+|ENV| **GRAVITEE_HEADERS_{index}_TAGS_{index}_VARIABLES_{index}_VALUE**|
+|JVM|`-Dgravitee.headers[{index}].tags[{index}].variables[{index}].value`|
 |Default| `{#jsonPath(#calloutResponse.content, '$.field')}`|
 
 <hr>
@@ -409,6 +433,16 @@ Some tags
                 "errorStatusCode": "500",
                 "exitOnError": false,
                 "fireAndForget": false,
+                "headers": [
+                  {
+                    "name": "Authorization",
+                    "value": "Basic Jfdueh2868d="
+                  },
+                  {
+                    "name": "X-Custom",
+                    "value": "Foo"
+                  }
+                ],
                 "method": "GET",
                 "proxy": {
                   "enabled": false,
@@ -470,6 +504,11 @@ spec:
               errorStatusCode: "500"
               exitOnError: false
               fireAndForget: false
+              headers:
+                - name: Authorization
+                  value: Basic Jfdueh2868d=
+                - name: X-Custom
+                  value: Foo
               method: GET
               proxy:
                 enabled: false
