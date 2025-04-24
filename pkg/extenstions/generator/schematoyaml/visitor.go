@@ -69,7 +69,7 @@ func (v *toYamlVisitor) OnArrayStart(array visitor.Array, level int) {
 	v.arrayFirstItem = true
 }
 
-func (v *toYamlVisitor) OnArrayItem(_ visitor.Array, value visitor.Value, level int) {
+func (v *toYamlVisitor) OnArrayItem(_ visitor.Array, value visitor.Value, level int, _ bool) {
 	attribute := visitor.NewAttribute("", nil)
 	attribute.Value = encode(value.Value, attribute.Type == "string")
 	v.Lines = append(v.Lines, yamlLine{

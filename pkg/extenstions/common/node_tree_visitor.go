@@ -22,7 +22,7 @@ type NodeTreeVisitor interface {
 	OnObjectStart(object visitor.Object, level int)
 	OnObjectEnd(object visitor.Object, level int)
 	OnArrayStart(array visitor.Array, level int)
-	OnArrayItem(parent visitor.Array, value visitor.Value, level int)
+	OnArrayItem(parent visitor.Array, value visitor.Value, level int, last bool)
 	OnArrayEnd(array visitor.Array, level int)
 	OnAttribute(attribute visitor.Attribute, level int)
 }
@@ -47,10 +47,10 @@ func visit(node visitor.Node, nodeTreeVisitor NodeTreeVisitor, level int) {
 
 	if array, isArray := node.(*visitor.Array); isArray {
 		nodeTreeVisitor.OnArrayStart(*array, level)
-		for _, node := range array.Items {
+		for i, node := range array.Items {
 			if node.Kind() == visitor.ValueNode {
 				if value, isValue := node.(visitor.Value); isValue {
-					nodeTreeVisitor.OnArrayItem(*array, value, level)
+					nodeTreeVisitor.OnArrayItem(*array, value, level, i == len(array.Items)-1)
 				}
 			} else {
 				visit(node, nodeTreeVisitor, level+1)
