@@ -194,11 +194,13 @@
         "properties": {
           "name": {
             "title": "Name",
-            "type": "string"
+            "type": "string",
+            "examples": ["Authorization"]
           },
           "value": {
             "title": "Value",
             "type": "string",
+            "examples": ["Basic Jfdueh2868d="],
             "gioConfig": {
               "secret": true,
               "el": true

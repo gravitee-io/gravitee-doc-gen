@@ -61,8 +61,10 @@ func (v *toEnvVisitor) OnObjectStart(object visitor.Object, level int) {
 	}
 }
 
-func (v *toEnvVisitor) OnObjectEnd(visitor.Object, int) {
-	v.removeLastPaths()
+func (v *toEnvVisitor) OnObjectEnd(_ visitor.Object, level int) {
+	if level > 0 {
+		v.removeLastPaths()
+	}
 }
 
 func (v *toEnvVisitor) OnArrayStart(array visitor.Array, level int) {
@@ -77,17 +79,19 @@ func (v *toEnvVisitor) OnArrayStart(array visitor.Array, level int) {
 	}
 }
 
-func (v *toEnvVisitor) OnArrayItem(array visitor.Array, _ visitor.Value, _ int) {
-	attribute := visitor.NewAttribute("", nil)
-	attribute.Type = array.ItemType
-	attribute.Title = array.Title
-	attribute.Description = array.Description
-	v.currentSection.AddVariable(envVariable{
-		Attribute: *attribute,
-		Env:       v.getEnv(),
-		JVM:       v.getJVM(),
-	})
-	// v.removeLastPaths()
+func (v *toEnvVisitor) OnArrayItem(array visitor.Array, _ visitor.Value, _ int, last bool) {
+	if last {
+		attribute := visitor.NewAttribute("", nil)
+		attribute.Type = array.ItemType
+		attribute.Title = array.Title
+		attribute.Description = array.Description
+		v.currentSection.AddVariable(envVariable{
+			Attribute: *attribute,
+			Env:       v.getEnv(),
+			JVM:       v.getJVM(),
+		})
+		v.removeLastPaths()
+	}
 }
 
 func (v *toEnvVisitor) OnArrayEnd(visitor.Array, int) {
