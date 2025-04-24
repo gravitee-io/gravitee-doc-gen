@@ -3,7 +3,7 @@ module github.com/gravitee-io/gravitee-doc-gen
 require (
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/onsi/ginkgo/v2 v2.23.4
-	github.com/onsi/gomega v1.36.3
+	github.com/onsi/gomega v1.37.0
 	github.com/rickar/props v1.1.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/spf13/cobra v1.9.1

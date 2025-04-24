@@ -39,7 +39,7 @@ func (v *SchemaToNodeTreeVisitor) OnAttribute(
 		return nil
 	}
 
-	value := visitor.GetDefaultOrFirstExample(attribute, ctx)
+	value := visitor.GetValueOrFirstExample(attribute, ctx)
 
 	if value != nil {
 		nodeAttribute := visitor.NewAttribute(property, parent)
@@ -47,10 +47,10 @@ func (v *SchemaToNodeTreeVisitor) OnAttribute(
 		nodeAttribute.Title = attribute.Title
 		nodeAttribute.Description = attribute.Description
 		nodeAttribute.Type = schema.GetType(attribute)
-		nodeAttribute.IsOneOfProperty = ctx.CurrentOneOf().Present
-		nodeAttribute.IsOneOfDiscriminator = ctx.CurrentOneOf().IsDiscriminator(property)
-		nodeAttribute.Enums = getEnums(attribute, property, ctx.CurrentOneOf())
-		nodeAttribute.Default = visitor.GetDefaultOrFirstExample(attribute, ctx)
+		nodeAttribute.IsOneOfProperty = ctx.PeekOneOf().Present
+		nodeAttribute.IsOneOfDiscriminator = ctx.PeekOneOf().IsDiscriminator(property)
+		nodeAttribute.Enums = getEnums(attribute, property, ctx.PeekOneOf())
+		nodeAttribute.Default = visitor.GetValueOrFirstExample(attribute, ctx)
 		return nodeAttribute
 	}
 	return nil
@@ -65,7 +65,7 @@ func (v *SchemaToNodeTreeVisitor) OnObjectEnd(_ *visitor.VisitContext) {
 }
 
 func (v *SchemaToNodeTreeVisitor) OnArrayStart(
-	_ *visitor.VisitContext,
+	ctx *visitor.VisitContext,
 	property string,
 	array *jsonschema.Schema,
 	itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
@@ -75,12 +75,12 @@ func (v *SchemaToNodeTreeVisitor) OnArrayStart(
 	newArray.ItemType = schema.GetTypeItem(array)
 	if !itemTypeIsObject {
 		values := make([]visitor.Value, 0)
-		if defaults, ok := array.Default.([]interface{}); ok {
+		value := visitor.GetValueOrFirstExample(array, ctx)
+		if defaults, ok := value.([]interface{}); ok {
 			for _, val := range defaults {
 				values = append(values, visitor.NewValue(val))
 			}
 		}
-
 		return newArray, values
 	}
 	return newArray, nil
@@ -143,7 +143,7 @@ func (v *SchemaToNodeTreeVisitor) updateOneOfLatestDiscriminatorValue(
 	ctx *visitor.VisitContext,
 	discriminatorProperty *jsonschema.Schema,
 	key string) any {
-	actualValue := visitor.GetConstantOrDefault(discriminatorProperty, ctx)
+	actualValue := visitor.GetValue(discriminatorProperty, ctx)
 	// reset if new value
 	if actualValue != v.lastDiscriminatorValue[key] {
 		v.oneOfIndex = 0
@@ -159,7 +159,7 @@ func (v *SchemaToNodeTreeVisitor) OnOneOfEnd(*visitor.VisitContext) {
 	v.skipAttributes = false
 }
 
-func getEnums(attribute *jsonschema.Schema, property string, oneOf visitor.OneOf) []any {
+func getEnums(attribute *jsonschema.Schema, property string, oneOf visitor.OneOfDescriptor) []any {
 	if oneOf.IsZero() {
 		return attribute.Enum
 	}

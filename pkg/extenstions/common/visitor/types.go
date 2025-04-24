@@ -15,6 +15,8 @@
 package visitor
 
 import (
+	"sort"
+
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
@@ -32,4 +34,32 @@ type DiscriminatorSpec struct {
 	Values   []any
 	Property string
 	Type     string
+}
+
+type SchemaProperty struct {
+	name   string
+	schema *jsonschema.Schema
+}
+
+type SchemaPropertyList []SchemaProperty
+
+func (l *SchemaPropertyList) Get(name string) *jsonschema.Schema {
+	for _, property := range *l {
+		if property.name == name {
+			return property.schema
+		}
+	}
+	return nil
+}
+
+func (l *SchemaPropertyList) Add(name string, attribute *jsonschema.Schema) {
+	*l = append(*l, SchemaProperty{name, attribute})
+}
+
+func (l *SchemaPropertyList) Sort() {
+	list := *l
+	sort.Slice(list, func(i, j int) bool {
+		return (list)[i].name < (list)[j].name
+	})
+	*l = list
 }

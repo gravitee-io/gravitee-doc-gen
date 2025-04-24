@@ -32,6 +32,7 @@
     },
     "resource": {
       "type": "object",
+      "title": "Resource",
       "oneOf": [
         {
           "type": "object",
@@ -205,7 +206,8 @@
                     "banner": {
                       "title": "Resource Pattern (Support EL) (Support comma separated values)",
                       "text": "Expression resource pattern, e.g. \"foo.?.bar.?*\" matches \"foo.1.bar.xyz\" <br> '*' matches zero or more characters <br> '?' matches exactly one character"
-                    }
+                    },
+                    "el": true
                   }
                 }
               },
@@ -244,6 +246,7 @@
     "topicOperations": {
       "type": "array",
       "title": "Topic operations",
+      "examples": ["TOPIC_WRITE"],
       "uniqueItems": true,
       "gioConfig": {
         "banner": {
@@ -255,6 +258,7 @@
         "type": "string",
         "title": "Operation",
         "description": "Operation",
+        "examples": ["TOPIC_WRITE"],
         "enum": [
           "TOPIC_ALTER",
           "TOPIC_ALTER_CONFIGS",

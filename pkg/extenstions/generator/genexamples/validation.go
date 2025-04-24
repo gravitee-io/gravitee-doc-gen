@@ -40,7 +40,7 @@ func (e *exampleValidation) OnAttribute(
 	if e.skip {
 		return nil
 	}
-	defaultValue := visitor.GetDefaultOrFirstExample(attribute, ctx)
+	defaultValue := visitor.GetValueOrFirstExample(attribute, ctx)
 	if schema.IsRequired(property, parent) && defaultValue == nil {
 		e.AddErr(fmt.Sprintf(
 			"property %s of type %s is required but do not have any examples, it must be set",

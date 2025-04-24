@@ -216,8 +216,9 @@ func (a *Attribute) IsEmpty() bool {
 }
 
 func (a *Attribute) updateWhen(ctx *VisitContext) {
-	for _, spec := range ctx.CurrentOneOf().Specs {
-		value := GetDefaultOrFirstExample(a.parent.Properties[spec.Property], ctx)
+	for _, spec := range ctx.PeekOneOf().Specs {
+		list := NewSchemaPropertyList(a.parent)
+		value := GetValueOrFirstExample(list.Get(spec.Property), ctx)
 		var set util.Set
 		if s, ok := a.When[spec.Property]; ok {
 			set = s

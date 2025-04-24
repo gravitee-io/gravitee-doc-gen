@@ -20,9 +20,9 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
-	common2 "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
-	visitor2 "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -48,9 +48,9 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		return chunks.Processed{}, err
 	}
 
-	ctx := visitor2.NewVisitContext(true, true).
-		WithStack(visitor2.NewObject(""))
-	visitor2.Visit(ctx, &common2.SchemaToNodeTreeVisitor{KeepAllOneOfAttributes: true}, compiled)
+	ctx := visitor.NewVisitContext(true, true).
+		WithStack(visitor.NewObject(""))
+	visitor.Visit(ctx, &common.SchemaToNodeTreeVisitor{KeepAllOneOfAttributes: true}, compiled)
 
 	indexPlaceholder := chunks.GetDataOrDefault[string](chunk, "indexPlaceholder", "X")
 	prefix := chunks.GetDataOrDefault[string](chunk, "prefix", "")
@@ -63,7 +63,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 		prefix:           prefix,
 	}
 
-	common2.Visit(ctx.NodeStack(), &envVisitor)
+	common.Visit(ctx.NodeStack(), &envVisitor)
 
 	processed := chunks.Processed{Data: envVisitor}
 	return processed, nil

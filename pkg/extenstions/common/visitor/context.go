@@ -15,7 +15,7 @@
 package visitor
 
 type VisitContext struct {
-	currentOneOf        OneOf
+	oneOfs              []OneOfDescriptor
 	queueNodes          bool
 	autoDefaultBooleans bool
 	nodeStack           *NodeStack
@@ -28,7 +28,7 @@ type OneOfFilter struct {
 	Index          int            `json:"index"`
 }
 
-type OneOf struct {
+type OneOfDescriptor struct {
 	ParentTitle string
 	Present     bool
 	Specs       []DiscriminatorSpec
@@ -36,7 +36,7 @@ type OneOf struct {
 
 func NewVisitContext(queueNodes bool, autoDefaultBooleans bool) *VisitContext {
 	return &VisitContext{
-		currentOneOf:        OneOf{},
+		oneOfs:              make([]OneOfDescriptor, 0),
 		queueNodes:          queueNodes,
 		autoDefaultBooleans: autoDefaultBooleans,
 	}
@@ -52,10 +52,6 @@ func (v *VisitContext) WithOneOfFilter(filter OneOfFilter) *VisitContext {
 	return v
 }
 
-func (v *VisitContext) CurrentOneOf() OneOf {
-	return v.currentOneOf
-}
-
 func (v *VisitContext) IsAutoDefaultBooleans() bool {
 	return v.autoDefaultBooleans
 }
@@ -68,19 +64,34 @@ func (v *VisitContext) IsQueueNodes() bool {
 	return v.queueNodes
 }
 
-func (v *VisitContext) SetCurrentOneOf(oneOf OneOf) {
-	v.currentOneOf = oneOf
+func (v *VisitContext) PushOneOf(oneOf OneOfDescriptor) {
+	if !oneOf.IsZero() {
+		v.oneOfs = append(v.oneOfs, oneOf)
+	} else {
+		panic("push one-of that is zero")
+	}
+}
+
+func (v *VisitContext) PopOneOf() {
+	v.oneOfs = v.oneOfs[:len(v.oneOfs)-1]
+}
+
+func (v *VisitContext) PeekOneOf() OneOfDescriptor {
+	if len(v.oneOfs) == 0 {
+		return OneOfDescriptor{}
+	}
+	return v.oneOfs[len(v.oneOfs)-1]
 }
 
 func (v *VisitContext) OneOfFilter() OneOfFilter {
 	return v.oneOfFilter
 }
 
-func (o OneOf) IsZero() bool {
+func (o OneOfDescriptor) IsZero() bool {
 	return o.ParentTitle == "" && !o.Present && len(o.Specs) == 0
 }
 
-func (o OneOf) IsDiscriminator(property string) bool {
+func (o OneOfDescriptor) IsDiscriminator(property string) bool {
 	for _, spec := range o.Specs {
 		if spec.Property == property {
 			return true

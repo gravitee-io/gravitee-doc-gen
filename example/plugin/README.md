@@ -38,10 +38,10 @@ The phases checked below are supported by the `test` policy:
 
 ### Can be used in flow phases:
 
+* Subscribe
 * Request
 * Response
 * Publish
-* Subscribe
 
 ## Compatibility matrix
 Strikethrough line are deprecated versions

@@ -26,7 +26,7 @@ type Options struct {
 type Section struct {
 	Title           string
 	Type            string
-	OneOf           visitor.OneOf
+	OneOf           visitor.OneOfDescriptor
 	DiscriminatedBy map[string]any
 	Attributes      []Attribute
 }
@@ -53,5 +53,5 @@ type Attribute struct {
 	Secret      bool
 	Description string
 	Enums       []any
-	OneOf       visitor.OneOf
+	OneOf       visitor.OneOfDescriptor
 }

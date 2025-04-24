@@ -68,7 +68,7 @@ func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
 	return chunks.Processed{Data: options}, err
 }
 
-func (options *Options) OnAttribute(
+func (o *Options) OnAttribute(
 	ctx *visitor.VisitContext,
 	property string,
 	attribute *jsonschema.Schema,
@@ -80,47 +80,60 @@ func (options *Options) OnAttribute(
 		TypeItem:    schema.GetTypeItem(attribute),
 		Constraint:  getConstraint(attribute),
 		Required:    schema.IsRequired(property, parent),
-		Default:     visitor.GetConstantOrDefault(attribute, ctx),
+		Default:     visitor.GetValue(attribute, ctx),
 		IsConstant:  isConstant(attribute),
 		EL:          isEL(attribute),
 		Secret:      isSecret(attribute),
 		Description: attribute.Description,
-		Enums:       attribute.Enum,
+		Enums:       enums(attribute),
 	}
-	options.AddAttribute(att)
+	o.AddAttribute(att)
 	return nil
 }
 
-func (options *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jsonschema.Schema) *visitor.Object {
+func enums(attribute *jsonschema.Schema) []any {
+	if len(attribute.Enum) > 0 {
+		return attribute.Enum
+	}
+	if schema.IsArray(attribute) && schema.IsAttribute(schema.Items(attribute)) && len(schema.Items(attribute).Enum) > 0 {
+		return schema.Items(attribute).Enum
+	}
+	return nil
+}
+
+func (o *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jsonschema.Schema) *visitor.Object {
 	objectType := "object"
-	if ctx.CurrentOneOf().Present {
+	if ctx.PeekOneOf().Present {
 		objectType = "oneOf"
 	}
-	options.Add(Section{
+	o.Add(Section{
 		Title: object.Title,
 		Type:  objectType,
 	})
 
-	if ctx.CurrentOneOf().Present {
-		specs := ctx.CurrentOneOf().Specs
+	if ctx.PeekOneOf().Present {
+		specs := ctx.PeekOneOf().Specs
 		for _, spec := range specs {
-			options.AddAttribute(Attribute{
+			o.AddAttribute(Attribute{
 				Name:     util.TitleCaseToTitle(util.Title(spec.Property)),
 				Property: spec.Property,
 				Type:     spec.Type,
 				Required: true,
 				Enums:    spec.Values,
-				OneOf:    ctx.CurrentOneOf(),
+				OneOf:    ctx.PeekOneOf(),
 			})
 		}
 	}
 	return nil
 }
 
-func (options *Options) OnArrayStart(_ *visitor.VisitContext, _ string,
-	array *jsonschema.Schema, _ bool) (*visitor.Array, []visitor.Value) {
-	if !schema.IsAttribute(schema.Items(array)) {
-		options.Add(Section{
+func (o *Options) OnArrayStart(
+	_ *visitor.VisitContext,
+	p string,
+	array *jsonschema.Schema,
+	isItemObject bool) (*visitor.Array, []visitor.Value) {
+	if isItemObject {
+		o.Add(Section{
 			Title: array.Title,
 			Type:  "array",
 		})
@@ -128,37 +141,38 @@ func (options *Options) OnArrayStart(_ *visitor.VisitContext, _ string,
 	return nil, nil
 }
 
-func (options *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
-	specs := ctx.CurrentOneOf().Specs
+func (o *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
+	specs := ctx.PeekOneOf().Specs
 	discriminatedBy := make(map[string]any)
+	list := visitor.NewSchemaPropertyList(oneOf)
 	for _, spec := range specs {
-		value := visitor.GetConstantOrDefault(oneOf.Properties[spec.Property], ctx)
+		value := visitor.GetValue(list.Get(spec.Property), ctx)
 		discriminatedBy[spec.Property] = value
 	}
 
-	options.Add(Section{Title: oneOf.Title, OneOf: ctx.CurrentOneOf(), DiscriminatedBy: discriminatedBy})
+	o.Add(Section{Title: oneOf.Title, OneOf: ctx.PeekOneOf(), DiscriminatedBy: discriminatedBy})
 }
 
-func (options *Options) OnObjectEnd(*visitor.VisitContext) {
+func (o *Options) OnObjectEnd(*visitor.VisitContext) {
 	// no op
 }
 
-func (options *Options) OnArrayEnd(*visitor.VisitContext, bool) {
+func (o *Options) OnArrayEnd(*visitor.VisitContext, bool) {
 	// no op
 }
 
-func (options *Options) OnOneOfEnd(*visitor.VisitContext) {
+func (o *Options) OnOneOfEnd(*visitor.VisitContext) {
 	// no op
 }
 
-func (options *Options) Add(section Section) {
+func (o *Options) Add(section Section) {
 	section.Attributes = make([]Attribute, 0)
-	options.Sections = append(options.Sections, section)
-	options.current += 1
+	o.Sections = append(o.Sections, section)
+	o.current += 1
 }
 
-func (options *Options) AddAttribute(attribute Attribute) {
-	options.Sections[options.current].Add(attribute)
+func (o *Options) AddAttribute(attribute Attribute) {
+	o.Sections[o.current].Add(attribute)
 }
 
 func (s *Section) Add(attribute Attribute) {
