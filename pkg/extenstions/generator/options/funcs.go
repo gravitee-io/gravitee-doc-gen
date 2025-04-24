@@ -129,10 +129,10 @@ func (o *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jso
 
 func (o *Options) OnArrayStart(
 	_ *visitor.VisitContext,
-	p string,
+	_ string,
 	array *jsonschema.Schema,
-	isItemObject bool) (*visitor.Array, []visitor.Value) {
-	if isItemObject {
+	itemTypeIsObject bool) (*visitor.Array, []visitor.Value) {
+	if itemTypeIsObject {
 		o.Add(Section{
 			Title: array.Title,
 			Type:  "array",

@@ -82,6 +82,14 @@ func (v *SchemaToNodeTreeVisitor) OnArrayStart(
 			}
 		}
 		return newArray, values
+	} else {
+		if len(array.Examples) > 0 {
+			values := make([]visitor.Value, 0)
+			for _, example := range array.Examples {
+				values = append(values, visitor.NewValue(example))
+			}
+			return newArray, values
+		}
 	}
 	return newArray, nil
 }
@@ -93,7 +101,7 @@ func (v *SchemaToNodeTreeVisitor) OnArrayEnd(*visitor.VisitContext, bool) {
 func (v *SchemaToNodeTreeVisitor) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
 	filter := ctx.OneOfFilter()
 
-	// no filter,just check if we can keep all properties or not
+	// no filter, just check if we can keep all properties or not
 	if filter.IsZero() {
 		v.oneOfCount++
 		// case where the first oneOf is kept
@@ -114,7 +122,7 @@ func (v *SchemaToNodeTreeVisitor) OnOneOf(ctx *visitor.VisitContext, oneOf *json
 		v.lastDiscriminatorValue = make(map[string]any)
 	}
 
-	// for each configured discriminator values
+	// for each configured discriminator value
 	for property, expectedValue := range filter.Discriminators {
 		// if the one of contains the discriminator property
 		if discriminatorSchema, ok := oneOf.Properties[property]; ok {

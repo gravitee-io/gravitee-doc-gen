@@ -123,12 +123,15 @@ func visitArray(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 	if ctx.NodeStack() != nil {
 		addArrayToStack(ctx, array, prop, itemTypeIsObject, values)
 	}
-	Visit(ctx, visitor, items)
+	if itemTypeIsObject && len(values) == 0 {
+		Visit(ctx, visitor, items)
+	}
+
 	if oneOfAdded {
 		ctx.PopOneOf()
 	}
 	visitor.OnArrayEnd(ctx, itemTypeIsObject)
-	if itemTypeIsObject {
+	if itemTypeIsObject && len(values) == 0 {
 		ctx.NodeStack().pop()
 	}
 	ctx.NodeStack().pop()
@@ -139,7 +142,7 @@ func addArrayToStack(ctx *VisitContext, array *Array, prop SchemaProperty, itemT
 		array = NewArray(prop.name)
 	}
 	ctx.NodeStack().add(ctx, array)
-	if itemTypeIsObject {
+	if itemTypeIsObject && len(values) == 0 {
 		ctx.NodeStack().add(ctx, NewObject(""))
 	} else {
 		for _, v := range values {

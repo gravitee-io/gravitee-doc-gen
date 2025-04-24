@@ -184,10 +184,8 @@
       "type": "array",
       "title": "Request Headers",
       "examples": [
-        [
           {"name": "Authorization", "value": "Basic Jfdueh2868d="},
           {"name": "X-Custom", "value": "Foo"}
-        ]
       ],
       "items": {
         "type": "object",
