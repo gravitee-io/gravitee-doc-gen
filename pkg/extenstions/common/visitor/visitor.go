@@ -15,23 +15,15 @@
 package visitor
 
 import (
-	"sort"
-
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
-type schemaProperty struct {
-	name   string
-	schema *jsonschema.Schema
-}
-
 func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
-	queue := make([]schemaProperty, 0)
+	queue := make([]SchemaProperty, 0)
 
-	ordered := orderedAndResolved(current)
-
-	for _, property := range ordered {
+	schemaPropertyList := NewSchemaPropertyList(current)
+	for _, property := range schemaPropertyList {
 		name, attribute := property.name, property.schema
 		if schema.IsAttribute(attribute) {
 			added := visitAttribute(ctx, visitor, name, attribute, current)
@@ -53,26 +45,15 @@ func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 		visitNode(ctx, pair, visitor)
 	}
 
-	if len(current.OneOf) > 0 {
-		for _, s := range current.OneOf {
-			s = orRef(s)
+	oneOfs := GetOneOfs(current)
+	if len(oneOfs) > 0 {
+		for _, s := range oneOfs {
+			s = schema.OrRef(s)
 			visitor.OnOneOf(ctx, s, current)
 			Visit(ctx, visitor, s)
 		}
 		visitor.OnOneOfEnd(ctx)
 	}
-}
-
-func orderedAndResolved(parent *jsonschema.Schema) []schemaProperty {
-	ordered := make([]schemaProperty, 0, len(parent.Properties))
-	for name, s := range parent.Properties {
-		ordered = append(ordered, schemaProperty{name: name, schema: orRef(s)})
-	}
-
-	sort.Slice(ordered, func(i, j int) bool {
-		return ordered[i].name < ordered[j].name
-	})
-	return ordered
 }
 
 func visitAttribute(
@@ -84,7 +65,7 @@ func visitAttribute(
 	attribute := visitor.OnAttribute(ctx, property, schema, parent)
 	if ctx.nodeStack != nil && attribute != nil {
 		if object, ok := ctx.NodeStack().Peek().(*Object); ok {
-			if _, alreadyAdded := object.Fields[property]; ctx.currentOneOf.Present && alreadyAdded {
+			if _, alreadyAdded := object.Fields[property]; ctx.PeekOneOf().Present && alreadyAdded {
 				return false
 			}
 			ctx.NodeStack().add(ctx, attribute)
@@ -95,7 +76,7 @@ func visitAttribute(
 	return true
 }
 
-func visitNode(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
+func visitNode(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 	if schema.IsObject(prop.schema) {
 		visitObject(ctx, prop, visitor)
 	}
@@ -104,9 +85,12 @@ func visitNode(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	}
 }
 
-func visitObject(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
-	if len(prop.schema.OneOf) > 0 {
-		ctx.SetCurrentOneOf(findDiscriminators(prop.schema))
+func visitObject(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
+	oneOfs := GetOneOfs(prop.schema)
+	var oneOfAdded bool
+	if len(oneOfs) > 0 {
+		ctx.PushOneOf(newOneOfDescriptor(prop.schema))
+		oneOfAdded = true
 	}
 	object := visitor.OnObjectStart(ctx, prop.name, prop.schema)
 	if ctx.NodeStack() != nil {
@@ -116,24 +100,33 @@ func visitObject(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 		ctx.NodeStack().add(ctx, object)
 	}
 	Visit(ctx, visitor, prop.schema)
-	ctx.SetCurrentOneOf(OneOf{})
+	if oneOfAdded {
+		ctx.PopOneOf()
+	}
 	visitor.OnObjectEnd(ctx)
 	ctx.NodeStack().pop()
 }
 
-func visitArray(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
+func visitArray(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 	var items *jsonschema.Schema
 	var itemTypeIsObject bool
+	var oneOfAdded bool
 	if prop.schema.Items != nil {
 		items = schema.Items(prop.schema)
-		// no support of multiple types
 		itemTypeIsObject = !schema.IsAttribute(items)
+		if itemTypeIsObject && len(GetOneOfs(items)) > 0 {
+			ctx.PushOneOf(newOneOfDescriptor(items))
+			oneOfAdded = true
+		}
 	}
 	array, values := visitor.OnArrayStart(ctx, prop.name, prop.schema, itemTypeIsObject)
 	if ctx.NodeStack() != nil {
 		addArrayToStack(ctx, array, prop, itemTypeIsObject, values)
 	}
 	Visit(ctx, visitor, items)
+	if oneOfAdded {
+		ctx.PopOneOf()
+	}
 	visitor.OnArrayEnd(ctx, itemTypeIsObject)
 	if itemTypeIsObject {
 		ctx.NodeStack().pop()
@@ -141,7 +134,7 @@ func visitArray(ctx *VisitContext, prop schemaProperty, visitor Visitor) {
 	ctx.NodeStack().pop()
 }
 
-func addArrayToStack(ctx *VisitContext, array *Array, prop schemaProperty, itemTypeIsObject bool, values []Value) {
+func addArrayToStack(ctx *VisitContext, array *Array, prop SchemaProperty, itemTypeIsObject bool, values []Value) {
 	if array == nil {
 		array = NewArray(prop.name)
 	}
@@ -155,22 +148,24 @@ func addArrayToStack(ctx *VisitContext, array *Array, prop schemaProperty, itemT
 	}
 }
 
-func findDiscriminators(parent *jsonschema.Schema) OneOf {
+func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
+	oneOfs := GetOneOfs(parent)
 	found := make(map[string]int)
-	expected := len(parent.OneOf)
+	expected := len(oneOfs)
 	values := make(map[string][]any)
 
-	for _, oneOf := range parent.OneOf {
-		for name, prop := range oneOf.Properties {
+	for _, oneOf := range oneOfs {
+		for _, property := range NewSchemaPropertyList(oneOf) {
+			name, s := property.name, property.schema
 			count := found[name]
-			if len(prop.Constant) > 0 {
+			if len(s.Constant) > 0 {
 				count += 1
 				found[name] = count
 				array := values[name]
 				if array == nil {
 					array = make([]any, 0)
 				}
-				array = append(array, prop.Constant[0])
+				array = append(array, s.Constant[0])
 				values[name] = array
 			}
 		}
@@ -187,18 +182,11 @@ func findDiscriminators(parent *jsonschema.Schema) OneOf {
 			result = append(result, spec)
 		}
 	}
-	oneOf := OneOf{}
+	oneOf := OneOfDescriptor{}
 	if len(result) > 0 {
 		oneOf.ParentTitle = parent.Title
 		oneOf.Present = true
 		oneOf.Specs = result
 	}
 	return oneOf
-}
-
-func orRef(schema *jsonschema.Schema) *jsonschema.Schema {
-	if schema.Ref != nil {
-		return schema.Ref
-	}
-	return schema
 }

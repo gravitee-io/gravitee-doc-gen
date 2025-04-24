@@ -59,8 +59,15 @@ func Items(array *jsonschema.Schema) *jsonschema.Schema {
 	if array.Items == nil {
 		panic("array.Items is nil")
 	}
-	if i, ok := array.Items.(*jsonschema.Schema); ok {
-		return i
+	if item, ok := array.Items.(*jsonschema.Schema); ok {
+		return OrRef(item)
 	}
 	panic("array.Items is likely to be an array of types, this is not supported")
+}
+
+func OrRef(schema *jsonschema.Schema) *jsonschema.Schema {
+	if schema.Ref != nil {
+		return schema.Ref
+	}
+	return schema
 }

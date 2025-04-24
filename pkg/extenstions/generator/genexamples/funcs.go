@@ -24,7 +24,7 @@ import (
 	bexamples "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/examples"
-	visitor2 "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/visitor"
 )
 
 func TypeValidator(chunk config.Chunk) (bool, error) {
@@ -50,7 +50,7 @@ func validateExamples(chunk config.Chunk, provider *examples.GenExampleProvider)
 		ev := &exampleValidation{
 			errors: make([]string, 0),
 		}
-		visitor2.Visit(visitor2.NewVisitContext(false, true).WithStack(visitor2.NewObject("")), ev, s)
+		visitor.Visit(visitor.NewVisitContext(false, true).WithStack(visitor.NewObject("")), ev, s)
 		if len(ev.errors) > 0 {
 			return false, errors.New(strings.Join(ev.errors, "\n"))
 		}
@@ -68,13 +68,13 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 
 	validationSchema, _, _ := examples.CompileSchema(genSpec, chunk)
 
-	object := visitor2.NewObject("")
+	object := visitor.NewObject("")
 
-	ctx := visitor2.NewVisitContext(true, true).
+	ctx := visitor.NewVisitContext(true, true).
 		WithStack(object).
 		WithOneOfFilter(genSpec.OneOfFilter)
 
-	visitor2.Visit(ctx, &common.SchemaToNodeTreeVisitor{}, validationSchema)
+	visitor.Visit(ctx, &common.SchemaToNodeTreeVisitor{}, validationSchema)
 
 	ref, _ := genSpec.TemplateFromRef()
 
@@ -95,6 +95,8 @@ func yieldCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) 
 		jsonToValidate = codeToEmbed
 	}
 
+	// recompile to get a pristine schema
+	validationSchema, _, _ = examples.CompileSchema(genSpec, chunk)
 	if err := examples.ValidateJson(jsonToValidate, validationSchema, "generated example from schema"); err != nil {
 		return "", err
 	}
