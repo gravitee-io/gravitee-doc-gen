@@ -1,0 +1,895 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "secrets": {
+      "type": "object",
+      "title": "Configuration level secrets",
+      "description": "To be used with the secret://provider/path...",
+      "properties": {
+        "kubernetes": {
+          "type": "object",
+          "title": "Kubernetes secret provider",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "title": "Enable Kubernetes"
+            },
+            "namespace": {
+              "title": "Resolution namespace",
+              "description": "Default is the namespace where gravitee is deployed",
+              "type": "string",
+              "examples": [
+                "gravitee"
+              ]
+            },
+            "kubeConfigFile": {
+              "title": "Kubeconfig file",
+              "description": "Allow a local file to connect to the cluster",
+              "type": "string"
+            },
+            "timeoutMs": {
+              "title": "Resolution timeout in milliseconds",
+              "type": "number"
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        },
+        "vault": {
+          "type": "object",
+          "title": "Hashicorp secret provider",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "title": "Enable Hashicorp Vault",
+              "default": false
+            },
+            "host": {
+              "type": "string",
+              "title": "Host (IP or name) of the Vault instance",
+              "examples": [
+                "127.0.0.1"
+              ]
+            },
+            "port": {
+              "type": "number",
+              "title": "Port of the Vault instance",
+              "examples": [
+                8082
+              ]
+            },
+            "namespace": {
+              "type": "string",
+              "title": "Vault namespace",
+              "default": "default"
+            },
+            "kvEngine": {
+              "type": "string",
+              "title": "Key-Value engine, no mixing supported",
+              "enum": [
+                "V1",
+                "V2"
+              ],
+              "default": "V2"
+            },
+            "readTimeoutSec": {
+              "type": "number",
+              "title": "Read timeout in seconds",
+              "minimum": 0,
+              "default": 2
+            },
+            "connectTimeoutSec": {
+              "type": "number",
+              "title": "Connection timeout in seconds",
+              "minimum": 0,
+              "default": 3
+            },
+            "ssl": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enable secured connection to Vault",
+                  "default": false
+                }
+              },
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "title": "Format of the client certificate or CA if not using a public one",
+                      "const": "pem"
+                    },
+                    "pem": {
+                      "type": "string",
+                      "title": "Content of the PEM file with headers",
+                      "examples": [
+                        "--- BEGIN CERTIFICATE ---\nMIIFxjCCA64CCQD9kAnHVVL02TANBgkqhkiG...\n--- END CERTIFICATE ---\n"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "pem"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "title": "Format of the client certificate or CA if not using a public one",
+                      "const": "pemfile"
+                    },
+                    "file": {
+                      "type": "string",
+                      "title": "Location of the file",
+                      "examples": [
+                        "ssl/cert.pem"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "file"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "title": "Format of the client certificate or CA if not using a public one",
+                      "const": "truststore"
+                    },
+                    "file": {
+                      "type": "string",
+                      "title": "Location of the file",
+                      "examples": [
+                        "ssl/cert.jks"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "file"
+                  ]
+                }
+              ],
+              "required": [
+                "enabled"
+              ]
+            },
+            "auth": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string"
+                },
+                "config": {
+                  "type": "object",
+                  "properties": {
+                    "token": {},
+                    "username": {},
+                    "password": {},
+                    "roleId": {},
+                    "secretId": {},
+                    "format": {},
+                    "cert": {},
+                    "key": {},
+                    "keyStore": {}
+                  },
+                  "required": [
+                    "token",
+                    "username",
+                    "password",
+                    "roleId",
+                    "secretId",
+                    "format",
+                    "cert",
+                    "key",
+                    "keyStore"
+                  ]
+                }
+              },
+              "required": [
+                "method",
+                "config"
+              ]
+            },
+            "retry": {
+              "type": "object",
+              "properties": {
+                "attempts": {
+                  "type": "number"
+                },
+                "intervalMs": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "attempts",
+                "intervalMs"
+              ]
+            },
+            "watch": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "pollIntervalSec": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "enabled",
+                "pollIntervalSec"
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "host",
+            "port",
+            "namespace",
+            "kvEngine",
+            "readTimeoutSec",
+            "connectTimeoutSec",
+            "ssl",
+            "auth",
+            "retry",
+            "watch"
+          ]
+        }
+      },
+      "required": [
+        "kubernetes",
+        "vault"
+      ]
+    },
+    "http": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "number"
+        },
+        "host": {
+          "type": "string"
+        },
+        "idleTimeout": {
+          "type": "number"
+        },
+        "tcpKeepAlive": {
+          "type": "boolean"
+        },
+        "compressionSupported": {
+          "type": "boolean"
+        },
+        "maxHeaderSize": {
+          "type": "number"
+        },
+        "maxChunkSize": {
+          "type": "number"
+        },
+        "maxInitialLineLength": {
+          "type": "number"
+        },
+        "instances": {
+          "type": "number"
+        },
+        "requestTimeout": {
+          "type": "number"
+        },
+        "requestTimeoutGraceDelay": {
+          "type": "number"
+        },
+        "secured": {
+          "type": "boolean"
+        },
+        "alpn": {
+          "type": "boolean"
+        },
+        "ssl": {
+          "type": "object",
+          "properties": {
+            "clientAuth": {
+              "type": "string"
+            },
+            "clientAuthHeader": {
+              "type": "object",
+              "properties": {
+                "name": {}
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "tlsProtocols": {
+              "type": "string"
+            },
+            "tlsCiphers": {
+              "type": "string"
+            },
+            "keystore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "certificates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "cert": {
+                        "type": "string"
+                      },
+                      "key": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cert",
+                      "key"
+                    ]
+                  }
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                },
+                "defaultAlias": {},
+                "secret": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "certificates",
+                "password",
+                "watch",
+                "defaultAlias",
+                "secret"
+              ]
+            },
+            "truststore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "password",
+                "watch"
+              ]
+            },
+            "sni": {
+              "type": "boolean"
+            },
+            "openssl": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "clientAuth",
+            "clientAuthHeader",
+            "tlsProtocols",
+            "tlsCiphers",
+            "keystore",
+            "truststore",
+            "sni",
+            "openssl"
+          ]
+        },
+        "websocket": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "subProtocols": {
+              "type": "string"
+            },
+            "perMessageWebSocketCompressionSupported": {
+              "type": "boolean"
+            },
+            "perFrameWebSocketCompressionSupported": {
+              "type": "boolean"
+            },
+            "maxWebSocketFrameSize": {
+              "type": "number"
+            },
+            "maxWebSocketMessageSize": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "enabled",
+            "subProtocols",
+            "perMessageWebSocketCompressionSupported",
+            "perFrameWebSocketCompressionSupported",
+            "maxWebSocketFrameSize",
+            "maxWebSocketMessageSize"
+          ]
+        },
+        "haproxy": {
+          "type": "object",
+          "properties": {
+            "proxyProtocol": {
+              "type": "boolean"
+            },
+            "proxyProtocolTimeout": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "proxyProtocol",
+            "proxyProtocolTimeout"
+          ]
+        }
+      },
+      "required": [
+        "port",
+        "host",
+        "idleTimeout",
+        "tcpKeepAlive",
+        "compressionSupported",
+        "maxHeaderSize",
+        "maxChunkSize",
+        "maxInitialLineLength",
+        "instances",
+        "requestTimeout",
+        "requestTimeoutGraceDelay",
+        "secured",
+        "alpn",
+        "ssl",
+        "websocket",
+        "haproxy"
+      ]
+    },
+    "tcp": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "port": {
+          "type": "number"
+        },
+        "host": {
+          "type": "string"
+        },
+        "idleTimeout": {
+          "type": "number"
+        },
+        "tcpKeepAlive": {
+          "type": "boolean"
+        },
+        "instances": {
+          "type": "number"
+        },
+        "requestTimeout": {
+          "type": "number"
+        },
+        "secured": {
+          "type": "boolean"
+        },
+        "ssl": {
+          "type": "object",
+          "properties": {
+            "sni": {
+              "type": "boolean"
+            },
+            "clientAuth": {
+              "type": "string"
+            },
+            "tlsProtocols": {
+              "type": "string"
+            },
+            "tlsCiphers": {
+              "type": "string"
+            },
+            "keystore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "certificates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "cert": {
+                        "type": "string"
+                      },
+                      "key": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cert",
+                      "key"
+                    ]
+                  }
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                },
+                "defaultAlias": {},
+                "secret": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "certificates",
+                "password",
+                "watch",
+                "defaultAlias",
+                "secret"
+              ]
+            },
+            "truststore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "password",
+                "watch"
+              ]
+            },
+            "openssl": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "sni",
+            "clientAuth",
+            "tlsProtocols",
+            "tlsCiphers",
+            "keystore",
+            "truststore",
+            "openssl"
+          ]
+        },
+        "haproxy": {
+          "type": "object",
+          "properties": {
+            "proxyProtocol": {
+              "type": "boolean"
+            },
+            "proxyProtocolTimeout": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "proxyProtocol",
+            "proxyProtocolTimeout"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "port",
+        "host",
+        "idleTimeout",
+        "tcpKeepAlive",
+        "instances",
+        "requestTimeout",
+        "secured",
+        "ssl",
+        "haproxy"
+      ]
+    },
+    "kafka": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "routingMode": {
+          "type": "string"
+        },
+        "routingHostMode": {
+          "type": "object",
+          "properties": {
+            "brokerPrefix": {
+              "type": "string"
+            },
+            "domainSeparator": {
+              "type": "string"
+            },
+            "defaultDomain": {
+              "type": "string"
+            },
+            "defaultPort": {
+              "type": "number"
+            },
+            "bootstrapDomainPattern": {
+              "type": "string"
+            },
+            "brokerDomainPattern": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "brokerPrefix",
+            "domainSeparator",
+            "defaultDomain",
+            "defaultPort",
+            "bootstrapDomainPattern",
+            "brokerDomainPattern"
+          ]
+        },
+        "api-key": {
+          "type": "object",
+          "properties": {
+            "securityMechanisms": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "securityMechanisms"
+          ]
+        },
+        "port": {
+          "type": "number"
+        },
+        "host": {
+          "type": "string"
+        },
+        "idleTimeout": {
+          "type": "number"
+        },
+        "tcpKeepAlive": {
+          "type": "boolean"
+        },
+        "instances": {
+          "type": "number"
+        },
+        "requestTimeout": {
+          "type": "number"
+        },
+        "secured": {
+          "type": "boolean"
+        },
+        "ssl": {
+          "type": "object",
+          "properties": {
+            "sni": {
+              "type": "boolean"
+            },
+            "clientAuth": {
+              "type": "string"
+            },
+            "tlsProtocols": {
+              "type": "string"
+            },
+            "tlsCiphers": {
+              "type": "string"
+            },
+            "keystore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "certificates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "cert": {
+                        "type": "string"
+                      },
+                      "key": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cert",
+                      "key"
+                    ]
+                  }
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                },
+                "defaultAlias": {},
+                "secret": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "certificates",
+                "password",
+                "watch",
+                "defaultAlias",
+                "secret"
+              ]
+            },
+            "truststore": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "watch": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "path",
+                "password",
+                "watch"
+              ]
+            },
+            "openssl": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "sni",
+            "clientAuth",
+            "tlsProtocols",
+            "tlsCiphers",
+            "keystore",
+            "truststore",
+            "openssl"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "routingMode",
+        "routingHostMode",
+        "api-key",
+        "port",
+        "host",
+        "idleTimeout",
+        "tcpKeepAlive",
+        "instances",
+        "requestTimeout",
+        "secured",
+        "ssl"
+      ]
+    },
+    "ds": {
+      "type": "object",
+      "properties": {
+        "mongodb": {
+          "type": "object",
+          "properties": {
+            "dbname": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "dbname",
+            "host",
+            "port"
+          ]
+        },
+        "elastic": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "host",
+            "port"
+          ]
+        }
+      },
+      "required": [
+        "mongodb",
+        "elastic"
+      ]
+    },
+    "management": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "mongodb": {
+          "type": "object",
+          "properties": {
+            "prefix": {},
+            "dbname": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "prefix",
+            "dbname",
+            "host",
+            "port"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "mongodb"
+      ]
+    }
+  }
+}
