@@ -53,7 +53,9 @@ func (v *toEnvVisitor) OnObjectStart(object visitor.Object, level int) {
 	}
 	if level == 0 {
 		v.currentSection = &envSection{
-			Variables: make([]envVariable, 0),
+			Title:       object.Title,
+			Description: object.Description,
+			Variables:   make([]envVariable, 0),
 		}
 		v.Sections = append(v.Sections, v.currentSection)
 	} else {

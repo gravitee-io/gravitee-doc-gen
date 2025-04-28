@@ -183,7 +183,7 @@ func extractApiTypes(properties *props.Properties) []ApiType {
 	return types
 }
 
-func PluginRelatedFile(filename string) (string, error) {
+func RelativeFile(filename string) (string, error) {
 	plugin, _ := bootstrap.GetData("plugin").(Plugin)
 	rootDir, _ := bootstrap.GetData(bootstrap.RootDirDataKey).(string)
 	specificConfig := path.Join(rootDir, plugin.Type, plugin.ID, filename)

@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"maps"
 	"os"
 
@@ -76,7 +75,7 @@ func chooseWriter(write bool, file string) io.Writer {
 func readUntilMarker(target string) []byte {
 	file, err := os.Open(target)
 	if err != nil {
-		log.Fatal(err)
+		panic(fmt.Sprintf("cannot open file %s before writing it: %v", target, err))
 	}
 	defer func() {
 		_ = file.Close()

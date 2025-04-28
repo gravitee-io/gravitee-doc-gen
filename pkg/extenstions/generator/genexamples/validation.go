@@ -68,6 +68,9 @@ func (e *exampleValidation) OnArrayStart(
 func (e *exampleValidation) OnArrayEnd(*visitor.VisitContext, bool) {
 	// no op
 }
+func (e *exampleValidation) OnOneOfStart(*visitor.VisitContext, *jsonschema.Schema) {
+	// no op
+}
 func (e *exampleValidation) OnOneOf(*visitor.VisitContext, *jsonschema.Schema, *jsonschema.Schema) {
 	e.skip = true
 }

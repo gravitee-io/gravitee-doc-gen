@@ -23,6 +23,7 @@ import (
 )
 
 const RootDirDataKey = "rootDir"
+const ConfigResolver = "configResolver"
 
 type data struct {
 	Filename   string `yaml:"file"`
@@ -30,7 +31,8 @@ type data struct {
 }
 
 type fileContent struct {
-	Data []data `yaml:"data"`
+	ChuckConfigResolver string `yaml:"configResolver"`
+	Data                []data `yaml:"data"`
 }
 
 func Load(rootDir string) error {
@@ -41,19 +43,23 @@ func Load(rootDir string) error {
 	}
 
 	// add this here so any one can use it
-	registry.data["rootDir"] = rootDir
-	registry.exports["rootDir"] = "RootDir"
+	reg.data["rootDir"] = rootDir
+	reg.exports["rootDir"] = "RootDir"
 
 	content, err := util.RenderTemplateFromFile(bootstrapFile, GetExported())
 	if err != nil {
 		return err
 	}
 
-	bootstrap := &fileContent{}
+	bootstrap := &fileContent{
+		ChuckConfigResolver: "default",
+	}
 	err = yaml.Unmarshal(content, bootstrap)
 	if err != nil {
 		return err
 	}
+
+	reg.data[ConfigResolver] = bootstrap.ChuckConfigResolver
 
 	for _, data := range bootstrap.Data {
 		_, err := load(data.Filename, data.ExportedAs)

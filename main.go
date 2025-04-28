@@ -60,6 +60,10 @@ func main() {
 	bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
 	bootstrap.RegisterPostProcessor("gen-examples", examples.GenExamplePostProcessor)
 
+	config.RegisterChuckConfigResolver("plugin", func(string, string) (string, error) {
+		return plugin.RelativeFile("default.yaml")
+	})
+
 	err := cmd.MainCommand().Execute()
 	if err != nil {
 		fmt.Println("Error:", err)

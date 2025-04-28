@@ -13,18 +13,17 @@
 # limitations under the License.
 
 outputs:
- - template : "{{ .RootDir }}/output/gravitee.yml.tmpl"
+ - template : "{{ .RootDir }}/gravitee.yml.tmpl"
    target: gen/gravitee.yml
-   processExisting: true
- - template : "{{ .RootDir }}/output/ENV.md.tmpl"
+ - template : "{{ .RootDir }}/ENV.md.tmpl"
    target: gen/ENV-CONFIGURATION.md
 chunks:
-  - template: "{{ .RootDir }}/yaml.tmpl"
+  - template: "{{ .RootDir }}/template/yaml.tmpl"
     required: true
     type: schema-to-yaml
     data:
       schema: apim-gateway-conf-schema.json
-  - template: "{{ .RootDir }}/env.tmpl"
+  - template: "{{ .RootDir }}/template/env.tmpl"
     required: true
     type: schema-to-env
     data:

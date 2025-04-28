@@ -64,6 +64,9 @@ func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
 }
 
 func defaultTo(value any, fallback any) any {
+	if b, ok := value.(bool); ok {
+		return b
+	}
 	if value == nil || reflect.ValueOf(value).IsZero() {
 		return fallback
 	}

@@ -82,7 +82,7 @@ func (s BaseExampleSpec) templateFromRef() (examples.GenTemplate, bool) {
 func (s BaseExampleSpec) getTemplateFile() string {
 	ref, _ := s.templateFromRef()
 	filename := ref.TemplateFilename()
-	templateFile, err := plugin.PluginRelatedFile(filename)
+	templateFile, err := plugin.RelativeFile(filename)
 	if err != nil {
 		panic(err.Error())
 	}

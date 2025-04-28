@@ -26,6 +26,7 @@ type Visitor interface {
 	OnObjectEnd(ctx *VisitContext)
 	OnArrayStart(ctx *VisitContext, property string, array *jsonschema.Schema, itemTypeIsObject bool) (*Array, []Value)
 	OnArrayEnd(ctx *VisitContext, itemTypeIsObject bool)
+	OnOneOfStart(ctx *VisitContext, oneOf *jsonschema.Schema)
 	OnOneOf(visitCtx *VisitContext, oneOf *jsonschema.Schema, parent *jsonschema.Schema)
 	OnOneOfEnd(*VisitContext)
 }

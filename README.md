@@ -7,19 +7,18 @@ Requirements:
 
 Build the tool
 ```shell
-go get
-go build -o example/plugin/doc-gen
+make build
 ```
 
 Set up the config
 ```shell
-export RMG_ROOT="$(pwd)/example/config"
+export DOCGEN_ROOT="$(pwd)/examples/test/config"
 ```
 
 Run it
 ```shell
-cd example/plugin
-./doc-gen --write
+cd examples/test/plugin
+../../../bin/doc-gen --write
 ```
 
 The docs are already generated in `example/plugin` but you can edit README.md above the generation marker.

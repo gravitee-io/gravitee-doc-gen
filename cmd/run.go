@@ -20,7 +20,6 @@ import (
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/output"
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +34,13 @@ func MainCommand() *cobra.Command {
 	main.Flags().BoolVarP(&optionsData.DryRun, "dry-run", "d", true, "Run generation, write result to console")
 	main.Flags().BoolVarP(&optionsData.Write, "write", "w", false, "Run generation, write result to console")
 	main.Flags().StringVarP(
+		&optionsData.ConfigFile,
+		"config-file",
+		"f",
+		"",
+		"Forces a config file (relative to config-dir) "+
+			"instead of using $DOCGEN_ROOT/default.yaml or the bootstrap config loader")
+	main.Flags().StringVarP(
 		&optionsData.RootDir,
 		"config-dir",
 		"c",
@@ -46,13 +52,14 @@ func MainCommand() *cobra.Command {
 }
 
 var optionsData struct {
-	Validate bool
-	DryRun   bool
-	Write    bool
-	RootDir  string
+	Validate   bool
+	DryRun     bool
+	Write      bool
+	RootDir    string
+	ConfigFile string
 }
 
-const rootEnvVar = "RMG_ROOT"
+const rootEnvVar = "DOCGEN_ROOT"
 
 func run(_ *cobra.Command, _ []string) {
 	rootDir := optionsData.RootDir
@@ -63,9 +70,7 @@ func run(_ *cobra.Command, _ []string) {
 		}
 	}
 
-	generated, cfg, genError := core.Load(rootDir, func(_ string) (string, error) {
-		return plugin.PluginRelatedFile("default.yaml")
-	})
+	generated, cfg, genError := core.Load(rootDir, optionsData.ConfigFile)
 
 	if optionsData.Validate {
 		if genError != nil {

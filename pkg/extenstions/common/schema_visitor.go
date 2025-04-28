@@ -56,8 +56,14 @@ func (v *SchemaToNodeTreeVisitor) OnAttribute(
 	return nil
 }
 
-func (v *SchemaToNodeTreeVisitor) OnObjectStart(*visitor.VisitContext, string, *jsonschema.Schema) *visitor.Object {
-	return nil
+func (v *SchemaToNodeTreeVisitor) OnObjectStart(
+	_ *visitor.VisitContext,
+	property string,
+	object *jsonschema.Schema) *visitor.Object {
+	o := visitor.NewObject(property)
+	o.Description = object.Description
+	o.Title = object.Title
+	return o
 }
 
 func (v *SchemaToNodeTreeVisitor) OnObjectEnd(_ *visitor.VisitContext) {
@@ -95,6 +101,10 @@ func (v *SchemaToNodeTreeVisitor) OnArrayStart(
 }
 
 func (v *SchemaToNodeTreeVisitor) OnArrayEnd(*visitor.VisitContext, bool) {
+	// no op
+}
+
+func (v *SchemaToNodeTreeVisitor) OnOneOfStart(*visitor.VisitContext, *jsonschema.Schema) {
 	// no op
 }
 
