@@ -1,0 +1,143 @@
+############################################################################################################
+#################################### Gravitee.IO Gateway - Configuration ###################################
+############################################################################################################
+
+############################################################################################################
+# This file is the general configuration of Gravitee.IO Gateway:
+# - Properties (and respective default values) in comment are provided for information.
+# - You can reference other property by using ${property.name} syntax
+# - gravitee.home property is automatically set-up by launcher and refers to the installation path. Do not override it !
+#
+# Please have a look to https://documentation.gravitee.io/ for more options and fine-grained granularity
+############################################################################################################
+
+# 
+http: 
+   #  (boolean)
+   alpn: 
+   #  (boolean)
+   compressionSupported: 
+   # 
+   haproxy: 
+      #  (boolean)
+      proxyProtocol: 
+   #  (boolean)
+   secured: 
+   # 
+   ssl: 
+      # 
+      keystore: 
+         #  (boolean)
+         watch: 
+      #  (boolean)
+      openssl: 
+      #  (boolean)
+      sni: 
+      # 
+      truststore: 
+         #  (boolean)
+         watch: 
+   #  (boolean)
+   tcpKeepAlive: 
+   # 
+   websocket: 
+      #  (boolean)
+      enabled: 
+      #  (boolean)
+      perFrameWebSocketCompressionSupported: 
+      #  (boolean)
+      perMessageWebSocketCompressionSupported: 
+# 
+kafka: 
+   #  (boolean)
+   enabled: 
+   #  (boolean)
+   secured: 
+   # 
+   ssl: 
+      # 
+      keystore: 
+         #  (boolean)
+         watch: 
+      #  (boolean)
+      openssl: 
+      #  (boolean)
+      sni: 
+      # 
+      truststore: 
+         #  (boolean)
+         watch: 
+   #  (boolean)
+   tcpKeepAlive: 
+# Configuration level secrets
+# To be used with the secret://provider/path...
+secrets: 
+   # Kubernetes secret provider
+   kubernetes: 
+      # Enable Kubernetes (boolean)
+      enabled: 
+      # Resolution namespace (string)
+      # Default is the namespace where gravitee is deployed
+      namespace: gravitee
+   # Hashicorp secret provider
+   vault: 
+      # Connection timeout in seconds (number)
+      connectTimeoutSec: 3
+      # Enable Hashicorp Vault (boolean)
+      enabled: 
+      # Host (IP or name) of the Vault instance (string)
+      host: 127.0.0.1
+      # Key-Value engine, no mixing supported (enum (string))
+      kvEngine: V2 # Possible values: "V1" "V2" 
+      # Vault namespace (string)
+      namespace: default
+      # Port of the Vault instance (number)
+      port: 8082
+      # Read timeout in seconds (number)
+      readTimeoutSec: 2
+      # 
+      ssl: 
+         # Enable secured connection to Vault (boolean)
+         enabled: 
+         # Format of the client certificate or CA if not using a public one (string)
+         # When format = 'pem'
+         format: pem # Possible values: "pem" "pemfile" "truststore" 
+         # Content of the PEM file with headers (string)
+         # When format = 'pem'
+         pem: |
+             --- BEGIN CERTIFICATE ---
+             MIIFxjCCA64CCQD9kAnHVVL02TANBgkqhkiG...
+             --- END CERTIFICATE ---
+         # Location of the file (string)
+         # When format = 'pemfile'
+         file: ssl/cert.pem
+      # 
+      watch: 
+         #  (boolean)
+         enabled: 
+# 
+tcp: 
+   #  (boolean)
+   enabled: 
+   # 
+   haproxy: 
+      #  (boolean)
+      proxyProtocol: 
+   #  (boolean)
+   secured: 
+   # 
+   ssl: 
+      # 
+      keystore: 
+         #  (boolean)
+         watch: 
+      #  (boolean)
+      openssl: 
+      #  (boolean)
+      sni: 
+      # 
+      truststore: 
+         #  (boolean)
+         watch: 
+   #  (boolean)
+   tcpKeepAlive: 
