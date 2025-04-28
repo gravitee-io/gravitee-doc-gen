@@ -22,12 +22,14 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 )
 
-var registry = struct {
+type registry struct {
 	data           map[string]interface{}
 	handlers       map[string]FileHandler
 	exports        map[string]string
 	postProcessors map[string]PostProcessor
-}{
+}
+
+var reg = registry{
 	data:           make(map[string]interface{}),
 	handlers:       make(map[string]FileHandler),
 	exports:        make(map[string]string),
@@ -43,24 +45,31 @@ func Register(handler FileHandler, ext ...string) {
 		panic("Register handler must have at least one extension")
 	}
 	for _, ext := range ext {
-		registry.handlers[ext] = handler
+		reg.handlers[ext] = handler
 	}
 }
 
 func RegisterPostProcessor(key string, processor PostProcessor) {
-	registry.postProcessors[key] = processor
+	reg.postProcessors[key] = processor
 }
 
 func GetData(name string) any {
-	if data, ok := registry.data[name]; ok {
+	if data, ok := reg.data[name]; ok {
 		return data
 	}
 	panic(fmt.Sprintf("'%s' bootstrap data does not exist", name))
 }
 
+func OverrideData(name string, d any) {
+	if _, ok := reg.data[name]; !ok {
+		panic(fmt.Sprintf("'%s' bootstrap data does not exist, cannot override", name))
+	}
+	reg.data[name] = d
+}
+
 func GetExported() map[string]any {
 	exported := make(map[string]any)
-	for k, v := range registry.exports {
+	for k, v := range reg.exports {
 		exported[v] = GetData(k)
 	}
 	return exported
@@ -77,24 +86,24 @@ func load(file string, export string) (any, error) {
 
 	var val any
 	var key string
-	if handle, ok := registry.handlers[filepath.Ext(file)]; ok {
+	if handle, ok := reg.handlers[filepath.Ext(file)]; ok {
 		val, err = handle(file)
 		if err != nil {
 			return nil, err
 		}
 		key = filepath.Base(util.BaseFileNoExt(file))
-		registry.data[key] = val
+		reg.data[key] = val
 	} else {
 		panic(fmt.Sprintf("no '%s' handler for bootstrap file: %s ", filepath.Ext(file), file))
 	}
 
-	if postProcessor, ok := registry.postProcessors[key]; ok {
+	if postProcessor, ok := reg.postProcessors[key]; ok {
 		updated, err := postProcessor(val)
 		if err != nil {
 			return nil, err
 		}
-		registry.data[key] = updated
+		reg.data[key] = updated
 	}
-	registry.exports[key] = export
+	reg.exports[key] = export
 	return val, nil
 }

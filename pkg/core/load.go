@@ -23,14 +23,18 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/generator"
 )
 
-func Load(rootDir string, resolver config.FileResolver) ([]chunks.Generated, config.Config, error) {
+func Load(rootDir string, overrideConfigFile string) ([]chunks.Generated, config.Config, error) {
 	err := bootstrap.Load(rootDir)
 	if err != nil {
 		return nil, config.Config{},
 			fmt.Errorf("failed to load bootstrap.yaml: %s", err.Error())
 	}
 
-	cfg, err := config.Read(rootDir, resolver)
+	if overrideConfigFile != "" {
+		bootstrap.OverrideData(bootstrap.ConfigResolver, "default")
+	}
+
+	cfg, err := config.Read(rootDir, overrideConfigFile)
 	if err != nil {
 		return nil, cfg, err
 	}

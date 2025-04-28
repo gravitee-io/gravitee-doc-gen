@@ -16,16 +16,41 @@ package config
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"gopkg.in/yaml.v3"
 )
 
-type FileResolver func(string) (string, error)
+type ChuckConfigResolver func(string, string) (string, error)
 
-func Read(rootDir string, resolver FileResolver) (Config, error) {
-	configFile, err := resolver(rootDir)
+func DefaultChunkConfigResolver(rootDir string, configFile string) (string, error) {
+	file := "default.yaml"
+	if configFile != "" {
+		file = configFile
+	}
+	return path.Join(rootDir, file), nil
+}
+
+var resolvers = map[string]ChuckConfigResolver{
+	"default": DefaultChunkConfigResolver,
+}
+
+func RegisterChuckConfigResolver(name string, resolver ChuckConfigResolver) {
+	if name == "default" {
+		panic("default resolver name 'default' is reserved")
+	}
+	resolvers[name] = resolver
+}
+
+func Read(rootDir string, configFile string) (Config, error) {
+	resolver := resolvers[bootstrap.GetData(bootstrap.ConfigResolver).(string)]
+	if resolver == nil {
+		panic("unknown chunk config resolver: " + bootstrap.GetData(bootstrap.ConfigResolver).(string))
+	}
+	configFile, err := resolver(rootDir, configFile)
+
 	if err != nil {
 		return Config{}, err
 	}

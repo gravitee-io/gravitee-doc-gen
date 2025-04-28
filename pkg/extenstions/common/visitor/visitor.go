@@ -15,6 +15,7 @@
 package visitor
 
 import (
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -47,12 +48,15 @@ func Visit(ctx *VisitContext, visitor Visitor, current *jsonschema.Schema) {
 
 	oneOfs := GetOneOfs(current)
 	if len(oneOfs) > 0 {
+		ctx.PushOneOf(newOneOfDescriptor(current))
+		visitor.OnOneOfStart(ctx, current)
 		for _, s := range oneOfs {
 			s = schema.OrRef(s)
 			visitor.OnOneOf(ctx, s, current)
 			Visit(ctx, visitor, s)
 		}
 		visitor.OnOneOfEnd(ctx)
+		ctx.PopOneOf()
 	}
 }
 
@@ -86,12 +90,6 @@ func visitNode(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 }
 
 func visitObject(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
-	oneOfs := GetOneOfs(prop.schema)
-	var oneOfAdded bool
-	if len(oneOfs) > 0 {
-		ctx.PushOneOf(newOneOfDescriptor(prop.schema))
-		oneOfAdded = true
-	}
 	object := visitor.OnObjectStart(ctx, prop.name, prop.schema)
 	if ctx.NodeStack() != nil {
 		if object == nil {
@@ -100,9 +98,6 @@ func visitObject(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 		ctx.NodeStack().add(ctx, object)
 	}
 	Visit(ctx, visitor, prop.schema)
-	if oneOfAdded {
-		ctx.PopOneOf()
-	}
 	visitor.OnObjectEnd(ctx)
 	ctx.NodeStack().pop()
 }
@@ -155,7 +150,7 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 	oneOfs := GetOneOfs(parent)
 	found := make(map[string]int)
 	expected := len(oneOfs)
-	values := make(map[string][]any)
+	values := make(map[string]util.Set)
 
 	for _, oneOf := range oneOfs {
 		for _, property := range NewSchemaPropertyList(oneOf) {
@@ -164,12 +159,12 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 			if len(s.Constant) > 0 {
 				count += 1
 				found[name] = count
-				array := values[name]
-				if array == nil {
-					array = make([]any, 0)
+				set := values[name]
+				if set == nil {
+					set = util.Set{}
 				}
-				array = append(array, s.Constant[0])
-				values[name] = array
+				set.Add(s.Constant[0])
+				values[name] = set
 			}
 		}
 	}
@@ -178,7 +173,7 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 	for name, count := range found {
 		if count == expected {
 			spec := DiscriminatorSpec{
-				Values:   values[name],
+				Values:   values[name].ToSlice(),
 				Type:     schema.GetType(parent),
 				Property: name,
 			}

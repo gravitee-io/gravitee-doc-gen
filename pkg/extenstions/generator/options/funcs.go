@@ -103,27 +103,11 @@ func enums(attribute *jsonschema.Schema) []any {
 
 func (o *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jsonschema.Schema) *visitor.Object {
 	objectType := "object"
-	if ctx.PeekOneOf().Present {
-		objectType = "oneOf"
-	}
 	o.Add(Section{
 		Title: object.Title,
 		Type:  objectType,
 	})
 
-	if ctx.PeekOneOf().Present {
-		specs := ctx.PeekOneOf().Specs
-		for _, spec := range specs {
-			o.AddAttribute(Attribute{
-				Name:     util.TitleCaseToTitle(util.Title(spec.Property)),
-				Property: spec.Property,
-				Type:     spec.Type,
-				Required: true,
-				Enums:    spec.Values,
-				OneOf:    ctx.PeekOneOf(),
-			})
-		}
-	}
 	return nil
 }
 
@@ -141,6 +125,22 @@ func (o *Options) OnArrayStart(
 	return nil, nil
 }
 
+func (o *Options) OnOneOfStart(ctx *visitor.VisitContext, _ *jsonschema.Schema) {
+
+	if ctx.PeekOneOf().Present {
+		specs := ctx.PeekOneOf().Specs
+		for _, spec := range specs {
+			o.AddAttribute(Attribute{
+				Name:     util.TitleCaseToTitle(util.Title(spec.Property)),
+				Property: spec.Property,
+				Type:     spec.Type,
+				Required: true,
+				Enums:    spec.Values,
+				OneOf:    ctx.PeekOneOf(),
+			})
+		}
+	}
+}
 func (o *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
 	specs := ctx.PeekOneOf().Specs
 	discriminatedBy := make(map[string]any)
