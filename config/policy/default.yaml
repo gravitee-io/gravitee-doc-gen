@@ -38,7 +38,7 @@ chunks:
         - plugin: Plugin version
         - apim: APIM
         - am: AM
-        - cockpit: Cockpit
+        - cockpit: Cloud
         - java: Java version
         - comment: Comment
 #  - template: "{{ .RootDir }}/policy/phases.tmpl"

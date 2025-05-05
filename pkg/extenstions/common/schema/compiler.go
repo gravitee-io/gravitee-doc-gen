@@ -20,7 +20,11 @@ import (
 )
 
 func CompileWithExtensions(schemaFile string) (*jsonschema.Schema, error) {
-	return CompilerWithExtensions().Compile(schemaFile)
+	compiled, err := CompilerWithExtensions().Compile(schemaFile)
+	if err == nil && compiled.Draft != jsonschema.Draft7 {
+		panic("Schema version must set to 'Draft 7' as follow: \"$schema\": \"http://json-schema.org/draft-07/schema#\"")
+	}
+	return compiled, err
 }
 
 func CompilerWithExtensions() *jsonschema.Compiler {

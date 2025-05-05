@@ -75,7 +75,7 @@ func (s BaseExampleSpec) Validate() error {
 }
 
 func (s BaseExampleSpec) templateFromRef() (examples.GenTemplate, bool) {
-	data := bootstrap.GetData("gen-examples").(*examples.GenExamples)
+	data := bootstrap.GetData("default-examples").(*examples.GenExamples)
 	return data.FromRef(s.TemplateRef)
 }
 
