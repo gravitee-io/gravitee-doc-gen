@@ -73,7 +73,6 @@ func (o *Options) OnAttribute(
 	property string,
 	attribute *jsonschema.Schema,
 	parent *jsonschema.Schema) *visitor.Attribute {
-
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,
@@ -127,7 +126,6 @@ func (o *Options) OnArrayStart(
 }
 
 func (o *Options) OnOneOfStart(ctx *visitor.VisitContext, _ *jsonschema.Schema) {
-
 	if ctx.PeekOneOf().Present {
 		specs := ctx.PeekOneOf().Specs
 		for _, spec := range specs {
@@ -142,6 +140,7 @@ func (o *Options) OnOneOfStart(ctx *visitor.VisitContext, _ *jsonschema.Schema) 
 		}
 	}
 }
+
 func (o *Options) OnOneOf(ctx *visitor.VisitContext, oneOf *jsonschema.Schema, _ *jsonschema.Schema) {
 	specs := ctx.PeekOneOf().Specs
 	discriminatedBy := make(map[string]any)

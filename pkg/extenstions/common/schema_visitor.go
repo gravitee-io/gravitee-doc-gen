@@ -88,14 +88,12 @@ func (v *SchemaToNodeTreeVisitor) OnArrayStart(
 			}
 		}
 		return newArray, values
-	} else {
-		if len(array.Examples) > 0 {
-			values := make([]visitor.Value, 0)
-			for _, example := range array.Examples {
-				values = append(values, visitor.NewValue(example))
-			}
-			return newArray, values
+	} else if len(array.Examples) > 0 {
+		values := make([]visitor.Value, 0)
+		for _, example := range array.Examples {
+			values = append(values, visitor.NewValue(example))
 		}
+		return newArray, values
 	}
 	return newArray, nil
 }
