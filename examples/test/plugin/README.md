@@ -155,7 +155,7 @@ Warning: this some heavy doc
 #### Key store (Object)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Type<br>`type`| object| ✅| |  |  | Type of Key store<br>Values:`""` `JKS` `PKCS12` `PEM` |
+| Type<br>`type`| object| ✅| |  |  | Type of Key store<br>Values:`PEM` `""` `JKS` `PKCS12` |
 
 
 #### Key store: None `type = ""` 
@@ -216,7 +216,7 @@ Warning: this some heavy doc
 #### Truststore (Object)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Type<br>`type`| object| ✅| |  |  | Type of Truststore<br>Values:`PKCS12` `PEM` `""` `JKS` |
+| Type<br>`type`| object| ✅| |  |  | Type of Truststore<br>Values:`""` `JKS` `PKCS12` `PEM` |
 
 
 #### Truststore: None `type = ""` 

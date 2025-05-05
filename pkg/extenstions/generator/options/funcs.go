@@ -73,6 +73,7 @@ func (o *Options) OnAttribute(
 	property string,
 	attribute *jsonschema.Schema,
 	parent *jsonschema.Schema) *visitor.Attribute {
+
 	att := Attribute{
 		Property:    property,
 		Name:        attribute.Title,

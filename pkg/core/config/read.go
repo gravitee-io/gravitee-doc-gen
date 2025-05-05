@@ -23,9 +23,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ChuckConfigResolver func(string, string) (string, error)
+type ConfigResolver func(string, string) (string, error)
 
-func DefaultChunkConfigResolver(rootDir string, configFile string) (string, error) {
+func DefaultConfigResolver(rootDir string, configFile string) (string, error) {
 	file := "default.yaml"
 	if configFile != "" {
 		file = configFile
@@ -33,11 +33,11 @@ func DefaultChunkConfigResolver(rootDir string, configFile string) (string, erro
 	return path.Join(rootDir, file), nil
 }
 
-var resolvers = map[string]ChuckConfigResolver{
-	"default": DefaultChunkConfigResolver,
+var resolvers = map[string]ConfigResolver{
+	"default": DefaultConfigResolver,
 }
 
-func RegisterChuckConfigResolver(name string, resolver ChuckConfigResolver) {
+func RegisterConfigResolver(name string, resolver ConfigResolver) {
 	if name == "default" {
 		panic("default resolver name 'default' is reserved")
 	}
@@ -49,8 +49,8 @@ func Read(rootDir string, configFile string) (Config, error) {
 	if resolver == nil {
 		panic("unknown chunk config resolver: " + bootstrap.GetData(bootstrap.ConfigResolver).(string))
 	}
-	configFile, err := resolver(rootDir, configFile)
 
+	configFile, err := resolver(rootDir, configFile)
 	if err != nil {
 		return Config{}, err
 	}

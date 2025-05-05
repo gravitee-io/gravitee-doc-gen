@@ -15,6 +15,6 @@
 data:
   - file: src/main/resources/plugin.properties
     exportedAs: Plugin
-  - file: {{ .RootDir }}/gen-examples.yaml
+  - file: {{ .RootDir }}/default-examples.yaml
     exportedAs: DefaultExamples
 configResolver: plugin

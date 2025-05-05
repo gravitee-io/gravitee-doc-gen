@@ -58,9 +58,9 @@ func main() {
 	bootstrap.Register(filehandlers.JSONFileHandler, filehandlers.JSONExt)
 
 	bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
-	bootstrap.RegisterPostProcessor("gen-examples", examples.GenExamplePostProcessor)
+	bootstrap.RegisterPostProcessor("default-examples", examples.GenExamplePostProcessor)
 
-	config.RegisterChuckConfigResolver("plugin", func(string, string) (string, error) {
+	config.RegisterConfigResolver("plugin", func(string, string) (string, error) {
 		return plugin.RelativeFile("default.yaml")
 	})
 
