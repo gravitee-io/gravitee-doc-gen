@@ -45,9 +45,10 @@ func RegisterConfigResolver(name string, resolver ConfigResolver) {
 }
 
 func Read(rootDir string, configFile string) (Config, error) {
-	resolver := resolvers[bootstrap.GetData(bootstrap.ConfigResolver).(string)]
+	s, _ := bootstrap.GetData(bootstrap.ConfigResolver).(string)
+	resolver := resolvers[s]
 	if resolver == nil {
-		panic("unknown chunk config resolver: " + bootstrap.GetData(bootstrap.ConfigResolver).(string))
+		panic("unknown chunk config resolver: " + s)
 	}
 
 	configFile, err := resolver(rootDir, configFile)
