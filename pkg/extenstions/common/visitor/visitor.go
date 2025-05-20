@@ -153,7 +153,7 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 	values := make(map[string]util.Set)
 
 	for _, oneOf := range oneOfs {
-		for _, property := range NewSchemaPropertyList(oneOf) {
+		for _, property := range NewSchemaPropertyList(schema.OrRef(oneOf)) {
 			name, s := property.name, property.schema
 			count := found[name]
 			if len(s.Constant) > 0 {

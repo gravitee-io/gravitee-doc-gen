@@ -67,7 +67,25 @@ func Items(array *jsonschema.Schema) *jsonschema.Schema {
 
 func OrRef(schema *jsonschema.Schema) *jsonschema.Schema {
 	if schema.Ref != nil {
-		return schema.Ref
+		ref := schema.Ref
+		if noDefault(ref) {
+			ref.Default = schema.Default
+		}
+		if !ref.ReadOnly && schema.ReadOnly {
+			ref.ReadOnly = schema.ReadOnly
+		}
+		return ref
 	}
 	return schema
+}
+
+func noDefault(ref *jsonschema.Schema) bool {
+	switch ref.Default.(type) {
+	case nil:
+		return true
+	case string:
+		return ref.Default.(string) == ""
+	default:
+		return false
+	}
 }

@@ -41,16 +41,6 @@ chunks:
         - cockpit: Cloud
         - java: Java version
         - comment: Comment
-#  - template: "{{ .RootDir }}/policy/phases.tmpl"
-#    type: table
-#    required: true
-#    data:
-#      table: docs/phases.yaml
-#      columns:
-#        - v2: v2 Phases
-#        - v2-comp: Compatible?
-#        - v4: v4 Phases
-#        - v4-comp: Compatible?
   - template: "{{ .RootDir }}/policy/phases_pl.tmpl"
     exportedAs: Phases
     required: true

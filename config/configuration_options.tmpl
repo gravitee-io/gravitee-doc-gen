@@ -23,7 +23,7 @@
 {{ if gt (len .Enums) 0 -}}
 {{ if or .Description .OneOf.Present -}}
 <br>{{ end -}}
-Values: {{- range .Enums }}`{{ default . "\"\"" }}` {{ end -}}
+Values: {{- range .Enums }} `{{ default . "\"\"" }}`{{ end -}}
 {{ end -}}
 |
 {{ else -}}{{- $skipped = icz $skipped -}}
