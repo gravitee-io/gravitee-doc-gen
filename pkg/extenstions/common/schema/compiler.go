@@ -21,8 +21,9 @@ import (
 
 func CompileWithExtensions(schemaFile string) (*jsonschema.Schema, error) {
 	compiled, err := CompilerWithExtensions().Compile(schemaFile)
-	if err == nil && compiled.Draft != jsonschema.Draft7 {
-		panic("Schema version must set to 'Draft 7' as follow: \"$schema\": \"http://json-schema.org/draft-07/schema#\"")
+	if err == nil && compiled.Draft == nil {
+		// panic("Schema version must set to 'Draft 7' as follow: \"$schema\": \"http://json-schema.org/draft-07/schema#\"")
+		panic("Schema version must set: \"$schema\": \"http://json-schema.org/draft-07/schema#\" for instance")
 	}
 	return compiled, err
 }

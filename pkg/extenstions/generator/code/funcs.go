@@ -82,5 +82,20 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 		return false, errors.New("code file not found")
 	}
 
+	if codeFileExists {
+		content, err := os.ReadFile(codeFile)
+		if err != nil {
+			return false, err
+		}
+		code := Code{}
+		err = yaml.Unmarshal(content, &code)
+		if err != nil {
+			return false, errors.New("unable to parse " + codeFile + ": " + err.Error())
+		}
+		if len(code.Snippets) == 0 {
+			return false, errors.New("no snippet found in " + codeFile + "")
+		}
+	}
+
 	return tmplExists && codeFileExists, nil
 }

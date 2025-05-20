@@ -38,10 +38,10 @@ The phases checked below are supported by the `test` policy:
 
 ### Can be used in flow phases:
 
-* Request
-* Response
 * Publish
 * Subscribe
+* Request
+* Response
 
 ## Compatibility matrix
 Strikethrough line are deprecated versions
@@ -120,7 +120,7 @@ Warning: this some heavy doc
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
 | Enabled<br>`enabled`| object| ✅| |  |  | Enabled of Proxy Options<br>Values:`false` `true` |
-| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | Use System Proxy of Proxy Options<br>Values:`true` `false` |
+| Use System Proxy<br>`useSystemProxy`| object| ✅| |  |  | Use System Proxy of Proxy Options<br>Values:`false` `true` |
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
@@ -155,7 +155,7 @@ Warning: this some heavy doc
 #### Key store (Object)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Type<br>`type`| object| ✅| |  |  | Type of Key store<br>Values:`PEM` `""` `JKS` `PKCS12` |
+| Type<br>`type`| object| ✅| |  |  | Type of Key store<br>Values:`""` `JKS` `PKCS12` `PEM` |
 
 
 #### Key store: None `type = ""` 
