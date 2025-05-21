@@ -87,6 +87,16 @@
           "title": "Description",
           "type": "string",
           "maxLength": 1000
+        },
+        "always": {
+          "title": "Always the same value",
+          "type": "string",
+          "default": "Static",
+          "readOnly": true
+        },"password": {
+          "title": "Never returned",
+          "type": "string",
+          "writeOnly": true
         }
       }
     },

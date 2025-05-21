@@ -197,6 +197,10 @@ func getConstraint(att *jsonschema.Schema) string {
 	case att.MinLength >= 0 || att.MaxLength >= 0:
 		constraints = append(constraints, "["+valueOrZero(att.MinLength))
 		constraints = append(constraints, valueOrInfinity(att.MaxLength)+"]")
+	case att.ReadOnly:
+		constraints = append(constraints, "read-only")
+	case att.WriteOnly:
+		constraints = append(constraints, "write-only")
 	}
 
 	return strings.Join(constraints, ", ")

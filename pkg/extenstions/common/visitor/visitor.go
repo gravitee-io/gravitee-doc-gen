@@ -106,7 +106,7 @@ func visitArray(ctx *VisitContext, prop SchemaProperty, visitor Visitor) {
 	var items *jsonschema.Schema
 	var itemTypeIsObject bool
 	var oneOfAdded bool
-	if prop.schema.Items != nil {
+	if prop.schema.Items != nil || prop.schema.Items2020 != nil {
 		items = schema.Items(prop.schema)
 		itemTypeIsObject = !schema.IsAttribute(items)
 		if itemTypeIsObject && len(GetOneOfs(items)) > 0 {
