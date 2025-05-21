@@ -56,30 +56,41 @@ func IsAttribute(schema *jsonschema.Schema) bool {
 }
 
 func Items(array *jsonschema.Schema) *jsonschema.Schema {
-	if array.Items == nil {
-		panic("array.Items is nil")
+	if array.Items != nil {
+		if item, ok := array.Items.(*jsonschema.Schema); ok {
+			return OrRef(item)
+		}
 	}
-	if item, ok := array.Items.(*jsonschema.Schema); ok {
-		return OrRef(item)
+	if array.Items2020 != nil {
+		return OrRef(array.Items.(*jsonschema.Schema))
 	}
-	panic("array.Items is likely to be an array of types, this is not supported")
+	panic("array.Items is nil or an array of types (Draft < 2020), this is not supported.")
 }
 
 func OrRef(schema *jsonschema.Schema) *jsonschema.Schema {
 	if schema.Ref != nil {
 		ref := schema.Ref
-		if noDefault(ref) {
+		if defaultIsEmpty(ref) {
 			ref.Default = schema.Default
 		}
 		if !ref.ReadOnly && schema.ReadOnly {
-			ref.ReadOnly = schema.ReadOnly
+			ref.ReadOnly = true
+		}
+		if !ref.WriteOnly && schema.WriteOnly {
+			ref.WriteOnly = true
+		}
+		if !ref.Deprecated && schema.Deprecated {
+			ref.Deprecated = true
+		}
+		if ref.Description == "" {
+			ref.Description = schema.Description
 		}
 		return ref
 	}
 	return schema
 }
 
-func noDefault(ref *jsonschema.Schema) bool {
+func defaultIsEmpty(ref *jsonschema.Schema) bool {
 	switch ref.Default.(type) {
 	case nil:
 		return true

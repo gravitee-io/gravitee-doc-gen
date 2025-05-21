@@ -60,6 +60,9 @@ The error keys sent by this policy are as follows:
             "policy": "test",
             "configuration":
               {
+                "constraints": {
+                  "always": "Static"
+                },
                 "errorCondition": "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}",
                 "errorStatusCode": "500",
                 "exitOnError": false,
@@ -131,6 +134,8 @@ spec:
             enabled: true
             policy: "test"
             configuration:
+              constraints:
+                always: Static
               errorCondition: '{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}'
               errorStatusCode: "500"
               exitOnError: false

@@ -38,10 +38,10 @@ The phases checked below are supported by the `test` policy:
 
 ### Can be used in flow phases:
 
-* Publish
-* Subscribe
 * Request
 * Response
+* Publish
+* Subscribe
 
 ## Compatibility matrix
 Strikethrough line are deprecated versions
@@ -100,11 +100,13 @@ Warning: this some heavy doc
 #### Constraint test bed (Object)
 | Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
 |:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Always the same value<br>`always`| string<br>read-only|  | `Static`|  |  | |
 | Description<br>`description`| string<br>[0, 1000]|  | |  |  | |
 | Lower bounds<br>`lowerBounds`| number<br>(1, 5]|  | |  |  | |
 | Middle bounds<br>`middleBounds`| number<br>[5, 10.333333333333]|  | |  |  | |
 | Open lower bound<br>`openLowerBounds`| number<br>[-Inf, 10]|  | |  |  | |
 | Open upper bound<br>`openUpperBounds`| number<br>[10, +Inf]|  | |  |  | |
+| Never returned<br>`password`| string<br>write-only|  | |  |  | |
 | Ratio<br>`ratio`| number<br>[0, 1]|  | |  |  | |
 | Upper bounds<br>`upperBounds`| number<br>[10.25, 15)|  | |  |  | |
 
@@ -301,6 +303,9 @@ Warning: this some heavy doc
             "policy": "test",
             "configuration":
               {
+                "constraints": {
+                  "always": "Static"
+                },
                 "errorCondition": "{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}",
                 "errorStatusCode": "500",
                 "exitOnError": false,
@@ -372,6 +377,8 @@ spec:
             enabled: true
             policy: "test"
             configuration:
+              constraints:
+                always: Static
               errorCondition: '{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}'
               errorStatusCode: "500"
               exitOnError: false
