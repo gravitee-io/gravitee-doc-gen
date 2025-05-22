@@ -223,9 +223,9 @@ func (a *Attribute) updateWhen(ctx *VisitContext) {
 		if s, ok := a.When[spec.Property]; ok {
 			set = s
 		} else {
-			set = util.Set{}
+			set = util.NewSet()
 		}
-		set[value] = true
+		set.Add(value)
 		a.When[spec.Property] = set
 	}
 }

@@ -161,7 +161,7 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 				found[name] = count
 				set := values[name]
 				if set == nil {
-					set = util.Set{}
+					set = util.NewSet()
 				}
 				set.Add(s.Constant[0])
 				values[name] = set
@@ -172,8 +172,9 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 	result := make([]DiscriminatorSpec, 0)
 	for name, count := range found {
 		if count == expected {
+			set := values[name]
 			spec := DiscriminatorSpec{
-				Values:   values[name].ToSlice(),
+				Values:   set.Items(),
 				Type:     schema.GetType(parent),
 				Property: name,
 			}

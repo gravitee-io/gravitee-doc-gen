@@ -14,29 +14,52 @@
 
 package util
 
-type Unstructured map[string]interface{}
-type Set map[any]bool
+import "slices"
 
-func (s Set) Add(v any) {
-	s[v] = true
+type Unstructured map[string]interface{}
+
+// Set a slices with unique values
+type set struct {
+	items []any
 }
 
-func (s Set) ToSlice() []any {
-	slice := make([]any, 0, len(s))
-	for v := range s {
-		slice = append(slice, v)
+type Set interface {
+	// Add a value to the set if not in it already
+	Add(v any)
+	// Items turn a Set into a slice by copying values
+	Items() []any
+}
+
+func NewSet() Set {
+	return &set{}
+}
+
+func (s *set) Add(v any) {
+	if !slices.Contains(s.items, v) {
+		s.items = append(s.items, v)
 	}
+}
+
+func (s *set) Items() []any {
+	slice := make([]any, len(s.items))
+	copy(slice, s.items)
 	return slice
 }
 
+// ToSlice convert an untyped Set into a typed slice
 func ToSlice[T any](s Set) []T {
-	slice := make([]T, 0, len(s))
-	for v := range s {
+	impl, ok := s.(*set)
+	if !ok {
+		panic("not a set")
+	}
+	slice := make([]T, 0, len(impl.items))
+	for _, v := range impl.items {
 		slice = append(slice, As[T](v))
 	}
 	return slice
 }
 
+// As types an untyped value or panics
 func As[T any](x any) T {
 	it, ok := x.(T)
 	if !ok {

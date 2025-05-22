@@ -147,7 +147,7 @@ func (p Plugin) Validate() error {
 }
 
 func extractPhases(properties *props.Properties) []FlowPhase {
-	set := util.Set{}
+	set := util.NewSet()
 	for _, key := range []string{
 		flowPhaseProxyKey,
 		flowPhaseMessageKey,
