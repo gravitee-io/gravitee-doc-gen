@@ -19,13 +19,13 @@ outputs:
  - template : "{{ .RootDir }}/{{ .Plugin.Type }}/POLICY_STUDIO_DOC.tmpl"
    target: docs/POLICY_STUDIO_DOC.md
 chunks:
-  - template: docgen/overview.md
+  - template: .docgen/overview.md
     required: true
-  - template: docgen/usage.md
+  - template: .docgen/usage.md
   - template: "{{ .RootDir }}/errors.tmpl"
     type: table
     data:
-      table: docgen/errors.yaml
+      table: .docgen/errors.yaml
       columns:
         - key: Key
         - params: Parameters
@@ -33,7 +33,7 @@ chunks:
     type: table
     required: true
     data:
-      table: docgen/matrix.yaml
+      table: .docgen/matrix.yaml
       columns:
         - plugin: Plugin version
         - apim: APIM
@@ -53,20 +53,20 @@ chunks:
     exportedAs: GenExamples
     type: gen-examples
     data:
-      examples: docgen/examples.yaml
+      examples: .docgen/examples.yaml
       schema: src/main/resources/schemas/schema-form.json
     required: true
   - template: "{{ .RootDir }}/examples.tmpl"
     exportedAs: RawExamples
     type: raw-examples
     data:
-      examples: docgen/examples.yaml
+      examples: .docgen/examples.yaml
       schema: src/main/resources/schemas/schema-form.json
     required: true
   - template: "{{ .RootDir }}/gateway_config.tmpl"
     type: code
     data:
-      code: docgen/gateway-config.yaml
+      code: .docgen/gateway-config.yaml
   - template: CHANGELOG.md
     exportedAs: ChangeLog
     required: true
