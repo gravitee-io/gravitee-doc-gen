@@ -26,7 +26,7 @@ import (
 func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 	result := make([]chunks.Ready, 0, len(configChunks))
 
-	unique := util.Set{}
+	unique := util.NewSet()
 
 	for i, chunk := range configChunks {
 		validate, err := Registry.getTypeValidator(chunk.Type)
@@ -62,7 +62,7 @@ func GetReady(configChunks []config.Chunk) ([]chunks.Ready, error) {
 		}
 	}
 
-	if len(unique) != len(result) {
+	if len(unique.Items()) != len(result) {
 		return nil,
 			errors.New("some chunks are using the same template filename, " +
 				"for those set 'exportedAs' with a name to use in the template")

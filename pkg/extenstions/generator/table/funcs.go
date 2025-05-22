@@ -16,6 +16,7 @@ package table
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"slices"
 
@@ -41,7 +42,7 @@ type Table struct {
 }
 
 func (t *Table) removeUnusedColumns() {
-	ids := util.Set{}
+	ids := util.NewSet()
 	for _, r := range t.Rows {
 		for k := range r.Data {
 			ids.Add(k)
@@ -66,27 +67,44 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 	tableFileExists := util.FileExists(tableFile)
 
 	if chunk.Required && !tableFileExists {
-		return false, errors.New("table file not found")
+		return false, errors.New(fmt.Sprintf("table file not found: %s", tableFile))
+	}
+
+	if tableFileExists {
+		table, err := parseConfig(chunk)
+		if err != nil {
+			return false, err
+		}
+
+		if len(table.Rows) == 0 {
+			return false, errors.New(fmt.Sprintf("no rows configured for table in file: %s", tableFile))
+		}
 	}
 
 	return tmplExists && tableFileExists, nil
 }
 
 func TypeHandler(chunk config.Chunk) (chunks.Processed, error) {
-	rows, err := os.ReadFile(chunks.GetDataTypeFile(chunk))
-	if err != nil {
-		return chunks.Processed{}, err
-	}
-
-	table := Table{}
-	processed := chunks.Processed{Data: &table}
-	err = yaml.Unmarshal(rows, processed.Data)
+	table, err := parseConfig(chunk)
 	if err != nil {
 		return chunks.Processed{}, err
 	}
 	table.Columns = getColumns(chunk)
 	table.removeUnusedColumns()
-	return processed, nil
+	return chunks.Processed{Data: table}, nil
+}
+
+func parseConfig(chunk config.Chunk) (Table, error) {
+	bytes, err := os.ReadFile(chunks.GetDataTypeFile(chunk))
+	if err != nil {
+		return Table{}, err
+	}
+
+	table := Table{}
+	if err = yaml.Unmarshal(bytes, &table); err != nil {
+		return Table{}, err
+	}
+	return table, nil
 }
 
 func getColumns(chunk config.Chunk) []Columns {
