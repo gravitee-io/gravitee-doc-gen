@@ -42,6 +42,8 @@ func ProcessAllExamples(chunk config.Chunk, provider ExampleSpecProvider, yield 
 
 		templateFile := spec.GetTemplateFile()
 
+		templateSpec, _ := spec.TemplateFromRef()
+
 		template, err := util.TemplateWithFunctions(templateFile)
 		if err != nil {
 			return chunks.Processed{}, err
@@ -59,7 +61,7 @@ func ProcessAllExamples(chunk config.Chunk, provider ExampleSpecProvider, yield 
 
 		snippets = append(snippets, Snippet{
 			Display:  spec.GetDisplay(),
-			Language: spec.GetLanguage(),
+			Language: templateSpec.Language,
 			Code:     string(codeSnippet),
 		})
 	}

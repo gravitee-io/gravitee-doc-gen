@@ -111,4 +111,4 @@ As part of this tool some go templates have been added to ease formatting
 - `title` 
     - Upper case the first letter
 - `mvmdheader`
-    -  Include a md file and move their titles level
+    -  Include a `.md` file and move their title levels

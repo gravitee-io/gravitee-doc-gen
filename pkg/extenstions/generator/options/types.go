@@ -31,6 +31,33 @@ type Section struct {
 	Attributes      []Attribute
 }
 
+func (s *Section) ELPresent() bool {
+	for _, attribute := range s.Attributes {
+		if attribute.EL {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Section) SecretPresent() bool {
+	for _, attribute := range s.Attributes {
+		if attribute.Secret {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Section) DefaultPresent() bool {
+	for _, attribute := range s.Attributes {
+		if attribute.Default != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Section) IsOneOfProperty(property string) bool {
 	discriminated := s.DiscriminatedBy != nil
 	if s.OneOf.Present && discriminated {

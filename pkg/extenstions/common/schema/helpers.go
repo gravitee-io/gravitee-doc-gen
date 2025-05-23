@@ -40,6 +40,9 @@ func GetType(prop *jsonschema.Schema) string {
 	if len(prop.Enum) > 0 {
 		return "enum (" + t + ")"
 	}
+	if t == "array" && IsAttribute(Items(prop)) {
+		return "array (" + GetType(Items(prop)) + ")"
+	}
 	return t
 }
 

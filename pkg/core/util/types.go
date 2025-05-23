@@ -28,6 +28,7 @@ type Set interface {
 	Add(v any)
 	// Items turn a Set into a slice by copying values
 	Items() []any
+	Contains(v any) bool
 }
 
 func NewSet() Set {
@@ -44,6 +45,10 @@ func (s *set) Items() []any {
 	slice := make([]any, len(s.items))
 	copy(slice, s.items)
 	return slice
+}
+
+func (s *set) Contains(v any) bool {
+	return slices.Contains(s.items, v)
 }
 
 // ToSlice convert an untyped Set into a typed slice

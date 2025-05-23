@@ -46,7 +46,7 @@ func TemplateWithFunctions(file string) (*template.Template, error) {
 		"quote":      quote,
 		"icz":        increase,
 		"joinset":    joinset,
-		"mvmdheader": moveMarkdownHeader,
+		"mvmdheader": MoveMarkdownHeader,
 		"title":      Title,
 		"upper":      upper,
 	},
@@ -129,23 +129,23 @@ func joinset(set map[any]bool, separator string, surrounding string) string {
 	return strings.Join(items, separator)
 }
 
-func moveMarkdownHeader(level int, header string) string {
-	scanner := bufio.NewScanner(strings.NewReader(header))
+func MoveMarkdownHeader(offset int, content string) string {
+	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Split(bufio.ScanLines)
 	buffer := bytes.Buffer{}
 	for scanner.Scan() {
 		line := scanner.Text()
 		if len(line) > 0 {
 			var found bool
-			var c = -1
+			var actual = 0
 			for line[0] == '#' {
 				found = true
 				line = line[1:]
-				c++
+				actual++
 			}
-			newLevel := strings.Repeat("#", level+c)
+			newLevel := strings.Repeat("#", actual+offset)
 			if found {
-				buffer.WriteString(newLevel + line + "\n")
+				buffer.WriteString(newLevel)
 			}
 		}
 		buffer.WriteString(line + "\n")
