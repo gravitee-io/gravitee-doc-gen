@@ -3,18 +3,18 @@
 {{ .OneOf.ParentTitle }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
 {{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
 {{ end }}
-| Name <br>`json name`  | Type <br>(constraint)  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
+| Name <br>`json name`  | Type <br>`constraint`  | Mandatory  |{{ if .DefaultPresent }} Default  |{{ end }}{{ if .ELPresent }} Supports <br>EL  |{{ end }}{{ if .SecretPresent }} Supports <br>Secrets |{{ end }} Description  |
+|:----------------------|:-----------------------|:----------:|{{ if .DefaultPresent }}:---------|{{ end }}{{ if .ELPresent }}:----------------:|{{ end }}{{ if .SecretPresent }}:--------------------:|{{ end }}:-------------|
 {{ $rows := 0 -}}
 {{ $skipped := 0 -}}
 {{- range $i, $_ := .Attributes -}}
 {{ if not ($section.IsOneOfProperty .Property) -}}
 | {{ if .Name }}{{ .Name }}<br>{{ end }}`{{ .Property }}` {{- /* hack to elude trailing \n */ -}}
-| {{ default .Type "string" }}{{ if .Constraint }}<br>{{ .Constraint }}{{ end -}}
+| {{ default .Type "string" }}{{ if .Constraint }}<br>`{{ .Constraint }}`{{ end -}}
 | {{ ternary .Required "✅" " " -}}
-| {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end -}}
-| {{ ternary .EL "✅" " " -}}
-| {{ ternary .Secret "✅" " " -}}
+{{ if $section.DefaultPresent }}| {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end }}{{ end -}}
+{{ if $section.ELPresent }}| {{ ternary .EL "✅" " " -}}{{ end -}}
+{{ if $section.SecretPresent }}| {{ ternary .Secret "✅" " " -}}{{ end -}}
 | {{ .Description -}}{{ if or (and (eq .Type "object") (not .OneOf.Present)) (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section{{ end -}}
 {{ if .OneOf.Present -}}
 {{ if ne .Description "" -}}<br>{{ end -}}

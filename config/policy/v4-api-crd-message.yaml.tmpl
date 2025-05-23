@@ -1,17 +1,16 @@
 apiVersion: "gravitee.io/v1alpha1"
 kind: "ApiV4Definition"
 metadata:
-    name: "{{ .ID }}-proxy-v4-api-crd"
+    name: "{{ .ID }}-message-v4-api-crd"
 spec:
     name: "{{ .Title }} example with V4 API CRD"
-    type: "PROXY"
+    type: "MESSAGE"
     flows:
       - name: "Common Flow"
         enabled: true
         selectors:
-          - type: "HTTP"
-            path: "/"
-            pathOperator: "STARTS_WITH"
+            matchRequired: false
+            mode: "DEFAULT"
         {{ .Properties.phase }}:
           - name: "{{ .Title }}"
             enabled: true

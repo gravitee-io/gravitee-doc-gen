@@ -44,15 +44,13 @@ func readCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) (
 	}
 
 	codeToEmbed := string(bytes)
-	var jsonToValidate string
+	var jsonToValidate = codeToEmbed
 	if rawSpec.Language == bexamples.YAML {
 		if converted, err := yamlToJSON(codeToEmbed); err == nil {
-			jsonToValidate = string(converted)
+			jsonToValidate = converted
 		} else {
-			panic(fmt.Sprintf("cannot yaml to json with example %v: %v", rawSpec, err))
+			panic(fmt.Sprintf("cannot convert yaml to json with example %v: %v", rawSpec, err))
 		}
-	} else {
-		jsonToValidate = codeToEmbed
 	}
 	validationSchema, _, err := examples.CompileSchema(rawSpec, chunk)
 	if err != nil {
@@ -62,14 +60,44 @@ func readCodeExampleAndValidate(chunk config.Chunk, spec examples.ExampleSpec) (
 		return "", err
 	}
 
+	tmpl, _ := rawSpec.TemplateFromRef()
+
+	if rawSpec.Language == bexamples.JSON && tmpl.Language == bexamples.YAML {
+		codeToEmbed, err = jsonToYaml(codeToEmbed)
+		if err != nil {
+			return "", err
+		}
+	} else if rawSpec.Language == bexamples.YAML && tmpl.Language == bexamples.JSON {
+		codeToEmbed, err = yamlToJSON(codeToEmbed)
+		if err != nil {
+			return "", err
+		}
+	}
 	return codeToEmbed, nil
 }
 
-func yamlToJSON(jsonToValidate string) ([]byte, error) {
-	y := util.Unstructured{}
-	err := yaml.Unmarshal([]byte(jsonToValidate), &y)
+func jsonToYaml(jsonBytes string) (string, error) {
+	j := util.Unstructured{}
+	err := json.Unmarshal([]byte(jsonBytes), &j)
 	if err != nil {
-		return []byte{}, err
+		return "", err
 	}
-	return json.Marshal(y)
+	converted, err := yaml.Marshal(j)
+	if err != nil {
+		return "", err
+	}
+	return string(converted), nil
+}
+
+func yamlToJSON(yamlBytes string) (string, error) {
+	y := util.Unstructured{}
+	err := yaml.Unmarshal([]byte(yamlBytes), &y)
+	if err != nil {
+		return "", err
+	}
+	converted, err := json.Marshal(y)
+	if err != nil {
+		return "", err
+	}
+	return string(converted), nil
 }
