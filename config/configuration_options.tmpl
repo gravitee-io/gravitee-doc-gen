@@ -1,7 +1,8 @@
 {{-  range $_,$section := .Sections }}
-#### {{ if .OneOf.Present -}}
+**{{ if .OneOf.Present -}}
 {{ .OneOf.ParentTitle }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
 {{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
+**
 {{ end }}
 | Name <br>`json name`  | Type <br>`constraint`  | Mandatory  |{{ if .DefaultPresent }} Default  |{{ end }}{{ if .ELPresent }} Supports <br>EL  |{{ end }}{{ if .SecretPresent }} Supports <br>Secrets |{{ end }} Description  |
 |:----------------------|:-----------------------|:----------:|{{ if .DefaultPresent }}:---------|{{ end }}{{ if .ELPresent }}:----------------:|{{ end }}{{ if .SecretPresent }}:--------------------:|{{ end }}:-------------|
@@ -15,7 +16,7 @@
 {{ if $section.DefaultPresent }}| {{ if and .Default (not .IsConstant) }}`{{ .Default }}`{{ end }}{{ if .IsConstant }}`{{ default .Default  "\"\"" }}` (constant){{ end }}{{ end -}}
 {{ if $section.ELPresent }}| {{ ternary .EL "✅" " " -}}{{ end -}}
 {{ if $section.SecretPresent }}| {{ ternary .Secret "✅" " " -}}{{ end -}}
-| {{ .Description -}}{{ if or (and (eq .Type "object") (not .OneOf.Present)) (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section{{ end -}}
+| {{ .Description -}}{{ if or (and (eq .Type "object") (not .OneOf.Present)) (and (eq .Type "array") (eq .TypeItem "object" )) }}<br/>See "{{ .Name }}" section.{{ end -}}
 {{ if .OneOf.Present -}}
 {{ if ne .Description "" -}}<br>{{ end -}}
 {{ .Name}} of {{ .OneOf.ParentTitle -}}

@@ -41,8 +41,7 @@ chunks:
         - cockpit: Cloud
         - java: Java version
         - comment: Comment
-  - template: "{{ .RootDir }}/policy/phases_pl.tmpl"
-    exportedAs: Phases
+  - template: "{{ .RootDir }}/policy/phases.tmpl"
     required: true
   - template: "{{ .RootDir }}/configuration_options.tmpl"
     type: options
