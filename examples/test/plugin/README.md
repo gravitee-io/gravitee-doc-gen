@@ -121,8 +121,8 @@ Warning: this some heavy doc
 #### Proxy Options (Object)
 | Name <br>`json name`  | Type <br>`constraint`  | Mandatory  | Description  |
 |:----------------------|:-----------------------|:----------:|:-------------|
-| Use System Proxy<br>`useSystemProxy`| object| ✅| Use System Proxy of Proxy Options<br>Values: `false` `true`|
 | Enabled<br>`enabled`| object| ✅| Enabled of Proxy Options<br>Values: `false` `true`|
+| Use System Proxy<br>`useSystemProxy`| object| ✅| Use System Proxy of Proxy Options<br>Values: `false` `true`|
 
 
 #### Proxy Options: No proxy `enabled = false` `useSystemProxy = false` 
