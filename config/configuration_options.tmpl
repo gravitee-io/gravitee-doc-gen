@@ -1,8 +1,7 @@
 {{-  range $_,$section := .Sections }}
-**{{ if .OneOf.Present -}}
+#### {{ if .OneOf.Present -}}
 {{ .OneOf.ParentTitle }}: {{ .Title }} {{ range $p,$v := .DiscriminatedBy }}`{{ $p }} = {{ quote $v }}` {{ end }}{{ else -}}
 {{ .Title -}}{{ if .Type }} ({{ title .Type }}){{ end -}}
-**
 {{ end }}
 | Name <br>`json name`  | Type <br>`constraint`  | Mandatory  |{{ if .DefaultPresent }} Default  |{{ end }}{{ if .ELPresent }} Supports <br>EL  |{{ end }}{{ if .SecretPresent }} Supports <br>Secrets |{{ end }} Description  |
 |:----------------------|:-----------------------|:----------:|{{ if .DefaultPresent }}:---------|{{ end }}{{ if .ELPresent }}:----------------:|{{ end }}{{ if .SecretPresent }}:--------------------:|{{ end }}:-------------|
