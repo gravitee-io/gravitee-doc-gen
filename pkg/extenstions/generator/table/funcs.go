@@ -15,7 +15,6 @@
 package table
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"slices"
@@ -67,7 +66,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 	tableFileExists := util.FileExists(tableFile)
 
 	if chunk.Required && !tableFileExists {
-		return false, errors.New(fmt.Sprintf("table file not found: %s", tableFile))
+		return false, fmt.Errorf("table file not found: %s", tableFile)
 	}
 
 	if tableFileExists {
@@ -77,7 +76,7 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 		}
 
 		if len(table.Rows) == 0 {
-			return false, errors.New(fmt.Sprintf("no rows configured for table in file: %s", tableFile))
+			return false, fmt.Errorf("no rows configured for table in file: %s", tableFile)
 		}
 	}
 

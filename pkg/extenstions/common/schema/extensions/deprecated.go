@@ -17,42 +17,31 @@ package extensions
 import (
 	"errors"
 
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 const (
-	GioConfig = "gioConfig"
+	Deprecated = "deprecated"
 )
 
-type GioConfigCompiler struct {
+type DeprecatedCompiler struct {
 }
-type GioConfigSchema struct {
-	El     bool `json:"el"`
-	Secret bool `json:"secret"`
-}
+type DeprecatedSchema bool
 
-func (c GioConfigCompiler) Compile(
+func (c DeprecatedCompiler) Compile(
 	_ jsonschema.CompilerContext,
 	schema map[string]interface{}) (jsonschema.ExtSchema, error) {
-	if e, exists := schema[GioConfig]; exists {
-		var config map[string]interface{}
-		if c, ok := e.(map[string]interface{}); !ok {
-			return nil, errors.New(GioConfig + " must be a map")
+	if e, exists := schema[Deprecated]; exists {
+		if b, ok := e.(bool); !ok {
+			return nil, errors.New(Deprecated + " must be a boolean")
 		} else {
-			config = c
+			return DeprecatedSchema(b), nil
 		}
-		u := util.Unstructured(config)
-		gioConfig, err := util.AnyMapToStruct[GioConfigSchema](&u)
-		if err != nil {
-			return nil, errors.New(GioConfig + " cannot be parse json extension struct, check your gioConfig node")
-		}
-		return gioConfig, nil
 	}
-	return GioConfigSchema{}, nil
+	return DeprecatedSchema(false), nil
 }
 
-func (c GioConfigSchema) Validate(_ jsonschema.ValidationContext, _ interface{}) error {
+func (c DeprecatedSchema) Validate(_ jsonschema.ValidationContext, _ interface{}) error {
 	// we don't validate payloads, no implementation required
 	return nil
 }

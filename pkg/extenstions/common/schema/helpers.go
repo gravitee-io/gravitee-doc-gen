@@ -17,8 +17,13 @@ package schema
 import (
 	"slices"
 
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema/extensions"
+
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
+
+const ArrayType = "array"
+const ObjectType = "object"
 
 func IsRequired(name string, parent *jsonschema.Schema) bool {
 	required := parent.Required
@@ -26,7 +31,7 @@ func IsRequired(name string, parent *jsonschema.Schema) bool {
 }
 
 func GetTypeItem(attribute *jsonschema.Schema) string {
-	if GetType(attribute) == "array" {
+	if GetType(attribute) == ArrayType {
 		return GetType(Items(attribute))
 	}
 	return ""
@@ -40,18 +45,18 @@ func GetType(prop *jsonschema.Schema) string {
 	if len(prop.Enum) > 0 {
 		return "enum (" + t + ")"
 	}
-	if t == "array" && IsAttribute(Items(prop)) {
-		return "array (" + GetType(Items(prop)) + ")"
+	if t == ArrayType && IsAttribute(Items(prop)) {
+		return ArrayType + " (" + GetType(Items(prop)) + ")"
 	}
 	return t
 }
 
 func IsArray(schema *jsonschema.Schema) bool {
-	return GetType(schema) == "array"
+	return GetType(schema) == ArrayType
 }
 
 func IsObject(schema *jsonschema.Schema) bool {
-	return GetType(schema) == "object"
+	return GetType(schema) == ObjectType
 }
 
 func IsAttribute(schema *jsonschema.Schema) bool {
@@ -65,7 +70,7 @@ func Items(array *jsonschema.Schema) *jsonschema.Schema {
 		}
 	}
 	if array.Items2020 != nil {
-		return OrRef(array.Items.(*jsonschema.Schema))
+		return OrRef(array.Items2020)
 	}
 	panic("array.Items is nil or an array of types (Draft < 2020), this is not supported.")
 }
@@ -73,20 +78,20 @@ func Items(array *jsonschema.Schema) *jsonschema.Schema {
 func OrRef(schema *jsonschema.Schema) *jsonschema.Schema {
 	if schema.Ref != nil {
 		ref := schema.Ref
-		if defaultIsEmpty(ref) {
+		switch {
+		case defaultIsEmpty(ref):
+
 			ref.Default = schema.Default
-		}
-		if !ref.ReadOnly && schema.ReadOnly {
+		case !ref.ReadOnly && schema.ReadOnly:
 			ref.ReadOnly = true
-		}
-		if !ref.WriteOnly && schema.WriteOnly {
+		case !ref.WriteOnly && schema.WriteOnly:
 			ref.WriteOnly = true
-		}
-		if !ref.Deprecated && schema.Deprecated {
+		case !ref.Deprecated && schema.Deprecated:
 			ref.Deprecated = true
-		}
-		if ref.Description == "" {
+		case ref.Description == "":
 			ref.Description = schema.Description
+		case len(ref.Extensions) == 0 && len(schema.Extensions) > 0:
+			ref.Extensions = schema.Extensions
 		}
 		return ref
 	}
@@ -94,12 +99,29 @@ func OrRef(schema *jsonschema.Schema) *jsonschema.Schema {
 }
 
 func defaultIsEmpty(ref *jsonschema.Schema) bool {
-	switch ref.Default.(type) {
+	switch t := ref.Default.(type) {
 	case nil:
 		return true
 	case string:
-		return ref.Default.(string) == ""
+		return t == ""
 	default:
 		return false
 	}
+}
+
+func IsDeprecated(schema *jsonschema.Schema) bool {
+	if schema.Deprecated {
+		return true
+	}
+	ext := GetExtension[extensions.DeprecatedSchema](schema, extensions.Deprecated)
+	return bool(ext)
+}
+
+func GetExtension[S jsonschema.ExtSchema](att *jsonschema.Schema, name string) S {
+	if extension, exists := att.Extensions[name]; exists {
+		if ext, ok := extension.(S); ok {
+			return ext
+		}
+	}
+	return *new(S)
 }

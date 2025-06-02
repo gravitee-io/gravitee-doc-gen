@@ -82,7 +82,6 @@ The error keys sent by this policy are as follows:
                   "enabled": false,
                   "useSystemProxy": false
                 },
-                "scope": "REQUEST",
                 "ssl": {
                   "hostnameVerifier": true,
                   "keyStore": {
@@ -149,7 +148,6 @@ spec:
               proxy:
                 enabled: false
                 useSystemProxy: false
-              scope: REQUEST
               ssl:
                 hostnameVerifier: true
                 keyStore:

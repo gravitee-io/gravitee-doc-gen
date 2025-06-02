@@ -18,7 +18,7 @@ import "slices"
 
 type Unstructured map[string]interface{}
 
-// Set a slices with unique values
+// Set a slices with unique values.
 type set struct {
 	items []any
 }
@@ -51,7 +51,7 @@ func (s *set) Contains(v any) bool {
 	return slices.Contains(s.items, v)
 }
 
-// ToSlice convert an untyped Set into a typed slice
+// ToSlice convert an untyped Set into a typed slice.
 func ToSlice[T any](s Set) []T {
 	impl, ok := s.(*set)
 	if !ok {
@@ -64,7 +64,7 @@ func ToSlice[T any](s Set) []T {
 	return slice
 }
 
-// As types an untyped value or panics
+// As types an untyped value or panics.
 func As[T any](x any) T {
 	it, ok := x.(T)
 	if !ok {

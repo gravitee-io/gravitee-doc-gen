@@ -102,10 +102,9 @@ func enums(attribute *jsonschema.Schema) []any {
 }
 
 func (o *Options) OnObjectStart(ctx *visitor.VisitContext, _ string, object *jsonschema.Schema) *visitor.Object {
-	objectType := "object"
 	o.Add(Section{
 		Title: object.Title,
-		Type:  objectType,
+		Type:  schema.ObjectType,
 	})
 
 	return nil
@@ -119,7 +118,7 @@ func (o *Options) OnArrayStart(
 	if itemTypeIsObject {
 		o.Add(Section{
 			Title: array.Title,
-			Type:  "array",
+			Type:  schema.ArrayType,
 		})
 	}
 	return nil, nil
@@ -255,18 +254,9 @@ func isConstant(att *jsonschema.Schema) bool {
 }
 
 func isEL(att *jsonschema.Schema) bool {
-	return getGioConfig(att).El
+	return schema.GetExtension[extensions.GioConfigSchema](att, extensions.GioConfig).El
 }
 
 func isSecret(att *jsonschema.Schema) bool {
-	return getGioConfig(att).Secret
-}
-
-func getGioConfig(att *jsonschema.Schema) *extensions.GioConfigSchema {
-	if gioConfig, exists := att.Extensions[extensions.GioConfigExtension]; exists {
-		if ext, ok := gioConfig.(*extensions.GioConfigSchema); ok {
-			return ext
-		}
-	}
-	return &extensions.GioConfigSchema{}
+	return schema.GetExtension[extensions.GioConfigSchema](att, extensions.GioConfig).Secret
 }

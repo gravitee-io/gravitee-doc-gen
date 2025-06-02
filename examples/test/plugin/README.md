@@ -78,23 +78,22 @@ Warning: this some heavy doc
 
 
 #### 
-| Name <br>`json name`  | Type <br>`constraint`  | Mandatory  | Default  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:---------|:----------------:|:--------------------:|:-------------|
-| Request body<br>`body`| string|  | |  |  | |
-| Constraint test bed<br>`constraints`| object|  | |  |  | For the sake of testing<br/>See "Constraint test bed" section|
-| Error condition<br>`errorCondition`| string|  | `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`| ✅|  | The condition which will be verified to end the request (support EL).|
-| Error response body<br>`errorContent`| string|  | |  |  | The body response of the error if the condition is true (support EL)|
-| Error status code<br>`errorStatusCode`| enum (string)|  | `500`|  |  | HTTP Status Code send to the consumer if the condition is true<br>Values: `100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507`|
-| Exit on error<br>`exitOnError`| boolean| ✅| |  |  | Terminate the request if the error condition is true|
-| Fire & forget<br>`fireAndForget`| boolean|  | |  |  | Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.|
-| Request Headers<br>`headers`| array|  | |  |  | <br/>See "Request Headers" section|
-| HTTP Method<br>`method`| enum (string)| ✅| `GET`|  |  | HTTP method to invoke the endpoint.<br>Values: `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE`|
-| Proxy Options<br>`proxy`| object|  | |  |  | <br/>See "Proxy Options" section|
-| Scope<br>`scope`| enum (string)|  | `REQUEST`|  |  | Execute policy on <strong>request</strong> (HEAD) phase, <strong>response</strong> (HEAD) phase, <strong>request_content</strong> (includes payload) phase, <strong>response content</strong> (includes payload) phase.<br>Values: `REQUEST` `RESPONSE` `REQUEST_CONTENT` `RESPONSE_CONTENT`|
-| SSL Options<br>`ssl`| object|  | |  |  | <br/>See "SSL Options" section|
-| Tags<br>`tags`| array (string)<br>`[1, 3], unique`|  | `[defaulted and again]`|  |  | Some tags|
-| URL<br>`url`| string<br>`[1, 150]`| ✅| | ✅| ✅| |
-| Context variables<br>`variables`| array|  | |  |  | <br/>See "Context variables" section|
+| Name <br>`json name`  | Type <br>`constraint`  | Mandatory  | Default  | Description  |
+|:----------------------|:-----------------------|:----------:|:---------|:-------------|
+| Request body<br>`body`| string|  | | |
+| Constraint test bed<br>`constraints`| object|  | | For the sake of testing<br/>See "Constraint test bed" section|
+| Error condition<br>`errorCondition`| string|  | `{#calloutResponse.status >= 400 and #calloutResponse.status <= 599}`| The condition which will be verified to end the request (support EL).|
+| Error response body<br>`errorContent`| string|  | | The body response of the error if the condition is true (support EL)|
+| Error status code<br>`errorStatusCode`| enum (string)|  | `500`| HTTP Status Code send to the consumer if the condition is true<br>Values: `100` `101` `102` `200` `201` `202` `203` `204` `205` `206` `207` `300` `301` `302` `303` `304` `305` `307` `400` `401` `402` `403` `404` `405` `406` `407` `408` `409` `410` `411` `412` `413` `414` `415` `416` `417` `422` `423` `424` `429` `500` `501` `502` `503` `504` `505` `507`|
+| Exit on error<br>`exitOnError`| boolean| ✅| | Terminate the request if the error condition is true|
+| Fire & forget<br>`fireAndForget`| boolean|  | | Make the http call without expecting any response. When activating this mode, context variables and exit on error are useless.|
+| Request Headers<br>`headers`| array|  | | <br/>See "Request Headers" section|
+| HTTP Method<br>`method`| enum (string)| ✅| `GET`| HTTP method to invoke the endpoint.<br>Values: `GET` `POST` `PUT` `DELETE` `PATCH` `HEAD` `CONNECT` `OPTIONS` `TRACE`|
+| Proxy Options<br>`proxy`| object|  | | <br/>See "Proxy Options" section|
+| SSL Options<br>`ssl`| object|  | | <br/>See "SSL Options" section|
+| Tags<br>`tags`| array (string)<br>`[1, 3], unique`|  | `[defaulted and again]`| Some tags|
+| URL<br>`url`| string<br>`[1, 150]`| ✅| | |
+| Context variables<br>`variables`| array|  | | <br/>See "Context variables" section|
 
 
 #### Constraint test bed (Object)
@@ -112,10 +111,10 @@ Warning: this some heavy doc
 
 
 #### Request Headers (Array)
-| Name <br>`json name`  | Type <br>`constraint`  | Mandatory  | Supports <br>EL  | Supports <br>Secrets | Description  |
-|:----------------------|:-----------------------|:----------:|:----------------:|:--------------------:|:-------------|
-| Name<br>`name`| string|  |  |  | |
-| Value<br>`value`| string|  | ✅| ✅| |
+| Name <br>`json name`  | Type <br>`constraint`  | Mandatory  | Description  |
+|:----------------------|:-----------------------|:----------:|:-------------|
+| Name<br>`name`| string|  | |
+| Value<br>`value`| string|  | |
 
 
 #### Proxy Options (Object)
@@ -325,7 +324,6 @@ Warning: this some heavy doc
                   "enabled": false,
                   "useSystemProxy": false
                 },
-                "scope": "REQUEST",
                 "ssl": {
                   "hostnameVerifier": true,
                   "keyStore": {
@@ -392,7 +390,6 @@ spec:
               proxy:
                 enabled: false
                 useSystemProxy: false
-              scope: REQUEST
               ssl:
                 hostnameVerifier: true
                 keyStore:
