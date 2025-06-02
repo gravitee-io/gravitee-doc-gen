@@ -15,6 +15,8 @@
 package visitor
 
 import (
+	"slices"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -66,6 +68,9 @@ func NewSchemaPropertyList(current *jsonschema.Schema) SchemaPropertyList {
 			ordered.Add(name, schema.OrRef(s))
 		}
 	}
+	ordered = slices.DeleteFunc(ordered, func(s SchemaProperty) bool {
+		return schema.IsDeprecated(s.schema)
+	})
 	ordered.Sort()
 	return ordered
 }

@@ -15,22 +15,36 @@
 package schema
 
 import (
+	"errors"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema/extensions"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
 
 func CompileWithExtensions(schemaFile string) (*jsonschema.Schema, error) {
-	compiled, err := CompilerWithExtensions().Compile(schemaFile)
-	if err == nil && compiled.Draft == nil {
-		// panic("Schema version must set to 'Draft 7' as follow: \"$schema\": \"http://json-schema.org/draft-07/schema#\"")
-		panic("Schema version must set: \"$schema\": \"http://json-schema.org/draft-07/schema#\" for instance")
+	compiled, err := CompilerWithExtensions(false).Compile(schemaFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if compiled.Draft == nil {
+		return nil, errors.New("schema version must set:" +
+			"\"$schema\": \"http://json-schema.org/draft-07/schema#\" " +
+			"for instance")
+	}
+
+	if compiled.Draft == jsonschema.Draft7 {
+		return CompilerWithExtensions(true).Compile(schemaFile)
 	}
 	return compiled, err
 }
 
-func CompilerWithExtensions() *jsonschema.Compiler {
+func CompilerWithExtensions(addDeprecated bool) *jsonschema.Compiler {
 	compiler := jsonschema.NewCompiler()
 	compiler.ExtractAnnotations = true
-	compiler.RegisterExtension(extensions.GioConfigExtension, nil, &extensions.GioConfigCompiler{})
+	compiler.RegisterExtension(extensions.GioConfig, nil, &extensions.GioConfigCompiler{})
+	if addDeprecated {
+		compiler.RegisterExtension(extensions.Deprecated, nil, &extensions.DeprecatedCompiler{})
+	}
 	return compiler
 }

@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -30,9 +32,9 @@ func (k NodeKind) String() any {
 	case ValueNode:
 		return "value"
 	case ArrayNode:
-		return "array"
+		return schema.ArrayType
 	case ObjectNode:
-		return "object"
+		return schema.ObjectType
 	case AttributeNode:
 		return "attribute"
 	case Unknown:

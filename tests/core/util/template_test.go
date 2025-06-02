@@ -1,10 +1,11 @@
 package util
 
 import (
+	"testing"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
 var _ = Describe("Template", func() {
