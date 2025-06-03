@@ -15,6 +15,10 @@ TEST_ARGS ?= ""
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCILINT ?= $(LOCALBIN)/golangci-lint
 
+# Image URL to use all building/pushing image targets
+IMG ?= doc-gen
+TAG ?= dev
+
 .PHONY: all
 all: build
 
@@ -62,6 +66,13 @@ install-tools: download ## Installs all required GO tools
 .PHONY: reinstall-tools
 re-install-tools: clean-tools install-tools ## Clean and install tools again
 
+.PHONY: docker-build
+docker-build: ## Build docker image with the manager.
+	docker build -t ${IMG}:${TAG} .
+
+.PHONY: docker-push
+docker-push: ## Push docker image with the manager.
+	docker push ${IMG}:${TAG}
 
 ##@ General
 
