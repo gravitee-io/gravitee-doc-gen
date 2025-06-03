@@ -1,6 +1,23 @@
 # Gravitee Doc Generation
 
-## Run the example project
+## Run with Docker on a plugin project
+
+In this project
+
+```shell
+export DOCGEN_ROOT="$(pwd)/config"
+```
+
+Then change the directory to be in your plugin project.
+
+Then run
+```shell
+docker run -v $DOCGEN_ROOT:/config -v ./:/plugin graviteeio.azurecr.io/doc-gen:latest
+````
+
+You can use the tag `main-latest` to use the latest unreleased version.
+
+## Build and run locally (with the example project)
 
 Requirements:
 * go 1.23
