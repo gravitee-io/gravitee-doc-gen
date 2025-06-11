@@ -135,6 +135,10 @@ workflows:
           tag: dev-<<pipeline.git.revision>>
           context: cicd-orchestrator
           filters:
+            branches:
+              ignore:
+                - /^[0-9]+\.[0-9]+\.x$/
+                - main
             tags:
               ignore: /.*/
   post-merge:
