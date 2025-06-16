@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  gravitee: gravitee-io/gravitee@4.13.0
+  gravitee: gravitee-io/gravitee@5.1.1
   go: circleci/go@3.0.2
   keeper: gravitee-io/keeper@0.7.0
   gh: circleci/github-cli@2.7.0
@@ -11,12 +11,6 @@ parameters:
   go-version:
     type: string
     default: "1.23.1"
-  trigger:
-    type: enum
-    default: none
-    enum:
-      - release
-      - none
 
 executors:
   azure-cli:
@@ -113,9 +107,8 @@ jobs:
       - run:
           name: Create GitHub Release and Upload Asset
           command: |
-            TAG=$(git describe --tags --abbrev=0)
-            gh release create "$TAG" ./bin/doc-gen \
-              --title "$TAG" \
+            gh release create "<< pipeline.git.tag >>" ./bin/doc-gen \
+              --title "<< pipeline.git.tag >>" \
               --notes-file release-notes.txt \
               --clobber
 
@@ -124,6 +117,13 @@ workflows:
     jobs:
       - job-install-go-tools:
           name: Install GO tools
+          filters:
+            branches:
+              ignore:
+                - /^[0-9]+\.[0-9]+\.x$/
+                - main
+            tags:
+              ignore: /.*/
       - job-lint-sources:
           name: Lint sources
           requires:
@@ -152,48 +152,46 @@ workflows:
           registry: graviteeio.azurecr.io
           username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
           password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
-    filters:
-      branches:
-        ignore:
-          - /^[0-9]+\.[0-9]+\.x$/
-          - main
-      tags:
-        ignore: /.*/
+
   post-merge:
-    when:
-      equal:
-        - none
-        - << pipeline.parameters.trigger >>
     jobs:
       - gravitee/common_docker_build:
-          name: Dev image
-          requires:
-            - Lint sources
-            - Lint commits
-            - Lint licenses
-            - Run unit tests
+          name: Main image
           dockerImage: doc-gen
-          dockerTag: dev
+          dockerTag: main
           registry: graviteeio.azurecr.io
           username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
           password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              ignore: /.*/
   tag-release:
     jobs:
       - release:
+          name: Release
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
             branches:
               ignore: /.*/
       - gravitee/common_docker_build:
-          name: Dev image
+          name: Prod image latest
           requires:
-            - Lint sources
-            - Lint commits
-            - Lint licenses
-            - Run unit tests
+            - Release
           dockerImage: doc-gen
           dockerTag: latest
+          registry: graviteeio
+          username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
+          password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
+      - gravitee/common_docker_build:
+          name: Prod image << pipeline.git.tag >>
+          requires:
+            - Release
+          dockerImage: doc-gen
+          dockerTag: << pipeline.git.tag >>
           registry: graviteeio
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
