@@ -142,6 +142,7 @@ workflows:
             - Install GO tools
       - gravitee/common_docker_build:
           name: Dev image
+          context: cicd-orchestrator
           requires:
             - Lint sources
             - Lint commits
@@ -156,6 +157,7 @@ workflows:
   post-merge:
     jobs:
       - gravitee/common_docker_build:
+          context: cicd-orchestrator
           name: Main image
           dockerImage: doc-gen
           dockerTag: main
@@ -171,6 +173,7 @@ workflows:
   tag-release:
     jobs:
       - release:
+          context: cicd-orchestrator
           name: Release
           filters:
             tags:
@@ -178,6 +181,7 @@ workflows:
             branches:
               ignore: /.*/
       - gravitee/common_docker_build:
+          context: cicd-orchestrator
           name: Prod image latest
           requires:
             - Release
@@ -187,6 +191,7 @@ workflows:
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
       - gravitee/common_docker_build:
+          context: cicd-orchestrator
           name: Prod image << pipeline.git.tag >>
           requires:
             - Release
