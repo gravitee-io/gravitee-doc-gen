@@ -150,6 +150,7 @@ workflows:
             - Run unit tests
           dockerImage: doc-gen
           dockerTag: dev-<<pipeline.git.revision>>
+          dockerFilePath: Dockerfile
           registry: graviteeio.azurecr.io
           username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
           password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
@@ -161,6 +162,7 @@ workflows:
           name: Main image
           dockerImage: doc-gen
           dockerTag: main
+          dockerFilePath: Dockerfile
           registry: graviteeio.azurecr.io
           username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
           password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
@@ -187,6 +189,7 @@ workflows:
             - Release
           dockerImage: doc-gen
           dockerTag: latest
+          dockerFilePath: Dockerfile
           registry: graviteeio
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
@@ -197,6 +200,7 @@ workflows:
             - Release
           dockerImage: doc-gen
           dockerTag: << pipeline.git.tag >>
+          dockerFilePath: Dockerfile
           registry: graviteeio
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
