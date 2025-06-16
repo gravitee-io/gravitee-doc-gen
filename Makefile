@@ -14,6 +14,7 @@ TEST_ARGS ?= ""
 ## Tool Binaries
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCILINT ?= $(LOCALBIN)/golangci-lint
+ADDLICENSE ?= $(LOCALBIN)/addlicense
 
 # Image URL to use all building/pushing image targets
 IMG ?= doc-gen
@@ -41,12 +42,33 @@ lint-sources: ## Run golangci-lint and fail on error
 .PHONY: lint-fix
 lint-fix: ## Fix whatever golangci-lint can fix
 	@$(GOLANGCILINT) run ./... --fix
+	@$(MAKE) add-license
 
 .PHONY: lint-commits
 lint-commits:  ## Run commitlint and fail on error
 	@echo "Linting commits ..."
 	@npm i -g @commitlint/config-conventional @commitlint/cli
 	@commitlint -x @commitlint/config-conventional --edit
+
+.PHONY: lint-licenses
+lint-licenses: ## Run addlicense linter and fail on error
+	@echo "Checking license headers ..."
+	@$(ADDLICENSE) -check -f LICENSE_TEMPLATE.txt \
+		-ignore ".circleci/**" \
+		-ignore ".mergify.yml" \
+		-ignore "config/**" \
+		-ignore "examples/**" \
+		-ignore ".idea/**" .
+
+.PHONY: add-license
+add-license: ## Add license headers to files
+	@echo "Adding license headers ..."
+	@$(ADDLICENSE) -f LICENSE_TEMPLATE.txt \
+		-ignore ".circleci/**" \
+		-ignore ".mergify.yml" \
+		-ignore "config/**" \
+		-ignore "examples/**" \
+		-ignore ".idea/**" .
 
 .PHONY: clean-tools
 clean-tools: $(LOCALBIN) ## Cleans (delete) all binary tools
