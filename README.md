@@ -2,20 +2,20 @@
 
 ## Run with Docker on a plugin project
 
-In this project
+Clone the following repository: https://github.com/gravitee-io/gravitee-doc-gen-config somewhere on your local machine.
+
+Then create an env var to point to `src` directory of this repo (ideally add this in your .bashrc/.zshrc file) to ease your pain later.
 
 ```shell
-export DOCGEN_ROOT="$(pwd)/config"
+export DOCGEN_ROOT="/path/to/gravitee-doc-gen-config/src"
 ```
 
 Then change the directory to be in your plugin project.
 
 Then run
 ```shell
-docker run -v $DOCGEN_ROOT:/config -v ./:/plugin graviteeio.azurecr.io/doc-gen:latest
+docker run --rm -v $DOCGEN_ROOT:/config -v ./:/plugin graviteeio.azurecr.io/doc-gen
 ````
-
-You can use the tag `main-latest` to use the latest unreleased version.
 
 ## Build and run locally (with the example project)
 
