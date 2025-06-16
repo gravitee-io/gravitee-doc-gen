@@ -109,8 +109,7 @@ jobs:
           command: |
             gh release create "<< pipeline.git.tag >>" ./bin/doc-gen \
               --title "<< pipeline.git.tag >>" \
-              --notes-file release-notes.txt \
-              --clobber
+              --notes-file release-notes.txt
 
 workflows:
   pull-request:
