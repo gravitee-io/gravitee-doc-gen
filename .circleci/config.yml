@@ -90,7 +90,7 @@ jobs:
 
   release:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/go:<< pipeline.parameters.go-version >>-node
     steps:
       - checkout
       - run:
