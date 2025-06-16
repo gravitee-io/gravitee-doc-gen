@@ -93,30 +93,31 @@ jobs:
             TEST_ARGS="--cover --coverprofile=cover-unit.out --coverpkg=github.com/gravitee-io/gravitee-doc-gen/... --output-dir=/tmp/junit/reports" \
              make -s test
       - go/save-mod-cache
-  job-build-docker-image:
+
+  release:
     docker:
-      - image: cimg/go:<< pipeline.parameters.go-version >>-node
-    parameters:
-      image:
-        type: string
-      tag:
-        type: string
+      - image: cimg/base:stable
     steps:
       - checkout
-      - setup_remote_docker
-      - gravitee/docker-login:
-          registry: graviteeio.azurecr.io
-          username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
-          password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
       - run:
-          name: Build image << parameters.image >>
-          command: IMG=<< parameters.image >> TAG=<< parameters.tag >> make docker-build
+          name: Build the binary using make
+          command: GOOS=linux GOARCH=amd64 make build
       - run:
-          name: Push image << parameters.image >>:<<parameters.tag >>
+          name: Get latest commit message
           command: |
-            IMG=<< parameters.image >> TAG=<< parameters.tag >> make docker-push
-      - gravitee/docker-logout:
-          registry: graviteeio.azurecr.io
+            git log -1 --pretty=%B > release-notes.txt
+      - keeper/env-export:
+          secret-url: keeper://TIlcGPFq4rN5GvgnZb9hng/field/password
+          var-name: GITHUB_TOKEN
+      - gh/setup
+      - run:
+          name: Create GitHub Release and Upload Asset
+          command: |
+            TAG=$(git describe --tags --abbrev=0)
+            gh release create "$TAG" ./bin/doc-gen \
+              --title "$TAG" \
+              --notes-file release-notes.txt \
+              --clobber
 
 workflows:
   pull-request:
@@ -139,38 +140,60 @@ workflows:
           name: Run unit tests
           requires:
             - Install GO tools
-      - job-build-docker-image:
+      - gravitee/common_docker_build:
           name: Dev image
           requires:
             - Lint sources
             - Lint commits
             - Lint licenses
             - Run unit tests
-          image: graviteeio.azurecr.io/doc-gen
-          tag: dev-<<pipeline.git.revision>>
-          context: cicd-orchestrator
-          filters:
-            branches:
-              ignore:
-                - /^[0-9]+\.[0-9]+\.x$/
-                - main
-            tags:
-              ignore: /.*/
+          dockerImage: doc-gen
+          dockerTag: dev-<<pipeline.git.revision>>
+          registry: graviteeio.azurecr.io
+          username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
+          password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
+    filters:
+      branches:
+        ignore:
+          - /^[0-9]+\.[0-9]+\.x$/
+          - main
+      tags:
+        ignore: /.*/
   post-merge:
     when:
       equal:
         - none
         - << pipeline.parameters.trigger >>
     jobs:
-      - job-build-docker-image:
-          name: Prod image
-          image: graviteeio.azurecr.io/doc-gen
-          tag: latest
-          context: cicd-orchestrator
+      - gravitee/common_docker_build:
+          name: Dev image
+          requires:
+            - Lint sources
+            - Lint commits
+            - Lint licenses
+            - Run unit tests
+          dockerImage: doc-gen
+          dockerTag: dev
+          registry: graviteeio.azurecr.io
+          username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
+          password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
+  tag-release:
+    jobs:
+      - release:
           filters:
-            branches:
-              only:
-                - /^[0-9]+\.[0-9]+\.x$/
-                - main
             tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
               ignore: /.*/
+      - gravitee/common_docker_build:
+          name: Dev image
+          requires:
+            - Lint sources
+            - Lint commits
+            - Lint licenses
+            - Run unit tests
+          dockerImage: doc-gen
+          dockerTag: latest
+          registry: graviteeio
+          username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
+          password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
