@@ -192,6 +192,11 @@ workflows:
           registry: graviteeio
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
       - gravitee/common_docker_build:
           context: cicd-orchestrator
           name: Prod image << pipeline.git.tag >>
@@ -203,3 +208,8 @@ workflows:
           registry: graviteeio
           username: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/login
           password: keeper://cooU9UoXIk8Kj0hsP2rkBw/field/password
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
