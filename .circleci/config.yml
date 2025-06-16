@@ -52,7 +52,17 @@ jobs:
           name: Lint sources
           command: make lint-sources
       - go/save-golangci-lint-cache
-
+  job-lint-licenses:
+    docker:
+      - image: cimg/go:<< pipeline.parameters.go-version >>-node
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gotools-{{ checksum "go.sum" }}
+      - run:
+          name: Lint licenses
+          command: make lint-licenses
   job-lint-commits:
     docker:
       - image: cimg/go:<< pipeline.parameters.go-version >>-node
@@ -121,6 +131,10 @@ workflows:
           name: Lint commits
           requires:
             - Install GO tools
+      - job-lint-licenses:
+          name: Lint licenses
+          requires:
+            - Install GO tools
       - job-unit-test:
           name: Run unit tests
           requires:
@@ -130,6 +144,7 @@ workflows:
           requires:
             - Lint sources
             - Lint commits
+            - Lint licenses
             - Run unit tests
           image: graviteeio.azurecr.io/doc-gen
           tag: dev-<<pipeline.git.revision>>
