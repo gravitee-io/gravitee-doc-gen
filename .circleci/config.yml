@@ -139,20 +139,6 @@ workflows:
           name: Run unit tests
           requires:
             - Install GO tools
-      - gravitee/common_docker_build:
-          name: Dev image
-          context: cicd-orchestrator
-          requires:
-            - Lint sources
-            - Lint commits
-            - Lint licenses
-            - Run unit tests
-          dockerImage: doc-gen
-          dockerTag: dev-<<pipeline.git.revision>>
-          dockerFilePath: Dockerfile
-          registry: graviteeio.azurecr.io
-          username: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/login
-          password: keeper://Q721P2LSOPJ9qiXLuf5AHQ/field/password
 
   post-merge:
     jobs:

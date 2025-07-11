@@ -26,6 +26,7 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/scaffold"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/code"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/genexamples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/options"
@@ -57,6 +58,7 @@ func main() {
 	bootstrap.Register(filehandlers.YamlFileHandler, filehandlers.YamlExt, filehandlers.YmlExt)
 	bootstrap.Register(filehandlers.JSONFileHandler, filehandlers.JSONExt)
 
+	bootstrap.RegisterScaffolder("plugin", scaffold.PluginScaffolder)
 	bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
 	bootstrap.RegisterPostProcessor("default-examples", examples.GenExamplePostProcessor)
 

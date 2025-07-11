@@ -1,0 +1,13 @@
+{
+  "$id": "urn:jsonschema:io:gravitee:policy:callout:configuration:CalloutHttpPolicyConfiguration",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "fake": {
+      "title": "Fake",
+      "description": "Fake description",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
