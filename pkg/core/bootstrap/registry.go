@@ -27,6 +27,7 @@ type registry struct {
 	handlers       map[string]FileHandler
 	exports        map[string]string
 	postProcessors map[string]PostProcessor
+	scaffolders    map[string]Scaffolder
 }
 
 var reg = registry{
@@ -34,11 +35,14 @@ var reg = registry{
 	handlers:       make(map[string]FileHandler),
 	exports:        make(map[string]string),
 	postProcessors: make(map[string]PostProcessor),
+	scaffolders:    make(map[string]Scaffolder),
 }
 
 type FileHandler func(file string) (any, error)
 
 type PostProcessor func(any) (any, error)
+
+type Scaffolder func() error
 
 func Register(handler FileHandler, ext ...string) {
 	if len(ext) == 0 {
@@ -51,6 +55,18 @@ func Register(handler FileHandler, ext ...string) {
 
 func RegisterPostProcessor(key string, processor PostProcessor) {
 	reg.postProcessors[key] = processor
+}
+
+func RegisterScaffolder(key string, scaffolder Scaffolder) {
+	reg.scaffolders[key] = scaffolder
+}
+
+func Scaffold(key string) error {
+	scaffold, ok := reg.scaffolders[key]
+	if !ok {
+		return fmt.Errorf("scaffolder '%s' not found", key)
+	}
+	return scaffold()
 }
 
 func GetData(name string) any {

@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/output"
 	"github.com/spf13/cobra"
 )
@@ -30,6 +31,12 @@ func MainCommand() *cobra.Command {
 		Run:   run,
 	}
 
+	main.Flags().StringVarP(
+		&optionsData.Init,
+		"scaffold",
+		"s",
+		"",
+		"Use a scaffolder to initialize a project with typical files. e.g 'plugin'")
 	main.Flags().BoolVarP(&optionsData.Validate, "validate", "v", false, "Run validation only.")
 	main.Flags().BoolVarP(&optionsData.DryRun, "dry-run", "d", true, "Run generation, write result to console")
 	main.Flags().BoolVarP(&optionsData.Write, "write", "w", false, "Run generation, write result to console")
@@ -52,6 +59,7 @@ func MainCommand() *cobra.Command {
 }
 
 var optionsData struct {
+	Init       string
 	Validate   bool
 	DryRun     bool
 	Write      bool
@@ -68,6 +76,16 @@ func run(_ *cobra.Command, _ []string) {
 		if rootDir == "" {
 			fail(fmt.Errorf("env variable %s must be set when %s is not", rootEnvVar, "--config-dir or -c"))
 		}
+	}
+
+	if optionsData.Init != "" {
+		if err := bootstrap.Load(rootDir); err != nil {
+			fail(fmt.Errorf("error initializing project: %w", err))
+		}
+		if err := bootstrap.Scaffold(optionsData.Init); err != nil {
+			fail(err)
+		}
+		return
 	}
 
 	generated, cfg, genError := core.Load(rootDir, optionsData.ConfigFile)

@@ -14,8 +14,15 @@ Then change the directory to be in your plugin project.
 
 Then run
 ```shell
-docker run --rm -v $DOCGEN_ROOT:/config -v ./:/plugin graviteeio.azurecr.io/doc-gen
+docker run --rm -v $DOCGEN_ROOT:/config -v ./:/plugin graviteeio/doc-gen
 ````
+
+## Enable doc-gen on a project 
+
+```shell
+docker run --rm -v $DOCGEN_ROOT:/config -v ./:/plugin --entrypoint "/doc-gen --scaffold plugin --config-dir /config" graviteeio/doc-gen
+````
+
 
 ## Build and run locally (with the example project)
 
