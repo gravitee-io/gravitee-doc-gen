@@ -29,6 +29,7 @@ import (
 const flowPhaseProxyKey = "http_proxy"
 const flowPhaseMessageKey = "http_message"
 const flowPhaseNativeKafkaKey = "native_kafka"
+const flowPhaseHttpMcpProxy = "http_mcp_proxy"
 const legacyProxyPhaseTypeKey = "proxy"
 const legacyMessagePhaseTypeKey = "message"
 
@@ -46,10 +47,11 @@ const (
 )
 
 const (
-	UnknownApiType     ApiType = iota
-	ProxyApiType       ApiType = iota
-	MessageApiType     ApiType = iota
-	NativeKafkaApiType ApiType = iota
+	UnknownApiType      ApiType = iota
+	ProxyApiType        ApiType = iota
+	MessageApiType      ApiType = iota
+	NativeKafkaApiType  ApiType = iota
+	HttpMcpProxyApiType ApiType = iota
 )
 
 func NewFlowPhase(str string) FlowPhase {
@@ -104,6 +106,8 @@ func (t ApiType) String() string {
 		return "message"
 	case NativeKafkaApiType:
 		return "native kafka"
+	case HttpMcpProxyApiType:
+		return "mcp proxy"
 	}
 unknown:
 	return "unknown"
@@ -152,6 +156,7 @@ func extractPhases(properties *props.Properties) []FlowPhase {
 		flowPhaseProxyKey,
 		flowPhaseMessageKey,
 		flowPhaseNativeKafkaKey,
+		flowPhaseHttpMcpProxy,
 		legacyMessagePhaseTypeKey,
 		legacyProxyPhaseTypeKey} {
 		if proxy, ok := properties.Get(key); ok {
@@ -178,6 +183,10 @@ func extractApiTypes(properties *props.Properties) []ApiType {
 
 	if _, ok := properties.Get(flowPhaseNativeKafkaKey); ok {
 		types = append(types, NativeKafkaApiType)
+	}
+
+	if _, ok := properties.Get(flowPhaseHttpMcpProxy); ok {
+		types = append(types, HttpMcpProxyApiType)
 	}
 
 	return types
