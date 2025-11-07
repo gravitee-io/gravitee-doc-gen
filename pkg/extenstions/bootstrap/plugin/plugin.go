@@ -195,7 +195,7 @@ func extractApiTypes(properties *props.Properties) []ApiType {
 	}
 
 	if _, ok := properties.Get(flowPhaseHttpLlmProxy); ok {
-		types = append(types, HttpMcpProxyApiType)
+		types = append(types, HttpLlmProxyApiType)
 	}
 
 	return types
