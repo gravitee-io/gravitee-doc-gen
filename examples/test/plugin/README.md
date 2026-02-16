@@ -37,6 +37,7 @@ The phases checked below are supported by the `test` policy:
 * `MESSAGE`
 * `MCP PROXY`
 * `LLM PROXY`
+* `A2A PROXY`
 
 ### Can be used in flow phases:
 
