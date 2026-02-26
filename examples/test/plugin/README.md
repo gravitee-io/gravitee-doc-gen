@@ -35,6 +35,7 @@ The phases checked below are supported by the `test` policy:
 
 * `PROXY`
 * `MESSAGE`
+* `NATIVE KAFKA`
 * `MCP PROXY`
 * `LLM PROXY`
 * `A2A PROXY`
@@ -45,6 +46,7 @@ The phases checked below are supported by the `test` policy:
 * Response
 * Publish
 * Subscribe
+* Entrypoint connect
 
 ## Compatibility matrix
 Strikethrough line are deprecated versions

@@ -39,13 +39,13 @@ type FlowPhase int
 type ApiType int
 
 const (
-	UnknownPhase   FlowPhase = iota
-	RequestPhase   FlowPhase = iota
-	ResponsePhase  FlowPhase = iota
-	InteractPhase  FlowPhase = iota
-	ConnectPhase   FlowPhase = iota
-	PublishPhase   FlowPhase = iota
-	SubscribePhase FlowPhase = iota
+	UnknownPhase           FlowPhase = iota
+	RequestPhase           FlowPhase = iota
+	ResponsePhase          FlowPhase = iota
+	InteractPhase          FlowPhase = iota
+	EntrypointConnectPhase FlowPhase = iota
+	PublishPhase           FlowPhase = iota
+	SubscribePhase         FlowPhase = iota
 )
 
 const (
@@ -73,8 +73,8 @@ func NewFlowPhase(str string) FlowPhase {
 		return PublishPhase
 	case "interact":
 		return InteractPhase
-	case "connect":
-		return ConnectPhase
+	case "entrypoint_connect":
+		return EntrypointConnectPhase
 	}
 	return UnknownPhase
 }
@@ -93,8 +93,8 @@ func (p FlowPhase) String() string {
 		return "publish"
 	case InteractPhase:
 		return "interact"
-	case ConnectPhase:
-		return "connect"
+	case EntrypointConnectPhase:
+		return "entrypoint connect"
 	}
 unknown:
 	return "unknown"
