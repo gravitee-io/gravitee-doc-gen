@@ -15,7 +15,11 @@
 package bootstrap
 
 import (
+	"os"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	bplugin "github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -25,6 +29,34 @@ var _ = Describe("cloud object context methods", func() {
 		It("trigger no error", func() {
 			Expect(bootstrap.Load("empty")).To(Succeed())
 			Expect(bootstrap.GetExported()).To(HaveKeyWithValue("RootDir", "empty"))
+		})
+	})
+
+	When("plugin.properties is missing but .docgen/plugin.properties fallback exists", func() {
+		var origDir string
+
+		BeforeEach(func() {
+			var err error
+			origDir, err = os.Getwd()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(os.Chdir("with-docgen-plugin")).To(Succeed())
+
+			bootstrap.Register(bplugin.PropertiesFileHandler, bplugin.PropertiesExt)
+			bootstrap.Register(bplugin.YamlFileHandler, bplugin.YamlExt, bplugin.YmlExt)
+			bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
+		})
+
+		AfterEach(func() {
+			Expect(os.Chdir(origDir)).To(Succeed())
+		})
+
+		It("falls back to .docgen/plugin.properties and loads plugin metadata", func() {
+			Expect(bootstrap.Load(".")).To(Succeed())
+			p, ok := bootstrap.GetData("plugin").(plugin.Plugin)
+			Expect(ok).To(BeTrue())
+			Expect(p.ID).To(Equal("test-plugin"))
+			Expect(p.Title).To(Equal("Test Plugin"))
+			Expect(p.Type).To(Equal("policy"))
 		})
 	})
 })
