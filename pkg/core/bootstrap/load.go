@@ -26,8 +26,9 @@ const RootDirDataKey = "rootDir"
 const ConfigResolver = "configResolver"
 
 type data struct {
-	Filename   string `yaml:"file"`
-	ExportedAs string `yaml:"exportedAs"`
+	Filename     string `yaml:"file"`
+	FallbackFile string `yaml:"fallbackFile"`
+	ExportedAs   string `yaml:"exportedAs"`
 }
 
 type fileContent struct {
@@ -62,7 +63,11 @@ func Load(rootDir string) error {
 	reg.data[ConfigResolver] = bootstrap.ChuckConfigResolver
 
 	for _, data := range bootstrap.Data {
-		_, err := load(data.Filename, data.ExportedAs)
+		file := data.Filename
+		if _, err := os.Stat(file); err != nil && data.FallbackFile != "" {
+			file = data.FallbackFile
+		}
+		_, err := load(file, data.ExportedAs)
 		if err != nil {
 			return err
 		}
