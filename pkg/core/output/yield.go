@@ -51,6 +51,10 @@ func Yield(output config.Output, generated []chunks.Generated, write bool) error
 	// make bootstrap data available
 	maps.Copy(data, bootstrap.GetExported())
 
+	if output.Vars != nil {
+		data["Vars"] = output.Vars
+	}
+
 	// render template
 	if rendered, err := util.RenderTemplateFromFile(output.Template, data); err == nil {
 		// add to buffer

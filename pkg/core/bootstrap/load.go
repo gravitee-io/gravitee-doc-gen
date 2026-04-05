@@ -29,6 +29,7 @@ type data struct {
 	Filename     string `yaml:"file"`
 	FallbackFile string `yaml:"fallbackFile"`
 	ExportedAs   string `yaml:"exportedAs"`
+	Optional     bool   `yaml:"optional"`
 }
 
 type fileContent struct {
@@ -64,8 +65,15 @@ func Load(rootDir string) error {
 
 	for _, data := range bootstrap.Data {
 		file := data.Filename
-		if _, err := os.Stat(file); err != nil && data.FallbackFile != "" {
-			file = data.FallbackFile
+		if _, err := os.Stat(file); err != nil {
+			if data.FallbackFile != "" {
+				file = data.FallbackFile
+				if _, err := os.Stat(file); err != nil && data.Optional {
+					continue
+				}
+			} else if data.Optional {
+				continue
+			}
 		}
 		_, err := load(file, data.ExportedAs)
 		if err != nil {

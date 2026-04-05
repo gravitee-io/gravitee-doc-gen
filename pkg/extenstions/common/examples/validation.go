@@ -33,15 +33,20 @@ func TypeValidator(chunk config.Chunk, provider ExampleSpecProvider) (bool, erro
 
 	examplesFile := chunks.GetString(chunk, "examples")
 	examplesFileExists := util.FileExists(examplesFile)
-
-	if chunk.Required && !examplesFileExists {
-		return examplesFileExists, errors.New(fmt.Sprintf("example file not found: %s", examplesFile))
+	if !examplesFileExists {
+		if chunk.Required {
+			return false, errors.New(fmt.Sprintf("example file not found: %s", examplesFile))
+		}
+		return false, nil
 	}
 
 	schemaFile := chunks.GetString(chunk, "schema")
 	schemaFileExists := util.FileExists(schemaFile)
-	if chunk.Required && !schemaFileExists {
-		return schemaFileExists, errors.New(fmt.Sprintf("schema file not found: %s", schemaFile))
+	if !schemaFileExists {
+		if chunk.Required {
+			return false, errors.New(fmt.Sprintf("schema file not found: %s", schemaFile))
+		}
+		return false, nil
 	}
 
 	err = LoadConfig(chunk, provider)
