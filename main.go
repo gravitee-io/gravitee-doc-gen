@@ -25,6 +25,7 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/generator"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/modules"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/scaffold"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/generator/code"
@@ -60,6 +61,7 @@ func main() {
 
 	bootstrap.RegisterScaffolder("plugin", scaffold.PluginScaffolder)
 	bootstrap.RegisterPostProcessor("plugin", plugin.PostProcessor)
+	bootstrap.RegisterPostProcessor("modules", modules.PostProcessor)
 	bootstrap.RegisterPostProcessor("default-examples", examples.GenExamplePostProcessor)
 
 	config.RegisterConfigResolver("plugin", func(string, string) (string, error) {

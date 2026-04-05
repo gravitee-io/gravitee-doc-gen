@@ -28,9 +28,10 @@ type Config struct {
 }
 
 type Output struct {
-	Template        string `yaml:"template"`
-	Target          string `yaml:"target"`
-	ProcessExisting bool   `yaml:"processExisting"`
+	Template        string            `yaml:"template"`
+	Target          string            `yaml:"target"`
+	ProcessExisting bool              `yaml:"processExisting"`
+	Vars            map[string]string `yaml:"vars"`
 }
 
 type Chunk struct {

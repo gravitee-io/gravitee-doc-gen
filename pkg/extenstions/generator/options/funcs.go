@@ -37,8 +37,11 @@ func TypeValidator(chunk config.Chunk) (bool, error) {
 
 	schemaFile := chunks.GetString(chunk, "schema")
 	schemaFileExists := util.FileExists(schemaFile)
-	if chunk.Required && !schemaFileExists {
-		return false, errors.New("schema file not found")
+	if !schemaFileExists {
+		if chunk.Required {
+			return false, errors.New("schema file not found")
+		}
+		return false, nil
 	}
 
 	compiler := jsonschema.NewCompiler()
