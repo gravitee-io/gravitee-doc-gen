@@ -15,6 +15,8 @@
 package visitor
 
 import (
+	"sort"
+
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/common/schema"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -181,6 +183,10 @@ func newOneOfDescriptor(parent *jsonschema.Schema) OneOfDescriptor {
 			result = append(result, spec)
 		}
 	}
+	// found is a map, so iteration order is random: sort to keep generated docs stable
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Property < result[j].Property
+	})
 	oneOf := OneOfDescriptor{}
 	if len(result) > 0 {
 		oneOf.ParentTitle = parent.Title
