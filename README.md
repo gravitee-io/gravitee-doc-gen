@@ -84,6 +84,40 @@ Outputs are define with :
 - Target file
 - If the target file can keep a part of its existing content  
 
+## Plugin metadata
+
+The plugin is read from `src/main/resources/plugin.properties`, or `.docgen/plugin.properties` when the project has
+none. Besides `id`, `type` and `name`, templates get:
+
+- the API types and flow phases, from the `http_proxy`, `http_message`, `native_kafka`, `mcp_proxy`, `llm_proxy` and
+  `a2a_proxy` keys (`.Plugin.ApiTypes`, `.Plugin.FlowPhases`);
+- the phases of a Guardian a guardrail policy runs in, from the `guardian` key (`.Plugin.GuardianPhases`, in the
+  declared order). A Guardian is not an API type: it runs on the request or the response of the APIs that enable it;
+- the repository the plugin is built from, from the `repository` key, `gravitee-<type>-<id>` by default
+  (`.Plugin.Repository`).
+
+### Repositories building several plugins
+
+`.docgen/modules.yaml` declares the modules of the repository (`id`, `path`, `name`, `exportedAs`). Each module that
+has its own `src/main/resources/plugin.properties` gets its plugin, read the same way (`.Plugin` of the module in
+`.Modules`); a module without one, a shared library for instance, gets none.
+
+An example of `examples.yaml` configures the plugin of the repository by default. Set `module` to the id of a module
+to configure its plugin instead, and `overrideSchema` to the schema of that module to validate the example against
+it:
+
+```yaml
+rawExamples:
+  - title: Block a credential in the prompt
+    templateRef: v4-api-llm-proxy
+    module: rule
+    overrideSchema: gravitee-policy-guardrail-rule/target/classes/schemas/schema-form.json
+    language: json
+    properties:
+      phase: request
+    file: .docgen/examples/block-credentials-in-prompt.json
+```
+
 ## Extension (aka data type)
 
 - `table`

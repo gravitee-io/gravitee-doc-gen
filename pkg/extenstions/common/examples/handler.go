@@ -15,7 +15,6 @@
 package examples
 
 import (
-	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
@@ -49,9 +48,12 @@ func ProcessAllExamples(chunk config.Chunk, provider ExampleSpecProvider, yield 
 			return chunks.Processed{}, err
 		}
 
-		pl := bootstrap.GetData("plugin")
+		pl, err := pluginOf(spec)
+		if err != nil {
+			return chunks.Processed{}, err
+		}
 		codeSnippet, err := util.RenderTemplate(template, Code{
-			Plugin:     pl.(plugin.Plugin),
+			Plugin:     pl,
 			Properties: spec.GetProperties(),
 			Node:       codeToEmbed,
 		})
@@ -69,4 +71,9 @@ func ProcessAllExamples(chunk config.Chunk, provider ExampleSpecProvider, yield 
 	return chunks.Processed{Data: &Examples{
 		Snippets: snippets,
 	}}, nil
+}
+
+// pluginOf returns the plugin an example configures: the plugin of its module, or the plugin of the repository.
+func pluginOf(spec ExampleSpec) (plugin.Plugin, error) {
+	return BaseExampleSpec{Module: spec.GetModule()}.plugin()
 }
