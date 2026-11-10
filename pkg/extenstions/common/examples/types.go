@@ -20,6 +20,7 @@ import (
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/modules"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
 	"os"
 )
@@ -49,12 +50,17 @@ type ExampleSpec interface {
 	GetOverrideSchema() string
 	GetDisplay() examples.Display
 	GetLanguage() examples.Language
+	// GetModule returns the id of the module the example configures, empty for the plugin of the repository.
+	GetModule() string
 }
 
 type BaseExampleSpec struct {
 	TemplateRef    string            `yaml:"templateRef"`
 	Properties     util.Unstructured `yaml:"properties"`
 	OverrideSchema string            `yaml:"overrideSchema"`
+	// Module is the id of the module whose plugin the example configures, in a repository building several plugins.
+	// Its schema is set with overrideSchema.
+	Module string `yaml:"module"`
 }
 
 func (s BaseExampleSpec) Validate() error {
@@ -71,7 +77,27 @@ func (s BaseExampleSpec) Validate() error {
 			return errors.New(fmt.Sprintf("overrideSchema cannot be loaded for spec %v: %s", s, err))
 		}
 	}
+	if s.Module != "" {
+		if _, err := s.plugin(); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// plugin returns the plugin the example configures: the one of its module, or the plugin of the repository.
+func (s BaseExampleSpec) plugin() (plugin.Plugin, error) {
+	if s.Module == "" {
+		return bootstrap.GetData("plugin").(plugin.Plugin), nil
+	}
+	m, ok := modules.Find(s.Module)
+	if !ok {
+		return plugin.Plugin{}, fmt.Errorf("module '%s' of spec %v is not declared in .docgen/modules.yaml", s.Module, s)
+	}
+	if m.Plugin == nil {
+		return plugin.Plugin{}, fmt.Errorf("module '%s' of spec %v builds no plugin: %s/src/main/resources/plugin.properties is missing", s.Module, s, m.Path)
+	}
+	return *m.Plugin, nil
 }
 
 func (s BaseExampleSpec) templateFromRef() (examples.GenTemplate, bool) {

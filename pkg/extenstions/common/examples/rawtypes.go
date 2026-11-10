@@ -37,6 +37,10 @@ func (s RawExampleSpec) TemplateFromRef() (examples.GenTemplate, bool) {
 	return s.BaseExampleSpec.templateFromRef()
 }
 
+func (s RawExampleSpec) GetModule() string {
+	return s.BaseExampleSpec.Module
+}
+
 func (s RawExampleSpec) GetOverrideSchema() string {
 	return s.BaseExampleSpec.OverrideSchema
 }

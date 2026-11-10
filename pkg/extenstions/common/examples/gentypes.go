@@ -37,6 +37,10 @@ func (s GenExampleSpec) GetProperties() util.Unstructured {
 	return s.Properties
 }
 
+func (s GenExampleSpec) GetModule() string {
+	return s.BaseExampleSpec.Module
+}
+
 func (s GenExampleSpec) GetOverrideSchema() string {
 	return s.BaseExampleSpec.OverrideSchema
 }

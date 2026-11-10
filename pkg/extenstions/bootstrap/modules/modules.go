@@ -16,15 +16,29 @@ package modules
 
 import (
 	"fmt"
+	"path/filepath"
 
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
+	"github.com/rickar/props"
 )
+
+// DataKey is the bootstrap data the modules are loaded as, from .docgen/modules.yaml.
+const DataKey = "modules"
+
+// pluginFile is where a module declares the plugin it builds, relative to the module path.
+const pluginFile = "src/main/resources/plugin.properties"
 
 type Module struct {
 	ID         string `json:"id"`
 	Path       string `json:"path"`
 	Name       string `json:"name"`
 	ExportedAs string `json:"exportedAs"`
+	// Plugin is the plugin the module builds, read from its own plugin.properties; nil when the module has none,
+	// a library bundled in the plugins for instance.
+	Plugin *plugin.Plugin `json:"-"`
 }
 
 type modulesFile struct {
@@ -53,7 +67,54 @@ func PostProcessor(data any) (any, error) {
 		if m.ExportedAs == "" {
 			return nil, fmt.Errorf("module at index %d: exportedAs is required", i)
 		}
+		file := filepath.Join(m.Path, pluginFile)
+		if !util.FileExists(file) {
+			continue
+		}
+		p, err := loadPlugin(file)
+		if err != nil {
+			return nil, fmt.Errorf("module at index %d: %w", i, err)
+		}
+		mf.Modules[i].Plugin = &p
 	}
 
 	return mf.Modules, nil
+}
+
+func loadPlugin(file string) (plugin.Plugin, error) {
+	read, err := filehandlers.PropertiesFileHandler(file)
+	if err != nil {
+		return plugin.Plugin{}, fmt.Errorf("cannot read %s: %w", file, err)
+	}
+	properties, ok := read.(*props.Properties)
+	if !ok {
+		return plugin.Plugin{}, fmt.Errorf("cannot read %s as properties", file)
+	}
+	processed, err := plugin.PostProcessor(properties)
+	if err != nil {
+		return plugin.Plugin{}, fmt.Errorf("invalid %s: %w", file, err)
+	}
+	loaded, ok := processed.(plugin.Plugin)
+	if !ok {
+		return plugin.Plugin{}, fmt.Errorf("cannot read %s as a plugin", file)
+	}
+	return loaded, nil
+}
+
+// Find returns the declared module of the given id, false when there is none or when no module is declared.
+func Find(id string) (Module, bool) {
+	declared, ok := bootstrap.FindData(DataKey)
+	if !ok {
+		return Module{}, false
+	}
+	all, ok := declared.([]Module)
+	if !ok {
+		return Module{}, false
+	}
+	for _, m := range all {
+		if m.ID == id {
+			return m, true
+		}
+	}
+	return Module{}, false
 }

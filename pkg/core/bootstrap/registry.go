@@ -76,6 +76,12 @@ func GetData(name string) any {
 	panic(fmt.Sprintf("'%s' bootstrap data does not exist", name))
 }
 
+// FindData returns the bootstrap data of the given name, false when it was not loaded, an optional file for instance.
+func FindData(name string) (any, bool) {
+	data, ok := reg.data[name]
+	return data, ok
+}
+
 func OverrideData(name string, d any) {
 	if _, ok := reg.data[name]; !ok {
 		panic(fmt.Sprintf("'%s' bootstrap data does not exist, cannot override", name))
