@@ -78,24 +78,26 @@ func (s BaseExampleSpec) Validate() error {
 		}
 	}
 	if s.Module != "" {
-		if _, err := s.plugin(); err != nil {
-			return err
+		if _, err := PluginFor(s.Module); err != nil {
+			return fmt.Errorf("invalid spec %v: %w", s, err)
 		}
 	}
 	return nil
 }
 
-// plugin returns the plugin the example configures: the one of its module, or the plugin of the repository.
-func (s BaseExampleSpec) plugin() (plugin.Plugin, error) {
-	if s.Module == "" {
+// PluginFor returns the plugin an example configures: the plugin of the given module, or the plugin of the
+// repository when module is empty.
+func PluginFor(module string) (plugin.Plugin, error) {
+	if module == "" {
 		return bootstrap.GetData("plugin").(plugin.Plugin), nil
 	}
-	m, ok := modules.Find(s.Module)
+	m, ok := modules.Find(module)
 	if !ok {
-		return plugin.Plugin{}, fmt.Errorf("module '%s' of spec %v is not declared in .docgen/modules.yaml", s.Module, s)
+		return plugin.Plugin{}, fmt.Errorf("module '%s' is not declared in .docgen/modules.yaml", module)
 	}
 	if m.Plugin == nil {
-		return plugin.Plugin{}, fmt.Errorf("module '%s' of spec %v builds no plugin: %s/src/main/resources/plugin.properties is missing", s.Module, s, m.Path)
+		return plugin.Plugin{}, fmt.Errorf(
+			"module '%s' builds no plugin: %s/src/main/resources/plugin.properties is missing", module, m.Path)
 	}
 	return *m.Plugin, nil
 }
