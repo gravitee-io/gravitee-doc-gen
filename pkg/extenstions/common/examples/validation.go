@@ -83,6 +83,9 @@ func ValidateSpecs(specs []ExampleSpec, chunk config.Chunk) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+		if _, err := PluginFor(ModuleOf(spec, chunk)); err != nil {
+			return false, fmt.Errorf("invalid spec %v: %w", spec, err)
+		}
 
 		schemaFile, _, err := CompileSchema(spec, chunk)
 		if err != nil {

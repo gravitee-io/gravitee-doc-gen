@@ -118,6 +118,19 @@ rawExamples:
     file: .docgen/examples/block-credentials-in-prompt.json
 ```
 
+A `gen-examples` or `raw-examples` chunk documenting a module sets `module` in its data: its examples configure the
+plugin of that module unless they set their own `module`, and validate against its `schema`:
+
+```yaml
+- template: "{{ .RootDir }}/examples.tmpl"
+  exportedAs: RuleRawExamples
+  type: raw-examples
+  data:
+    module: rule
+    examples: gravitee-policy-guardrail-rule/.docgen/examples.yaml
+    schema: gravitee-policy-guardrail-rule/target/classes/schemas/schema-form.json
+```
+
 ## Extension (aka data type)
 
 - `table`

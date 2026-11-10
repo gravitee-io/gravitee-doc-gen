@@ -47,7 +47,7 @@ func ProcessAllExamples(chunk config.Chunk, provider ExampleSpecProvider, yield 
 			return chunks.Processed{}, err
 		}
 
-		pl, err := PluginFor(spec.GetModule())
+		pl, err := PluginFor(ModuleOf(spec, chunk))
 		if err != nil {
 			return chunks.Processed{}, err
 		}

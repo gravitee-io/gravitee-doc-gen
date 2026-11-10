@@ -18,6 +18,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/chunks"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/examples"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/modules"
@@ -58,8 +60,8 @@ type BaseExampleSpec struct {
 	TemplateRef    string            `yaml:"templateRef"`
 	Properties     util.Unstructured `yaml:"properties"`
 	OverrideSchema string            `yaml:"overrideSchema"`
-	// Module is the id of the module whose plugin the example configures, in a repository building several plugins.
-	// Its schema is set with overrideSchema.
+	// Module is the id of the module whose plugin the example configures, in a repository building several plugins,
+	// over the module of the chunk listing the example. Its schema is set with overrideSchema.
 	Module string `yaml:"module"`
 }
 
@@ -77,12 +79,17 @@ func (s BaseExampleSpec) Validate() error {
 			return errors.New(fmt.Sprintf("overrideSchema cannot be loaded for spec %v: %s", s, err))
 		}
 	}
-	if s.Module != "" {
-		if _, err := PluginFor(s.Module); err != nil {
-			return fmt.Errorf("invalid spec %v: %w", s, err)
-		}
-	}
 	return nil
+}
+
+// ModuleOf returns the id of the module an example configures: the module the example sets, else the module of the
+// chunk listing it (its module data, set when the examples document a module), else empty for the plugin of the
+// repository.
+func ModuleOf(spec ExampleSpec, chunk config.Chunk) string {
+	if m := spec.GetModule(); m != "" {
+		return m
+	}
+	return chunks.GetDataOrDefault(chunk, "module", "")
 }
 
 // PluginFor returns the plugin an example configures: the plugin of the given module, or the plugin of the

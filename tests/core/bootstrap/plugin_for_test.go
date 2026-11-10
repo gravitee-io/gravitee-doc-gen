@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/bootstrap"
+	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/config"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/filehandlers"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/modules"
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/extenstions/bootstrap/plugin"
@@ -67,5 +68,24 @@ var _ = Describe("plugin an example configures", func() {
 	It("fails for a module that builds no plugin", func() {
 		_, err := examples.PluginFor("commons")
 		Expect(err).To(MatchError(ContainSubstring("module 'commons' builds no plugin")))
+	})
+})
+
+var _ = Describe("module an example configures", func() {
+	moduleChunk := config.Chunk{Data: map[string]any{"module": "rule"}}
+	inModule := func(module string) examples.ExampleSpec {
+		return examples.RawExampleSpec{BaseExampleSpec: examples.BaseExampleSpec{Module: module}}
+	}
+
+	It("is none when neither the example nor its chunk sets one", func() {
+		Expect(examples.ModuleOf(inModule(""), config.Chunk{})).To(BeEmpty())
+	})
+
+	It("is the module of the chunk when the example sets none", func() {
+		Expect(examples.ModuleOf(inModule(""), moduleChunk)).To(Equal("rule"))
+	})
+
+	It("is the module the example sets, over the module of the chunk", func() {
+		Expect(examples.ModuleOf(inModule("commons"), moduleChunk)).To(Equal("commons"))
 	})
 })
