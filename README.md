@@ -183,3 +183,7 @@ As part of this tool some go templates have been added to ease formatting
     - Upper case the first letter
 - `mvmdheader`
     -  Include a `.md` file and move their title levels
+- `fileExists`
+    - tells whether a file exists, relative to the plugin directory
+- `fail`
+    - stops the generation with the given message, for a configuration to reject a layout it cannot document

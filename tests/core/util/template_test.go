@@ -15,6 +15,8 @@
 package util
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/gravitee-io/gravitee-doc-gen/pkg/core/util"
@@ -62,3 +64,26 @@ Lorem ipsum dolor sit amet
 func TestMdHeaderShift(t *testing.T) {
 
 }
+
+var _ = Describe("Template functions", func() {
+	render := func(content string) (string, error) {
+		file := filepath.Join(GinkgoT().TempDir(), "template.tmpl")
+		Expect(os.WriteFile(file, []byte(content), 0o600)).To(Succeed())
+		rendered, err := util.RenderTemplateFromFile(file, nil)
+		return string(rendered), err
+	}
+
+	It("tells whether a file exists", func() {
+		file := filepath.Join(GinkgoT().TempDir(), "present.yaml")
+		Expect(os.WriteFile(file, []byte("a: b"), 0o600)).To(Succeed())
+
+		rendered, err := render(`{{ fileExists "` + file + `" }} {{ fileExists "missing.yaml" }}`)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(rendered).To(Equal("true false"))
+	})
+
+	It("fails the rendering with the given message", func() {
+		_, err := render(`before {{ fail "move the examples" }}`)
+		Expect(err).To(MatchError(ContainSubstring("move the examples")))
+	})
+})

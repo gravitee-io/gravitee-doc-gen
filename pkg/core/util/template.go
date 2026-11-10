@@ -17,6 +17,7 @@ package util
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -49,6 +50,8 @@ func TemplateWithFunctions(file string) (*template.Template, error) {
 		"mvmdheader": MoveMarkdownHeader,
 		"title":      Title,
 		"upper":      upper,
+		"fileExists": FileExists,
+		"fail":       fail,
 	},
 	).Parse(string(content))
 }
@@ -61,6 +64,12 @@ func RenderTemplate(tpl *template.Template, data interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
+}
+
+// fail stops the rendering of a template with the given message, for a configuration to reject what it cannot
+// document.
+func fail(message string) (string, error) {
+	return "", errors.New(message)
 }
 
 func defaultTo(value any, fallback any) any {
