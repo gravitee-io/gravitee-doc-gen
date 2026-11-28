@@ -9,7 +9,6 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/spf13/cobra v1.9.1
 	gopkg.in/yaml.v3 v3.0.1
-
 )
 
 require (
@@ -204,4 +203,4 @@ require (
 
 go 1.23.0
 
-toolchain go1.23.1
+toolchain go1.27.4
