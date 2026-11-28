@@ -98,9 +98,9 @@ var _ = Describe("cloud object context methods", func() {
 			Expect(rule.Plugin.ApiTypes).To(ConsistOf(plugin.HttpLlmProxyApiType))
 		})
 
-		It("reads the guardian phases of a module in declared order, once each, without unsupported ones", func() {
+		It("reads the guardrail phases of a module in declared order, once each, without unsupported ones", func() {
 			rule, _ := modules.Find("rule")
-			Expect(rule.Plugin.GuardianPhases).To(Equal([]plugin.FlowPhase{plugin.ResponsePhase, plugin.RequestPhase}))
+			Expect(rule.Plugin.GuardrailPhases).To(Equal([]plugin.FlowPhase{plugin.ResponsePhase, plugin.RequestPhase}))
 		})
 
 		It("loads no plugin for a module without plugin.properties", func() {
@@ -115,7 +115,7 @@ var _ = Describe("cloud object context methods", func() {
 		})
 	})
 
-	When("a plugin declares no repository nor guardian phase", func() {
+	When("a plugin declares no repository nor guardrail phase", func() {
 		var origDir string
 
 		BeforeEach(func() {
@@ -138,10 +138,10 @@ var _ = Describe("cloud object context methods", func() {
 			Expect(p.Repository).To(Equal("gravitee-policy-test-plugin"))
 		})
 
-		It("runs in no Guardian", func() {
+		It("runs in no Guardrail", func() {
 			p, ok := bootstrap.GetData("plugin").(plugin.Plugin)
 			Expect(ok).To(BeTrue())
-			Expect(p.GuardianPhases).To(BeEmpty())
+			Expect(p.GuardrailPhases).To(BeEmpty())
 		})
 	})
 })

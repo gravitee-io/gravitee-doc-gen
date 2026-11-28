@@ -33,9 +33,9 @@ const flowPhaseMcpProxy = "mcp_proxy"
 const flowPhaseLlmProxy = "llm_proxy"
 const flowPhaseA2aProxy = "a2a_proxy"
 
-// flowPhaseGuardianKey lists the phases a guardrail policy offers as a step of a Guardian. A Guardian is not an API
+// flowPhaseGuardrailKey lists the phases a guardrail policy runs in. A Guardrail is not an API
 // type: it is run on the request or the response of the APIs that enable it, whatever their type.
-const flowPhaseGuardianKey = "guardian"
+const flowPhaseGuardrailKey = "guardrail"
 
 // repositoryKey names the repository the plugin is built from, when it differs from gravitee-<type>-<id>: a
 // repository that builds several plugins, for instance.
@@ -136,8 +136,8 @@ type Plugin struct {
 	Repository string
 	FlowPhases []FlowPhase
 	ApiTypes   []ApiType
-	// GuardianPhases are the phases of a Guardian the plugin can run in, empty when it is not a guardrail.
-	GuardianPhases []FlowPhase
+	// GuardrailPhases are the phases the plugin can run in as a guardrail, empty when it is not one.
+	GuardrailPhases []FlowPhase
 }
 
 func (p Plugin) String() string {
@@ -149,13 +149,13 @@ func PostProcessor(data any) (any, error) {
 	id := properties.GetDefault("id", "")
 	pluginType := properties.GetDefault("type", "")
 	plugin := Plugin{
-		ID:             id,
-		Type:           pluginType,
-		Title:          properties.GetDefault("name", ""),
-		Repository:     properties.GetDefault(repositoryKey, fmt.Sprintf("gravitee-%s-%s", pluginType, id)),
-		FlowPhases:     extractPhases(properties),
-		ApiTypes:       extractApiTypes(properties),
-		GuardianPhases: extractGuardianPhases(properties),
+		ID:              id,
+		Type:            pluginType,
+		Title:           properties.GetDefault("name", ""),
+		Repository:      properties.GetDefault(repositoryKey, fmt.Sprintf("gravitee-%s-%s", pluginType, id)),
+		FlowPhases:      extractPhases(properties),
+		ApiTypes:        extractApiTypes(properties),
+		GuardrailPhases: extractGuardrailPhases(properties),
 	}
 	return plugin, plugin.Validate()
 }
@@ -193,11 +193,11 @@ func extractPhases(properties *props.Properties) []FlowPhase {
 	return util.ToSlice[FlowPhase](set)
 }
 
-// extractGuardianPhases keeps the order the phases are declared in. A Guardian runs on the request or the response
-// only: any other value is dropped with a warning, so that a typo does not silently remove the Guardian section.
-func extractGuardianPhases(properties *props.Properties) []FlowPhase {
+// extractGuardrailPhases keeps the order the phases are declared in. A Guardrail runs on the request or the response
+// only: any other value is dropped with a warning, so that a typo does not silently remove the Guardrail section.
+func extractGuardrailPhases(properties *props.Properties) []FlowPhase {
 	phases := make([]FlowPhase, 0)
-	value, ok := properties.Get(flowPhaseGuardianKey)
+	value, ok := properties.Get(flowPhaseGuardrailKey)
 	if !ok {
 		return phases
 	}
@@ -207,7 +207,7 @@ func extractGuardianPhases(properties *props.Properties) []FlowPhase {
 		phase := NewFlowPhase(token)
 		if phase != RequestPhase && phase != ResponsePhase {
 			fmt.Printf(
-				"Warning: plugin '%s' declares an unsupported guardian phase '%s', expected REQUEST or RESPONSE: ignored\n",
+				"Warning: plugin '%s' declares an unsupported guardrail phase '%s', expected REQUEST or RESPONSE: ignored\n",
 				properties.GetDefault("id", ""), token)
 			continue
 		}
