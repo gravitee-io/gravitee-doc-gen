@@ -91,8 +91,8 @@ none. Besides `id`, `type` and `name`, templates get:
 
 - the API types and flow phases, from the `http_proxy`, `http_message`, `native_kafka`, `mcp_proxy`, `llm_proxy` and
   `a2a_proxy` keys (`.Plugin.ApiTypes`, `.Plugin.FlowPhases`);
-- the phases of a Guardian a guardrail policy runs in, from the `guardian` key (`.Plugin.GuardianPhases`, in the
-  declared order). A Guardian is not an API type: it runs on the request or the response of the APIs that enable it;
+- the phases a guardrail policy runs in, from the `guardrail` key (`.Plugin.GuardrailPhases`, in the
+  declared order). A Guardrail is not an API type: it runs on the request or the response of the APIs that enable it;
 - the repository the plugin is built from, from the `repository` key, `gravitee-<type>-<id>` by default
   (`.Plugin.Repository`).
 
